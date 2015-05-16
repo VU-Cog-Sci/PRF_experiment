@@ -1,0 +1,4 @@
+softTabs = false
+tabSize = 4
+indentUsing = tabs
+showInvisibles = true

@@ -50,8 +50,8 @@ class Trial(object):
 	def run(self):
 		self.start_time = self.session.clock.getTime()
 		if self.tracker:
-			self.tracker.sendMessage('trial ' + str(self.ID) + ' started at ' + str(self.start_time) )
-			self.tracker.sendCommand('record_status_message "Trial ' + str(self.ID) + '"')
+			self.tracker.log('trial ' + str(self.ID) + ' started at ' + str(self.start_time) )
+			self.tracker.send_command('record_status_message "Trial ' + str(self.ID) + '"')
 		self.events.append('trial ' + str(self.ID) + ' started at ' + str(self.start_time))
 		
 		
@@ -61,15 +61,15 @@ class Trial(object):
 		if self.tracker:
 			# pipe parameters to the eyelink data file in a for loop so as to limit the risk of flooding the buffer
 			for k in self.parameters.keys():
-				self.tracker.sendMessage('trial ' + str(self.ID) + ' parameter\t' + k + ' : ' + str(self.parameters[k]) )
+				self.tracker.log('trial ' + str(self.ID) + ' parameter\t' + k + ' : ' + str(self.parameters[k]) )
 				time_module.sleep(0.0005)
-			self.tracker.sendMessage('trial ' + str(self.ID) + ' stopped at ' + str(self.stop_time) )
+			self.tracker.log('trial ' + str(self.ID) + ' stopped at ' + str(self.stop_time) )
 		self.session.outputDict['eventArray'].append(self.events)
 		self.session.outputDict['parameterArray'].append(self.parameters)
 		
 	def key_event(self, event):
 		if self.tracker:
-			self.tracker.sendMessage('trial ' + str(self.ID) + ' event ' + str(event) + ' at ' + str(self.session.clock.getTime()) )
+			self.tracker.log('trial ' + str(self.ID) + ' event ' + str(event) + ' at ' + str(self.session.clock.getTime()) )
 		self.events.append('trial ' + str(self.ID) + ' event ' + str(event) + ' at ' + str(self.session.clock.getTime()))
 	
 	def feedback(self, answer, setting):
@@ -90,7 +90,7 @@ class Trial(object):
 		phase_time = str(self.session.clock.getTime())
 		self.events.append('trial ' + str(self.ID) + ' phase ' + str(self.phase) + ' started at ' + phase_time)
 		if self.tracker:
-			self.tracker.sendMessage('trial ' + str(self.ID) + ' phase ' + str(self.phase) + ' started at ' + phase_time )
+			self.tracker.log('trial ' + str(self.ID) + ' phase ' + str(self.phase) + ' started at ' + phase_time )
 			time_module.sleep(0.0005)
 		
 		

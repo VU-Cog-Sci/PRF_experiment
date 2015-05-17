@@ -98,9 +98,9 @@ class PRFTrial(Trial):
 
 				# add answers based on stimulus changes, and interact with the staircases at hand
 				# elif ev == 'b' or ev == 'right': # answer pulse
-				self.events.append('trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime()) + ' for task ' + self.parameters['task'])
+				self.events.append('trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime()) + ' for task ' + self.session.unique_tasks[self.parameters['unique_task']])
 				if self.tracker:
-					self.tracker.sendMessage( 'trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime()) + ' for task ' + self.parameters['task'] )
+					self.tracker.log( 'trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime()) + ' for task ' + self.session.unique_tasks[self.parameters['unique_task']] )
 		
 			super(PRFTrial, self).key_event( ev )
 

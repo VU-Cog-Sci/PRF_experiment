@@ -62,7 +62,7 @@ class PRFSession(EyelinkSession):
 								Quest.QuestObject(
 										tGuess = self.initial_values[i], 
 										tGuessSd = self.initial_values[i] * 0.5, 
-										pThreshold = 0.85, 
+										pThreshold = 0.9, 
 										beta = 3.5, 
 										delta = 0.01, 
 										gamma = 0.0, 
@@ -72,13 +72,12 @@ class PRFSession(EyelinkSession):
 									})
 	
 	def prepare_trials(self):
-		"""docstring for create_trials(self):"""
+		"""docstring for prepare_trials(self):"""
 		# 8 directions, 7 tasks
 		self.directions = np.linspace(0, 2.0 * pi, 8, endpoint = False)
 		self.tasks = ['color', 'speed', 'color', 'speed', 'fix', 'fix', 'fix_no_stim']
 		self.task_instructions = ['Color', 'Speed', 'Color', 'Speed', 'Fix', 'Fix', 'Fix']	
 		self.unique_tasks = ['Color', 'Speed', 'Fix']
-		self.num_elements = [1000, 1000, 1000, 1000, 1000, 1000, 1000]
 		
 		self.trial_array = []
 		for d in range(len(self.directions)):
@@ -95,8 +94,7 @@ class PRFSession(EyelinkSession):
 			'orientation' : 0.0,
 			'period' : 36.0,
 			'refresh_frequency' : 2.0,
-			'task_rate' : 2.0,
-			'task_index': None,
+			'task_rate' : 3.0,
 			'baseline_speed_for_task': 5.0,
 			'baseline_color_for_task': 0.75,
 			'element_size': 35.0,
@@ -132,8 +130,8 @@ class PRFSession(EyelinkSession):
 			this_trial_parameters = self.standard_parameters.copy()
 			this_trial_parameters['orientation'] = self.directions[self.trial_array[i,0]]
 			this_trial_parameters['task_index'] = self.trial_array[i,1]
-			this_trial_parameters['task_instruction'] = self.task_instructions[self.trial_array[i,1]]
-			this_trial_parameters['task'] = self.tasks[self.trial_array[i,1]]
+			# this_trial_parameters['task_instruction'] = self.task_instructions[self.trial_array[i,1]]
+			# this_trial_parameters['task'] = self.tasks[self.trial_array[i,1]]
 			this_trial_parameters['unique_task'] = self.unique_tasks.index(self.task_instructions[self.trial_array[i,1]])
 			this_trial_parameters['num_elements'] = self.num_elements[self.trial_array[i,1]]
 			this_trial = PRFTrial(this_trial_parameters, phase_durations = self.phase_durations, session = self, screen = self.screen, tracker = self.tracker)

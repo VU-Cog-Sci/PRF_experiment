@@ -97,7 +97,6 @@ class PRFSession(EyelinkSession):
 			'refresh_frequency' : 2.0,
 			'task_rate' : 2.0,
 			'task_index': None,
-			'task_instruction': None,
 			'baseline_speed_for_task': 5.0,
 			'baseline_color_for_task': 0.75,
 			'element_size': 35.0,

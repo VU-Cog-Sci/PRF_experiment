@@ -30,7 +30,6 @@ from scipy.io import wavfile
 import pyaudio, wave
 
 from pylink import *
-from EyeLinkCoreGraphicsPyglet import EyeLinkCoreGraphicsPyglet
 
 import pygaze
 from pygaze import libscreen 
@@ -237,11 +236,6 @@ class EyelinkSession(Session):
 			self.tracker = None
 			self.tracker_on = False
 			return
-		
-		
-		# dir(self.tracker)
-		# self.genv = EyeLinkCoreGraphicsPyglet(self.screen.screen, self.screen, self.screen_pix_size)
-		# openGraphicsEx(self.genv)
 
 		self.apply_settings(sensitivity_class = sensitivity_class, split_screen = split_screen, screen_half = screen_half, auto_trigger_calibration = auto_trigger_calibration, calibration_type = calibration_type, sample_rate = sample_rate)
 		
@@ -308,18 +302,11 @@ class EyelinkSession(Session):
 		else:
 			self.tracker.send_command("calibration_type = " + calibration_type)
 			
-			
-			
-	
 	def tracker_setup(self, sensitivity_class = 0, split_screen = False, screen_half = 'L', auto_trigger_calibration = True, calibration_type = 'HV9', sample_rate = 1000):
 		if self.tracker.connected():
-			
-			# set colors and point size to be used during calibration
-#			pylink.setCalibrationColors((127,127,127), (0,0,0))
-#			pylink.setTargetSize(diameter = self.pixels_per_degree * 0.125, holesize = self.pixels_per_degree * 0.0625)
-			
-			# self.tracker.doTrackerSetup()
+						
 			self.tracker.calibrate()
+
 			# re-set all the settings to be sure of sample rate and filter and such that may have been changed during the calibration procedure and the subject pressing all sorts of buttons
 			self.apply_settings(sensitivity_class = sensitivity_class, split_screen = split_screen, screen_half = screen_half, auto_trigger_calibration = auto_trigger_calibration, calibration_type = calibration_type, sample_rate = sample_rate )
 			
@@ -329,12 +316,7 @@ class EyelinkSession(Session):
 			self.tracker.log('degrees per pixel ' + str(self.pixels_per_degree) )
 			# now, we want to know how fast we're sampling, really
 #			self.eye_measured, self.sample_rate, self.CR_mode, self.file_sample_filter, self.link_sample_filter = self.tracker.getModeData()
-			self.sample_rate = self.tracker.sample_rate
-			# self.sample_rate = 2000
-			# self.CR_mode = self.tracker.getCRMode()
-			# self.eye_measured = self.tracker.getEyeUsed()
-			# self.file_sample_filter = self.tracker.getFileFilter()
-			# self.link_sample_filter = self.tracker.getLinkFilter()
+			self.sample_rate = sample_rate
 	
 	def drift_correct(self, position = None):
 		"""docstring for drift_correct"""
@@ -420,12 +402,13 @@ class EyelinkSession(Session):
 			
 		if algorithm_type == 'eyelink':
 			while no_saccade:
+				self.tracker.wait_for_saccade_start()
 				saccade_polling_time = core.getTime()
-				ev = self.tracker.getNextData()
-				if ev == 5: # start of a saccade
-					no_saccade = False
-				if ( saccade_polling_time - start_time ) > max_time:
-					no_saccade = False
+				# ev = 
+				# if ev == 5: # start of a saccade
+				# 	no_saccade = False
+				# if ( saccade_polling_time - start_time ) > max_time:
+				# 	no_saccade = False
 			
 		return saccade_polling_time
 			
@@ -434,8 +417,8 @@ class EyelinkSession(Session):
 		if self.tracker:
 			if self.tracker.connected():
 				self.tracker.stop_recording()
+			# inject local file name into pygaze tracker and then close.
 			self.tracker.local_data_file = self.output_file + '.edf'
-			# self.tracker.receiveDataFile(self.eyelink_temp_file, self.output_file + '.edf')
 			self.tracker.close()
 		super(EyelinkSession, self).close()
 	
@@ -443,7 +426,7 @@ class EyelinkSession(Session):
 		"""docstring for play_sound"""
 		super(EyelinkSession, self).play_sound(sound_index = sound_index)
 		if self.tracker != None:
-			self.tracker.sendMessage('sound ' + str(sound_index) + ' at ' + str(VisionEgg.time_func()) )
+			self.tracker.log('sound ' + str(sound_index) + ' at ' + str(VisionEgg.time_func()) )
 
 
 class StarStimSession(EyelinkSession):

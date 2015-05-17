@@ -135,7 +135,7 @@ class PRFSession(EyelinkSession):
 			this_trial_parameters['task_index'] = self.trial_array[i,1]
 			this_trial_parameters['task_instruction'] = self.task_instructions[self.trial_array[i,1]]
 			this_trial_parameters['task'] = self.tasks[self.trial_array[i,1]]
-			this_trial_parameters['unique_task'] = self.unique_tasks[self.unique_tasks.index(self.task_instructions[self.trial_array[i,1]])]
+			this_trial_parameters['unique_task'] = self.unique_tasks.index(self.task_instructions[self.trial_array[i,1]])
 			this_trial_parameters['num_elements'] = self.num_elements[self.trial_array[i,1]]
 			this_trial = PRFTrial(this_trial_parameters, phase_durations = self.phase_durations, session = self, screen = self.screen, tracker = self.tracker)
 			

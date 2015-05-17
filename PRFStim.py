@@ -59,36 +59,48 @@ class PRFStim(object):
 			this_stim_value_incr = False
 			if self.redraws in list(self.transient_occurrences[i]):
 				this_stim_value_incr = True
-				if self.session.tracker:
-					self.session.tracker.sendMessage( 'signal in task ' + task + ' at ' + str(self.session.clock.getTime())  )
-				self.trial.events.append( 'signal in task ' + task + ' at ' + str(self.session.clock.getTime()) )
-				print 'signal in task ' + task + ' at ' + str(self.session.clock.getTime()) + ' ecc bin ' + str(self.eccentricity_bin)
 
 			# now fill in this value into the different cues/tasks whatever, supplement this with a quest staircase...
-			if task == 'Color' and this_stim_value_incr:
+			if self.session.unique_tasks[i] == 'Color' and this_stim_value_incr:
 				# get quest sample here
-				color_quest_sample = self.session.staircases[task + '_%i'%self.eccentricity_bin].quantile()
+				color_quest_sample = self.session.staircases[self.session.unique_tasks[i] + '_%i'%self.eccentricity_bin].quantile()
 
 				self.present_color_task_sign = np.random.choice([-1,1])
 				RG_color = self.trial.parameters['baseline_color_for_task'] + self.present_color_task_sign * color_quest_sample
 				BY_color = self.trial.parameters['baseline_color_for_task'] + -self.present_color_task_sign * color_quest_sample
-			elif task == 'Speed' and this_stim_value_incr:
+
+				log_msg = 'signal in task: %s ecc bin: %i phase: %1.3f value: %f at %f ' % (self.session.unique_tasks[i], self.eccentricity_bin, self.phase, self.present_color_task_sign * color_quest_sample, self.session.clock.getTime())
+
+			elif self.session.unique_tasks[i] == 'Speed' and this_stim_value_incr:
 				# get quest sample here
-				speed_quest_sample = self.session.staircases[task + '_%i'%self.eccentricity_bin].quantile()
+				speed_quest_sample = self.session.staircases[self.session.unique_tasks[i] + '_%i'%self.eccentricity_bin].quantile()
 
 				self.present_speed_task_sign = np.random.choice([-1,1])
 				self.speed = self.trial.parameters['baseline_speed_for_task'] + self.present_speed_task_sign * speed_quest_sample
-			elif task == 'Fix' and this_stim_value_incr:
+
+				log_msg = 'signal in task: %s ecc bin: %i phase: %1.3f value: %f at %f ' % (self.session.unique_tasks[i], self.eccentricity_bin, self.phase, self.speed, self.session.clock.getTime())
+
+			elif self.session.unique_tasks[i] == 'Fix' and this_stim_value_incr:
 				# get quest sample here
-				fix_quest_sample = self.session.staircases[task + '_%i'%self.eccentricity_bin].quantile()
+				fix_quest_sample = self.session.staircases[self.session.unique_tasks[i] + '_%i'%self.eccentricity_bin].quantile()
 
 				self.present_fix_task_sign = np.random.choice([-1,1])
 				self.fix_gray_value = np.ones(3) * fix_quest_sample * self.present_fix_task_sign
 
+				log_msg = 'signal in task: %s ecc bin: %i phase: %1.3f value: %f at %f ' % (self.session.unique_tasks[i], self.eccentricity_bin, self.phase, self.fix_gray_value[0], self.session.clock.getTime())
+
+			if this_stim_value_incr:
+				if self.session.tracker:
+					self.session.tracker.log( log_msg )
+				self.trial.events.append( log_msg )
+				print log_msg
+
+
+
 			# tell the subject he/she has something to do, for the task-relevant shizzle that gets shown during this stimulus refresh.
-			if this_stim_value_incr and task == self.trial.parameters['unique_task']:
+			if this_stim_value_incr and i == self.trial.parameters['unique_task']:
 				self.session.play_sound()
-				self.last_sampled_staircase = task + '_%i'%self.eccentricity_bin
+				self.last_sampled_staircase = self.session.unique_tasks[i] + '_%i'%self.eccentricity_bin
 
 
 		# Now set the actual stimulus parameters
@@ -123,8 +135,8 @@ class PRFStim(object):
 			self.element_array.setOris(self.element_orientations)
 			self.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -midpoint])) * self.rotation_matrix)) #  + np.array([midpoint, 0])
 			self.trial.events.append( 'stimulus populated at  ' + str(phase) + ' at ' + str(self.session.clock.getTime()) + ' for midpoint ' + str(midpoint))
-			print self.trial.parameters['unique_task'] + ' - ' + self.trial.parameters['unique_task'] + ' stimulus populated at  ' + str(phase) + \
-					' at ' + str(self.session.clock.getTime()) + ' for midpoint ' + str(midpoint) + ' eccen bin is ' + str(self.eccentricity_bin)
+			# print self.session.unique_tasks[self.trial.parameters['unique_task']] + ' - ' + self.trial.parameters['unique_task'] + ' stimulus populated at  ' + str(phase) + \
+			# 		' at ' + str(self.session.clock.getTime()) + ' for midpoint ' + str(midpoint) + ' eccen bin is ' + str(self.eccentricity_bin)
 			
 		# if fmod(self.phase * self.period * self.refresh_frequency, 1.0) > 0.5: 
 		self.element_array.setPhases(self.element_speeds * self.phase * self.trial.parameters['period'] + self.element_phases)

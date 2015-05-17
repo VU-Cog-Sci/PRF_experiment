@@ -82,14 +82,14 @@ class PRFTrial(Trial):
 					if self.stim.last_sampled_staircase != None:
 						# what value were we presenting at?
 						test_value = self.session.staircases[self.stim.last_sampled_staircase].quantile()
-						if self.parameters['unique_task'] == 'Color':
+						if self.session.unique_tasks[self.parameters['unique_task']] == 'Color':
 							response = self.response_button_signs[ev]*self.stim.present_color_task_sign
-						elif self.parameters['unique_task'] == 'Speed':
+						elif self.session.unique_tasks[self.parameters['unique_task']] == 'Speed':
 							response = self.response_button_signs[ev]*self.stim.present_speed_task_sign
-						elif self.parameters['unique_task'] == 'Fix':
+						elif self.session.unique_tasks[self.parameters['unique_task']] == 'Fix':
 							response = self.response_button_signs[ev]*self.stim.present_fix_task_sign
 
-						print str(self.session.staircases[self.parameters['unique_task'] + '_%i'%self.stim.eccentricity_bin]) + ' response ' + str((response+1)/2) + 'updated at ' + str(test_value)
+						print str(self.session.staircases[self.session.unique_tasks[self.parameters['unique_task']] + '_%i'%self.stim.eccentricity_bin]) + ' response ' + str((response+1)/2) + 'updated at ' + str(test_value)
 						self.session.staircases[self.stim.last_sampled_staircase].update(test_value,(response+1)/2)
 
 						# now block teh possibility of further updates
@@ -116,7 +116,7 @@ class PRFTrial(Trial):
 				self.fix_time = self.session.clock.getTime()
 
 				if not self.instruct_sound_played:
-					self.session.play_sound(self.parameters['unique_task'].lower())
+					self.session.play_sound(self.session.unique_tasks[self.parameters['unique_task']].lower())
 					self.instruct_sound_played = True
 
 				# this trial phase is timed

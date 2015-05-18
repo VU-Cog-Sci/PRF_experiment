@@ -114,8 +114,6 @@ class PRFSession(EyelinkSession):
 		
 		ecc_mask = filters.makeMask(matrixSize = 2048, shape='raisedCosine', radius=0.9 * self.screen_pix_size[1] / self.screen_pix_size[0], center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
 		self.mask_stim = visual.PatchStim(self.screen, mask=ecc_mask,tex=None, size=(self.screen_pix_size[0], self.screen_pix_size[0]), pos = np.array((0.0,0.0)), color = self.screen.background_color) # 
-
-		print self.sounds.keys()
 	
 	def close(self):
 		super(PRFSession, self).close()

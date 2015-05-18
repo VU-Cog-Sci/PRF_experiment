@@ -31,7 +31,7 @@ class PRFStim(object):
 		self.last_stimulus_present_for_task = 0
 		
 		# construct timecourses of tasks
-		# task_rate is in one per task_rate seconds. we add 2x refresh frequency to avoid transients in the first second(s) and those following too quickly, and add an insane number to avoid tasks in the last second. 
+		# task_rate is in task_rate seconds per occurrence. we add 2x refresh frequency to avoid transients in the first second(s) and those following too quickly, and add an insane number to avoid tasks in the last second(s). 
 		self.transient_occurrences = np.round(np.cumsum(np.random.exponential(task_rate * refresh_frequency, size = (len(self.session.unique_tasks), 20)) + 2.0*refresh_frequency, axis = 1))
 		self.transient_occurrences[self.transient_occurrences > (self.trial.parameters['period'] * refresh_frequency - 2.0*refresh_frequency)] += 500000
 				
@@ -95,9 +95,7 @@ class PRFStim(object):
 					self.session.tracker.log( log_msg )
 				self.trial.events.append( log_msg )
 				print log_msg
-
-
-
+			
 			# tell the subject he/she has something to do, for the task-relevant shizzle that gets shown during this stimulus refresh.
 			if this_stim_value_incr and i == self.trial.parameters['unique_task']:
 				self.session.play_sound()

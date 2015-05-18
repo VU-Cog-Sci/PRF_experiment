@@ -37,7 +37,10 @@ class PRFStim(object):
 				
 		# psychopy stimuli
 		self.populate_stimulus()
-		self.element_array = visual.ElementArrayStim(screen, nElements = self.num_elements, sizes = self.element_sizes, sfs = self.element_sfs, xys = self.element_positions, colors = self.colors, colorSpace = 'rgb') 
+
+		# make this stimulus array a session variable, in order to have to create it only once...
+		if not hasattr(session, 'element_array'):
+			self.session.element_array = visual.ElementArrayStim(screen, nElements = self.num_elements, sizes = self.element_sizes, sfs = self.element_sfs, xys = self.element_positions, colors = self.colors, colorSpace = 'rgb') 
 
 		# set this to its default no-answer necessary value of None - this is tested for in PRFTrial when incorporating responses
 		self.last_sampled_staircase = None
@@ -52,8 +55,6 @@ class PRFStim(object):
 		self.speed = self.trial.parameters['baseline_speed_for_task']
 		RG_color = self.trial.parameters['baseline_color_for_task'] 
 		BY_color = self.trial.parameters['baseline_color_for_task'] 
-
-
 
 		for i, task in enumerate(self.session.unique_tasks):
 			this_stim_value_incr = False
@@ -129,11 +130,11 @@ class PRFStim(object):
 		if self.redraws < (self.phase * self.period * self.refresh_frequency):
 			self.redraws = self.redraws + 1
 			self.populate_stimulus()
-			self.element_array.setSfs(self.element_sfs)
-			self.element_array.setSizes(self.element_sizes)
-			self.element_array.setColors(self.colors)
-			self.element_array.setOris(self.element_orientations)
-			self.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -midpoint])) * self.rotation_matrix)) 
+			self.session.element_array.setSfs(self.element_sfs)
+			self.session.element_array.setSizes(self.element_sizes)
+			self.session.element_array.setColors(self.colors)
+			self.session.element_array.setOris(self.element_orientations)
+			self.session.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -midpoint])) * self.rotation_matrix)) 
 			log_msg = 'stimulus draw for phase %f, at %f'%(phase, self.session.clock.getTime())
 			self.trial.events.append( log_msg )
 			if self.session.tracker:
@@ -141,10 +142,10 @@ class PRFStim(object):
 
 			
 		# if fmod(self.phase * self.period * self.refresh_frequency, 1.0) > 0.5: 
-		self.element_array.setPhases(self.element_speeds * self.phase * self.trial.parameters['period'] + self.element_phases)
+		self.session.element_array.setPhases(self.element_speeds * self.phase * self.trial.parameters['period'] + self.element_phases)
 
 		if self.session.tasks[self.trial.parameters['task_index']] != 'fix_no_stim':
-			self.element_array.draw()
+			self.session.element_array.draw()
 		
 		self.session.fixation_outer_rim.draw()
 		self.session.fixation_rim.draw()

@@ -89,18 +89,22 @@ class PRFTrial(Trial):
 						elif self.session.unique_tasks[self.parameters['unique_task']] == 'Fix':
 							response = self.response_button_signs[ev]*self.stim.present_fix_task_sign
 
-						print str(self.session.staircases[self.session.unique_tasks[self.parameters['unique_task']] + '_%i'%self.stim.eccentricity_bin]) + ' response ' + str((response+1)/2) + 'updated at ' + str(test_value)
+						# update the staircase
 						self.session.staircases[self.stim.last_sampled_staircase].update(test_value,(response+1)/2)
-
-						# now block teh possibility of further updates
+						# now block the possibility of further updates
 						self.stim.last_sampled_staircase = None
+
+						log_msg = 'staircase %s updated from %f after response %s at %f'%( self.session.unique_tasks[self.parameters['unique_task']], test_value, str((response+1)/2), self.session.clock.getTime() )
+						self.events.append( log_msg )
+						if self.session.tracker:
+							self.session.tracker.log( log_msg )
+
 
 
 				# add answers based on stimulus changes, and interact with the staircases at hand
 				# elif ev == 'b' or ev == 'right': # answer pulse
-				self.events.append('trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime()) + ' for task ' + self.session.unique_tasks[self.parameters['unique_task']])
-				if self.tracker:
-					self.tracker.log( 'trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime()) + ' for task ' + self.session.unique_tasks[self.parameters['unique_task']] )
+				event_msg = 'trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime())
+				self.events.append(event_msg)
 		
 			super(PRFTrial, self).key_event( ev )
 

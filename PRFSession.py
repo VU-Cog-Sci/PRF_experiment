@@ -26,7 +26,7 @@ class PRFSession(EyelinkSession):
 	def __init__(self, subject_initials, index_number, tracker_on):
 		super(PRFSession, self).__init__( subject_initials, index_number )
 		# self.create_screen( size = (1680, 1050), full_screen = 1, physical_screen_distance = 124.0, background_color = (-0.75,-0.75,-0.75), physical_screen_size = (60, 40) )
-		self.create_screen( size = (1680, 1050), full_screen = 0, physical_screen_distance = 114.0, background_color = (-1,-1,-1), physical_screen_size = (60, 40) )
+		self.create_screen( size = (1680, 1050), full_screen = 0, physical_screen_distance = 114.0, background_color = (-0.75,-0.75,-0.75), physical_screen_size = (60, 40) )
 #		self.create_screen( size = (1920, 1200), full_screen = 1, physical_screen_distance = 124.0, background_color = (-0.75,-0.75,-0.75), physical_screen_size = (60, 40) )
 #		self.create_screen( size = (1280, 1024), full_screen = 1, physical_screen_distance = 124.0, background_color = (-0.75,-0.75,-0.75), physical_screen_size = (60, 40) )
 		self.create_output_file_name()
@@ -77,6 +77,7 @@ class PRFSession(EyelinkSession):
 		self.directions = np.linspace(0, 2.0 * pi, 8, endpoint = False)
 		self.tasks = ['color', 'speed', 'color', 'speed', 'fix', 'fix', 'fix_no_stim']
 		self.task_instructions = ['Color', 'Speed', 'Color', 'Speed', 'Fix', 'Fix', 'Fix']	
+		self.num_elements = np.ones(len(self.task_instructions)) * 2000
 		self.unique_tasks = ['Color', 'Speed', 'Fix']
 		
 		self.trial_array = []

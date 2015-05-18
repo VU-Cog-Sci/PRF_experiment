@@ -134,7 +134,11 @@ class PRFStim(object):
 			self.element_array.setColors(self.colors)
 			self.element_array.setOris(self.element_orientations)
 			self.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -midpoint])) * self.rotation_matrix)) 
-			self.trial.events.append( 'stimulus populated at  ' + str(phase) + ' at ' + str(self.session.clock.getTime()) + ' for midpoint ' + str(midpoint))
+			log_msg = 'stimulus draw for phase %f, at %f'%(phase, self.session.clock.getTime())
+			self.trial.events.append( log_msg )
+			if self.session.tracker:
+				self.session.tracker.log( log_msg )
+
 			
 		# if fmod(self.phase * self.period * self.refresh_frequency, 1.0) > 0.5: 
 		self.element_array.setPhases(self.element_speeds * self.phase * self.trial.parameters['period'] + self.element_phases)

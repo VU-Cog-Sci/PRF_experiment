@@ -101,7 +101,7 @@ class Session(object):
 		# print dir(self.pygaze_scr.screen[0])
 
 		self.screen = pygaze.expdisplay
-
+		self.screen.setColor(background_color)
 		# self.screen = visual.Window( size = size, fullscr = full_screen, allowGUI = False, units = 'pix', allowStencil = True, rgb = background_color, waitBlanking = wait_blanking, winType = 'pyglet' )
 		
 		self.screen.background_color = background_color

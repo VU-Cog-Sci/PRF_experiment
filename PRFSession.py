@@ -103,7 +103,7 @@ class PRFSession(EyelinkSession):
 			'element_spatial_frequency': 2.0,
 		}
 		
-		self.phase_durations = np.array([-0.0001, 1.00, self.standard_parameters['period'], 0.001])
+		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['period'], 0.001])
 		
 		# stimuli
 		self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (0,0,0), maskParams = {'fringeWidth':0.4})
@@ -138,7 +138,7 @@ class PRFSession(EyelinkSession):
 
 			these_phase_durations = self.phase_durations.copy()
 			if i == 0:
-				these_phase_durations[1] = 1.0
+				these_phase_durations[1] = 5.0
 
 			this_trial = PRFTrial(this_trial_parameters, phase_durations = these_phase_durations, session = self, screen = self.screen, tracker = self.tracker)
 			

@@ -24,14 +24,15 @@ class PRFTrial(Trial):
 						refresh_frequency = self.parameters['refresh_frequency'], 
 						task_rate = self.parameters['task_rate'])
 		
-		this_instruction_string = 'keep fixation'# self.parameters['task_instruction']
-		self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0.0, 30.0), italic = True, height = 30)
+		this_instruction_string = '\t\tLeft / Right:\nFix - White / Black\nColor - RG / BY\nSpeed - Acc / Dec'# self.parameters['task_instruction']
+		self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (-self.session.screen_pix_size[0]/2.0, self.session.screen_pix_size[1]/2.0 - 60), italic = True, height = 30, alignHoriz = 'left')
+		self.instruction.setSize((1200,50))
 		
 		self.run_time = 0.0
 		self.instruct_time = self.fix_time = self.stimulus_time = self.post_stimulus_time = 0.0
 		self.instruct_sound_played = False
 
-		self.response_button_signs = {'b':-1, 'g':1}
+		self.response_button_signs = {'b':-1, 'g':1, 'z':1, 'm':-1}
 		
 	
 	def draw(self):
@@ -100,6 +101,7 @@ class PRFTrial(Trial):
 
 							log_msg = 'staircase %s updated from %f after response %s at %f'%( self.session.unique_tasks[self.parameters['unique_task']], test_value, str((response+1)/2), self.session.clock.getTime() )
 							self.events.append( log_msg )
+							print log_msg
 							if self.session.tracker:
 								self.session.tracker.log( log_msg )
 

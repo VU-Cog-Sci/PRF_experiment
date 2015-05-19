@@ -37,12 +37,14 @@ class PRFTrial(Trial):
 	def draw(self):
 		"""docstring for draw"""
 		if self.phase == 0:
+			self.session.fixation_outer_rim.draw()
 			self.session.fixation_rim.draw()
 			self.session.fixation.draw()
 			if self.ID == 0:
 				self.instruction.draw()
 		
 		elif self.phase == 1:
+			self.session.fixation_outer_rim.draw()
 			self.session.fixation_rim.draw()
 			self.session.fixation.draw()
 			
@@ -50,6 +52,7 @@ class PRFTrial(Trial):
 			self.stim.draw(phase = (self.stimulus_time - self.fix_time) / self.phase_durations[2])
 		
 		elif self.phase == 3:
+			self.session.fixation_outer_rim.draw()
 			self.session.fixation_rim.draw()
 			self.session.fixation.setColor((0,0,0))
 			self.session.fixation.draw()
@@ -77,27 +80,28 @@ class PRFTrial(Trial):
 					self.events.append([99,self.session.clock.getTime()-self.start_time])
 					if self.phase == 0:
 						self.phase_forward()
-				elif ev in self.response_button_signs:
+				elif ev in self.response_button_signs.keys():
 					# first check, do we even need an answer?
-					if self.stim.last_sampled_staircase != None:
-						# what value were we presenting at?
-						test_value = self.session.staircases[self.stim.last_sampled_staircase].quantile()
-						if self.session.unique_tasks[self.parameters['unique_task']] == 'Color':
-							response = self.response_button_signs[ev]*self.stim.present_color_task_sign
-						elif self.session.unique_tasks[self.parameters['unique_task']] == 'Speed':
-							response = self.response_button_signs[ev]*self.stim.present_speed_task_sign
-						elif self.session.unique_tasks[self.parameters['unique_task']] == 'Fix':
-							response = self.response_button_signs[ev]*self.stim.present_fix_task_sign
+					if self.phase == 2:
+						if self.stim.last_sampled_staircase != None:
+							# what value were we presenting at?
+							test_value = self.session.staircases[self.stim.last_sampled_staircase].quantile()
+							if self.session.unique_tasks[self.parameters['unique_task']] == 'Color':
+								response = self.response_button_signs[ev]*self.stim.present_color_task_sign
+							elif self.session.unique_tasks[self.parameters['unique_task']] == 'Speed':
+								response = self.response_button_signs[ev]*self.stim.present_speed_task_sign
+							elif self.session.unique_tasks[self.parameters['unique_task']] == 'Fix':
+								response = self.response_button_signs[ev]*self.stim.present_fix_task_sign
 
-						# update the staircase
-						self.session.staircases[self.stim.last_sampled_staircase].update(test_value,(response+1)/2)
-						# now block the possibility of further updates
-						self.stim.last_sampled_staircase = None
+							# update the staircase
+							self.session.staircases[self.stim.last_sampled_staircase].update(test_value,(response+1)/2)
+							# now block the possibility of further updates
+							self.stim.last_sampled_staircase = None
 
-						log_msg = 'staircase %s updated from %f after response %s at %f'%( self.session.unique_tasks[self.parameters['unique_task']], test_value, str((response+1)/2), self.session.clock.getTime() )
-						self.events.append( log_msg )
-						if self.session.tracker:
-							self.session.tracker.log( log_msg )
+							log_msg = 'staircase %s updated from %f after response %s at %f'%( self.session.unique_tasks[self.parameters['unique_task']], test_value, str((response+1)/2), self.session.clock.getTime() )
+							self.events.append( log_msg )
+							if self.session.tracker:
+								self.session.tracker.log( log_msg )
 
 
 

@@ -26,7 +26,8 @@ class PRFSession(EyelinkSession):
 	def __init__(self, subject_initials, index_number, tracker_on):
 		super(PRFSession, self).__init__( subject_initials, index_number )
 		# self.create_screen( size = (1680, 1050), full_screen = 1, physical_screen_distance = 124.0, background_color = (-0.75,-0.75,-0.75), physical_screen_size = (60, 40) )
-		self.create_screen( size = (1680, 1050), full_screen = 0, physical_screen_distance = 114.0, background_color = (-0.75,-0.75,-0.75), physical_screen_size = (60, 40) )
+		# self.create_screen( size = (1680, 1050), full_screen = 0, physical_screen_distance = 114.0, background_color = (-0.75,-0.75,-0.75), physical_screen_size = (60, 40) )
+		self.create_screen( size = (2560, 1440), full_screen = 0, physical_screen_distance = 114.0, background_color = (-0.75,-0.75,-0.75), physical_screen_size = (60, 40) )
 #		self.create_screen( size = (1920, 1200), full_screen = 1, physical_screen_distance = 124.0, background_color = (-0.75,-0.75,-0.75), physical_screen_size = (60, 40) )
 #		self.create_screen( size = (1280, 1024), full_screen = 1, physical_screen_distance = 124.0, background_color = (-0.75,-0.75,-0.75), physical_screen_size = (60, 40) )
 		self.create_output_file_name()
@@ -48,8 +49,8 @@ class PRFSession(EyelinkSession):
 		# staircases
 		# Quest(tGuess,tGuessSd,pThreshold,beta,delta,gamma,grain=0.01,range=None)
 		self.nr_staircases_ecc = 4
-		self.initial_values = [0.2, 2, 0.2] # for self.unique_tasks, 
-		self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_quest.pickle')
+		self.initial_values = [0.25, 2, 0.2] # for self.unique_tasks, 
+		self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_quest.pickle')
 		if os.path.exists( self.staircase_file_name ):
 			with open(self.staircase_file_name) as f:
 				self.staircases = pickle.load(f)
@@ -89,21 +90,20 @@ class PRFSession(EyelinkSession):
 		
 		# standard parameters
 		self.standard_parameters = {
-			'stim_size': 0.9,
+			'stim_size': 0.66667,					# twenty degree diameter aperture - ten degree radius
 			'num_elements' : 2000,
-			'bar_width_ratio': 0.075,
+			'bar_width_ratio': 0.125 * 0.66667,		# 0.25 times the stimulus radius
 			'orientation' : 0.0,
 			'period' : 36.0,
 			'refresh_frequency' : 2.0,
 			'task_rate' : 3.0,
 			'baseline_speed_for_task': 5.0,
 			'baseline_color_for_task': 0.75,
-			'element_size': 35.0,
+			'element_size': 45.0,
 			'element_spatial_frequency': 2.0,
-
 		}
 		
-		self.phase_durations = [-0.0001, 1.00, self.standard_parameters['period'], 0.001]
+		self.phase_durations = np.array([-0.0001, 1.00, self.standard_parameters['period'], 0.001])
 		
 		# stimuli
 		self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (0,0,0), maskParams = {'fringeWidth':0.4})
@@ -112,13 +112,15 @@ class PRFSession(EyelinkSession):
 
 		screen_width, screen_height = self.screen_pix_size
 		
-		ecc_mask = filters.makeMask(matrixSize = 2048, shape='raisedCosine', radius=0.9 * self.screen_pix_size[1] / self.screen_pix_size[0], center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
+		ecc_mask = filters.makeMask(matrixSize = 2048, shape='raisedCosine', radius=self.standard_parameters['stim_size'] * self.screen_pix_size[1] / self.screen_pix_size[0], center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
 		self.mask_stim = visual.PatchStim(self.screen, mask=ecc_mask,tex=None, size=(self.screen_pix_size[0], self.screen_pix_size[0]), pos = np.array((0.0,0.0)), color = self.screen.background_color) # 
 	
 	def close(self):
 		super(PRFSession, self).close()
 		with open(self.staircase_file_name, 'w') as f:
 			pickle.dump(self.staircases, f)
+		for s in self.staircases.keys():
+			print 'Staircase {}, mean {}, standard deviation {}'.format(s, self.staircases[s].mean(), self.staircases[s].sd())
 		
 	
 	def run(self):
@@ -133,7 +135,12 @@ class PRFSession(EyelinkSession):
 			# this_trial_parameters['task'] = self.tasks[self.trial_array[i,1]]
 			this_trial_parameters['unique_task'] = self.unique_tasks.index(self.task_instructions[self.trial_array[i,1]])
 			this_trial_parameters['num_elements'] = self.num_elements[self.trial_array[i,1]]
-			this_trial = PRFTrial(this_trial_parameters, phase_durations = self.phase_durations, session = self, screen = self.screen, tracker = self.tracker)
+
+			these_phase_durations = self.phase_durations.copy()
+			if i == 0:
+				these_phase_durations[1] = 1.0
+
+			this_trial = PRFTrial(this_trial_parameters, phase_durations = these_phase_durations, session = self, screen = self.screen, tracker = self.tracker)
 			
 			# run the prepared trial
 			this_trial.run(ID = i)
@@ -142,14 +149,3 @@ class PRFSession(EyelinkSession):
 		self.close()
 	
 
-def main():
-#	initials = raw_input('Your initials: ')
-#	run_nr = int(raw_input('Run number: '))
-	
-	ts = PRFSession( 'jj', 1, tracker_on = False )
-	ts.run()
-	
-
-	
-if __name__ == '__main__':
-	main()

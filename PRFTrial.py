@@ -24,35 +24,43 @@ class PRFTrial(Trial):
 						refresh_frequency = self.parameters['refresh_frequency'], 
 						task_rate = self.parameters['task_rate'])
 		
-		this_instruction_string = '\t\tLeft / Right:\nFix - White / Black\nColor - RG / BY\nSpeed - Acc / Dec'# self.parameters['task_instruction']
-		self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (-self.session.screen_pix_size[0]/2.0, self.session.screen_pix_size[1]/2.0 - 60), italic = True, height = 30, alignHoriz = 'left')
+		this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nFix\t\t\t-\tBlack\t\t/\tWhite\nColor\t\t-\tBY\t\t\t/\tRG\nSpeed\t\t-\tDec\t\t/\tAcc'# self.parameters['task_instruction']
+		self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 30, alignHoriz = 'center')
 		self.instruction.setSize((1200,50))
-		
+		# self.fixation_mask = visual.Circle(self.screen,radius=10,pos=(0,0))
+		# self.fixation_mask.setColor((-0.75,-0.75))
+
 		self.run_time = 0.0
 		self.instruct_time = self.fix_time = self.stimulus_time = self.post_stimulus_time = 0.0
 		self.instruct_sound_played = False
 
-		self.response_button_signs = {'b':-1, 'g':1, 'z':1, 'm':-1}
+		self.response_button_signs = {'b':1, 'g':-1, 'z':-1, 'm':1}
 		
 	
 	def draw(self):
 		"""docstring for draw"""
 		if self.phase == 0:
+			if self.ID == 0:
+				# self.fixation_mask.draw()
+				self.instruction.draw()
+			else:
+				self.session.fixation_outer_rim.draw()
+				self.session.fixation_rim.draw()
+				self.session.fixation.draw()
+		if self.phase == 1:
 			self.session.fixation_outer_rim.draw()
 			self.session.fixation_rim.draw()
 			self.session.fixation.draw()
-			if self.ID == 0:
-				self.instruction.draw()
-		
-		elif self.phase == 1:
+
+		elif self.phase == 2:
 			self.session.fixation_outer_rim.draw()
 			self.session.fixation_rim.draw()
 			self.session.fixation.draw()
 			
-		elif self.phase == 2:
-			self.stim.draw(phase = (self.stimulus_time - self.fix_time) / self.phase_durations[2])
-		
 		elif self.phase == 3:
+			self.stim.draw(phase = (self.stimulus_time - self.fix_time) / self.phase_durations[3])
+		
+		elif self.phase == 4:
 			self.session.fixation_outer_rim.draw()
 			self.session.fixation_rim.draw()
 			self.session.fixation.setColor((0,0,0))
@@ -123,6 +131,11 @@ class PRFTrial(Trial):
 			if self.phase == 0:
 				self.instruct_time = self.session.clock.getTime()
 			if self.phase == 1:
+				# this trial phase is timed
+				self.initial_wait_time = self.session.clock.getTime()
+				if ( self.initial_wait_time  - self.instruct_time ) > self.phase_durations[1]:
+					self.phase_forward()
+			if self.phase == 2:
 				self.fix_time = self.session.clock.getTime()
 
 				if not self.instruct_sound_played:
@@ -130,17 +143,17 @@ class PRFTrial(Trial):
 					self.instruct_sound_played = True
 
 				# this trial phase is timed
-				if ( self.fix_time  - self.instruct_time ) > self.phase_durations[1]:
-					self.phase_forward()
-			if self.phase == 2:
-				# this trial phase is timed
-				self.stimulus_time = self.session.clock.getTime()
-				if ( self.stimulus_time - self.fix_time ) > self.phase_durations[2]:
+				if ( self.fix_time  - self.initial_wait_time ) > self.phase_durations[2]:
 					self.phase_forward()
 			if self.phase == 3:
 				# this trial phase is timed
+				self.stimulus_time = self.session.clock.getTime()
+				if ( self.stimulus_time - self.fix_time ) > self.phase_durations[3]:
+					self.phase_forward()
+			if self.phase == 4:
+				# this trial phase is timed
 				self.post_stimulus_time = self.session.clock.getTime()
-				if ( self.post_stimulus_time  - self.stimulus_time ) > self.phase_durations[3]:
+				if ( self.post_stimulus_time  - self.stimulus_time ) > self.phase_durations[4]:
 					self.stopped = True
 		
 			# events and draw

@@ -116,6 +116,7 @@ class Session(object):
 		self.pixels_per_centimeter = self.pixels_per_degree / self.centimeters_per_degree
 		# print 'screen: ' + str(self.screen_height_degrees) + ' degrees tall and pixels per degree: ' + str(self.pixels_per_degree)
 		
+		# self.screen.mousevis = False
 		self.screen.setMouseVisible(False)
 		self.screen.flip()
 	

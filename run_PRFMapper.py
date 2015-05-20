@@ -2,7 +2,7 @@ import sys
 
 sys.path.append( 'exp_tools' )
 
-from PRFSession import *
+from PRFMapperSession import *
 from plot_staircases import *
 import appnope
 
@@ -13,10 +13,8 @@ def main():
 
 	appnope.nope()
 
-	ts = PRFSession( initials, run_nr, scanner, tracker_on = False )
+	ts = PRFMapperSession( initials, run_nr, scanner, tracker_on = False )
 	ts.run()
-
-	plot_staircases(initials, run_nr)
 	
 if __name__ == '__main__':
 	main()

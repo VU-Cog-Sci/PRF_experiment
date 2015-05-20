@@ -1,0 +1,133 @@
+(dp0
+S'parameterArray'
+p1
+(lp2
+(dp3
+S'num_elements'
+p4
+I2000
+sS'baseline_color_for_task'
+p5
+F0.75
+sS'task'
+p6
+S'no_color_no_speed'
+p7
+sS'orientation'
+p8
+cnumpy.core.multiarray
+scalar
+p9
+(cnumpy
+dtype
+p10
+(S'f8'
+p11
+I0
+I1
+tp12
+Rp13
+(I3
+S'<'
+p14
+NNNI-1
+I-1
+I0
+tp15
+bS'\x18-DT\xfb!\t@'
+p16
+tp17
+Rp18
+sS'element_size'
+p19
+F45.0
+sS'task_index'
+p20
+g9
+(g10
+(S'i8'
+p21
+I0
+I1
+tp22
+Rp23
+(I3
+S'<'
+p24
+NNNI-1
+I-1
+I0
+tp25
+bS'\x00\x00\x00\x00\x00\x00\x00\x00'
+p26
+tp27
+Rp28
+sS'period'
+p29
+F36.0
+sS'mapper_period'
+p30
+F3.0
+sS'bar_width_ratio'
+p31
+F0.1
+sS'baseline_speed_for_task'
+p32
+F5.0
+sS'element_spatial_frequency'
+p33
+F2.0
+sS'stim_size'
+p34
+F0.66667
+sS'task_rate'
+p35
+F1.0
+sS'refresh_frequency'
+p36
+F2.0
+sasS'eventArray'
+p37
+(lp38
+(lp39
+S'trial 0 started at 2.23379683495'
+p40
+aS'fix signal 1 at 2.235604 '
+p41
+aS'fix signal -1 at 3.247402 '
+p42
+aS'fix signal 1 at 4.247899 '
+p43
+aS'fix signal -1 at 5.249140 '
+p44
+aS'fix signal -1 at 6.249172 '
+p45
+a(lp46
+I99
+aF4.344162225723267
+aaS'trial 0 phase 1 started at 6.57796502113'
+p47
+aS'trial 0 event t at 6.5779838562'
+p48
+aS'fix signal -1 at 6.750089 '
+p49
+aS'fix signal -1 at 7.249270 '
+p50
+aS'fix signal 1 at 8.250611 '
+p51
+aS'fix signal 1 at 9.250422 '
+p52
+aS'fix signal -1 at 9.750723 '
+p53
+aS'fix signal -1 at 10.250843 '
+p54
+aS'fix signal 1 at 11.235056 '
+p55
+aS'trial 0 phase 2 started at 11.5686678886'
+p56
+a(lp57
+I-99
+aF9.419358015060425
+aaS'trial 0 event escape at 11.6531870365'
+p58
+aas.

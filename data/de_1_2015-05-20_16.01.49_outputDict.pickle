@@ -1,0 +1,551 @@
+(dp0
+S'parameterArray'
+p1
+(lp2
+(dp3
+S'num_elements'
+p4
+I2000
+sS'baseline_color_for_task'
+p5
+F0.75
+sS'task'
+p6
+S'yes_color_yes_speed'
+p7
+sS'orientation'
+p8
+cnumpy.core.multiarray
+scalar
+p9
+(cnumpy
+dtype
+p10
+(S'f8'
+p11
+I0
+I1
+tp12
+Rp13
+(I3
+S'<'
+p14
+NNNI-1
+I-1
+I0
+tp15
+bS'\xd2!3\x7f|\xd9\x12@'
+p16
+tp17
+Rp18
+sS'element_size'
+p19
+F45.0
+sS'task_index'
+p20
+g9
+(g10
+(S'i8'
+p21
+I0
+I1
+tp22
+Rp23
+(I3
+S'<'
+p24
+NNNI-1
+I-1
+I0
+tp25
+bS'\x03\x00\x00\x00\x00\x00\x00\x00'
+p26
+tp27
+Rp28
+sS'period'
+p29
+F36.0
+sS'mapper_period'
+p30
+F3.0
+sS'bar_width_ratio'
+p31
+F0.1
+sS'refresh_frequency_mapper'
+p32
+F0.3333333333333333
+sS'baseline_speed_for_task'
+p33
+F5.0
+sS'element_spatial_frequency'
+p34
+F2.0
+sS'stim_size'
+p35
+F0.66667
+sS'task_rate'
+p36
+F3.0
+sS'refresh_frequency'
+p37
+F2.0
+sa(dp38
+g4
+I2000
+sg5
+F0.75
+sg6
+S'yes_color_no_speed'
+p39
+sg8
+g9
+(g13
+S'\x18-DT\xfb!\xe9?'
+p40
+tp41
+Rp42
+sg19
+F45.0
+sg20
+g9
+(g23
+S'\x01\x00\x00\x00\x00\x00\x00\x00'
+p43
+tp44
+Rp45
+sg29
+F36.0
+sg30
+F3.0
+sg31
+F0.1
+sg32
+F0.3333333333333333
+sg33
+F5.0
+sg34
+F2.0
+sg35
+F0.66667
+sg36
+F3.0
+sg37
+F2.0
+sa(dp46
+g4
+I2000
+sg5
+F0.75
+sg6
+S'no_color_yes_speed'
+p47
+sg8
+g9
+(g13
+S'\x00\x00\x00\x00\x00\x00\x00\x00'
+p48
+tp49
+Rp50
+sg19
+F45.0
+sg20
+g9
+(g23
+S'\x02\x00\x00\x00\x00\x00\x00\x00'
+p51
+tp52
+Rp53
+sg29
+F36.0
+sg30
+F3.0
+sg31
+F0.1
+sg32
+F0.3333333333333333
+sg33
+F5.0
+sg34
+F2.0
+sg35
+F0.66667
+sg36
+F3.0
+sg37
+F2.0
+sa(dp54
+g4
+I2000
+sg5
+F0.75
+sg6
+g39
+sg8
+g9
+(g13
+S'\x18-DT\xfb!\t@'
+p55
+tp56
+Rp57
+sg19
+F45.0
+sg20
+g9
+(g23
+S'\x01\x00\x00\x00\x00\x00\x00\x00'
+p58
+tp59
+Rp60
+sg29
+F36.0
+sg30
+F3.0
+sg31
+F0.1
+sg32
+F0.3333333333333333
+sg33
+F5.0
+sg34
+F2.0
+sg35
+F0.66667
+sg36
+F3.0
+sg37
+F2.0
+sa(dp61
+g4
+I2000
+sg5
+F0.75
+sg6
+g7
+sg8
+g9
+(g13
+S'\x18-DT\xfb!\xf9?'
+p62
+tp63
+Rp64
+sg19
+F45.0
+sg20
+g9
+(g23
+S'\x03\x00\x00\x00\x00\x00\x00\x00'
+p65
+tp66
+Rp67
+sg29
+F36.0
+sg30
+F3.0
+sg31
+F0.1
+sg32
+F0.3333333333333333
+sg33
+F5.0
+sg34
+F2.0
+sg35
+F0.66667
+sg36
+F3.0
+sg37
+F2.0
+sa(dp68
+g4
+I2000
+sg5
+F0.75
+sg6
+g7
+sg8
+g9
+(g13
+S'\x18-DT\xfb!\t@'
+p69
+tp70
+Rp71
+sg19
+F45.0
+sg20
+g9
+(g23
+S'\x03\x00\x00\x00\x00\x00\x00\x00'
+p72
+tp73
+Rp74
+sg29
+F36.0
+sg30
+F3.0
+sg31
+F0.1
+sg32
+F0.3333333333333333
+sg33
+F5.0
+sg34
+F2.0
+sg35
+F0.66667
+sg36
+F3.0
+sg37
+F2.0
+sa(dp75
+g4
+I2000
+sg5
+F0.75
+sg6
+g47
+sg8
+g9
+(g13
+S'\xd2!3\x7f|\xd9\x02@'
+p76
+tp77
+Rp78
+sg19
+F45.0
+sg20
+g9
+(g23
+S'\x02\x00\x00\x00\x00\x00\x00\x00'
+p79
+tp80
+Rp81
+sg29
+F36.0
+sg30
+F3.0
+sg31
+F0.1
+sg32
+F0.3333333333333333
+sg33
+F5.0
+sg34
+F2.0
+sg35
+F0.66667
+sg36
+F3.0
+sg37
+F2.0
+sa(dp82
+g4
+I2000
+sg5
+F0.75
+sg6
+S'fix_no_stim'
+p83
+sg8
+g9
+(g13
+S'\xd2!3\x7f|\xd9\x12@'
+p84
+tp85
+Rp86
+sg19
+F45.0
+sg20
+g9
+(g23
+S'\x04\x00\x00\x00\x00\x00\x00\x00'
+p87
+tp88
+Rp89
+sg29
+F36.0
+sg30
+F3.0
+sg31
+F0.1
+sg32
+F0.3333333333333333
+sg33
+F5.0
+sg34
+F2.0
+sg35
+F0.66667
+sg36
+F3.0
+sg37
+F2.0
+sa(dp90
+g4
+I2000
+sg5
+F0.75
+sg6
+g39
+sg8
+g9
+(g13
+S'^8U)zj\x0f@'
+p91
+tp92
+Rp93
+sg19
+F45.0
+sg20
+g9
+(g23
+S'\x01\x00\x00\x00\x00\x00\x00\x00'
+p94
+tp95
+Rp96
+sg29
+F36.0
+sg30
+F3.0
+sg31
+F0.1
+sg32
+F0.3333333333333333
+sg33
+F5.0
+sg34
+F2.0
+sg35
+F0.66667
+sg36
+F3.0
+sg37
+F2.0
+sasS'eventArray'
+p97
+(lp98
+(lp99
+S'trial 0 started at 2.18621015549'
+p100
+a(lp101
+I99
+aF0.39025187492370605
+aaS'trial 0 phase 1 started at 2.5764670372'
+p102
+aS'trial 0 event t at 2.57648611069'
+p103
+aS'trial 0 phase 2 started at 7.56717514992'
+p104
+aS'trial 0 phase 3 started at 8.583122015'
+p105
+aS'stimulus draw for phase 0.000010, at 8.621165'
+p106
+aS'trial 0 phase 4 started at 11.6139991283'
+p107
+aa(lp108
+S'trial 1 started at 11.7011620998'
+p109
+aS'trial 1 phase 1 started at 11.7011699677'
+p110
+aS'trial 1 phase 2 started at 11.7011749744'
+p111
+aS'trial 1 phase 3 started at 12.7024199963'
+p112
+aS'stimulus draw for phase 0.000010, at 12.740452'
+p113
+aS'trial 1 phase 4 started at 15.7256891727'
+p114
+aa(lp115
+S'trial 2 started at 15.8015670776'
+p116
+aS'trial 2 phase 1 started at 15.8015749454'
+p117
+aS'trial 2 phase 2 started at 15.8015799522'
+p118
+aS'trial 2 phase 3 started at 16.8044199944'
+p119
+aS'stimulus draw for phase 0.000010, at 16.842406'
+p120
+aS'trial 2 phase 4 started at 19.830147028'
+p121
+aa(lp122
+S'trial 3 started at 19.9029221535'
+p123
+aS'trial 3 phase 1 started at 19.9029300213'
+p124
+aS'trial 3 phase 2 started at 19.9029350281'
+p125
+aS'trial 3 phase 3 started at 20.9056861401'
+p126
+aS'stimulus draw for phase 0.000010, at 20.945706'
+p127
+aS'trial 3 phase 4 started at 23.937525034'
+p128
+aa(lp129
+S'trial 4 started at 24.0222511292'
+p130
+aS'trial 4 phase 1 started at 24.022258997'
+p131
+aS'trial 4 phase 2 started at 24.0222640038'
+p132
+aS'trial 4 phase 3 started at 25.024034977'
+p133
+aS'stimulus draw for phase 0.000010, at 25.061680'
+p134
+aS'trial 4 phase 4 started at 28.0537641048'
+p135
+aa(lp136
+S'trial 5 started at 28.1402220726'
+p137
+aS'trial 5 phase 1 started at 28.1402299404'
+p138
+aS'trial 5 phase 2 started at 28.1402349472'
+p139
+aS'trial 5 phase 3 started at 29.1426711082'
+p140
+aS'stimulus draw for phase 0.000010, at 29.180340'
+p141
+aS'trial 5 phase 4 started at 32.1657669544'
+p142
+aa(lp143
+S'trial 6 started at 32.245775938'
+p144
+aS'trial 6 phase 1 started at 32.2457849979'
+p145
+aS'trial 6 phase 2 started at 32.2457900047'
+p146
+aS'trial 6 phase 3 started at 33.259966135'
+p147
+aS'stimulus draw for phase 0.000010, at 33.296967'
+p148
+aS'trial 6 phase 4 started at 36.2699971199'
+p149
+aa(lp150
+S'trial 7 started at 36.3481900692'
+p151
+aS'trial 7 phase 1 started at 36.348197937'
+p152
+aS'trial 7 phase 2 started at 36.3482041359'
+p153
+aS'trial 7 phase 3 started at 37.3639190197'
+p154
+aS'stimulus draw for phase 0.000010, at 37.400901'
+p155
+aS'trial 7 phase 4 started at 40.3644759655'
+p156
+aa(lp157
+S'trial 8 started at 40.4466559887'
+p158
+aS'trial 8 phase 1 started at 40.4466650486'
+p159
+aS'trial 8 phase 2 started at 40.4466700554'
+p160
+aS'trial 8 phase 3 started at 41.4488329887'
+p161
+aS'stimulus draw for phase 0.000011, at 41.497734'
+p162
+a(lp163
+I-99
+aF2.073399066925049
+aaS'trial 8 event escape at 42.5200879574'
+p164
+aas.

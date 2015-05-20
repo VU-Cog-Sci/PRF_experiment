@@ -26,13 +26,15 @@ class PRFStim(object):
 
 		self.phase = 0
 		# bookkeeping variables
+		self.eccentricity_bin = -1
 		self.redraws = 0
 		self.frames = 0
 		self.last_stimulus_present_for_task = 0
 		
 		# construct timecourses of tasks
 		# task_rate is in task_rate seconds per occurrence. we add 2x refresh frequency to avoid transients in the first second(s) and those following too quickly, and add an insane number to avoid tasks in the last second(s). 
-		self.transient_occurrences = np.round(np.cumsum(np.random.exponential(task_rate * refresh_frequency, size = (len(self.session.unique_tasks), 20)) + 2.0*refresh_frequency, axis = 1))
+		minimum_pulse_gap = 2.0 # in seconds
+		self.transient_occurrences = np.round(np.cumsum(np.random.exponential(task_rate * refresh_frequency, size = (len(self.session.unique_tasks), 20)) + minimum_pulse_gap*refresh_frequency, axis = 1))
 		self.transient_occurrences[self.transient_occurrences > (self.trial.parameters['period'] * refresh_frequency - 2.0*refresh_frequency)] += 500000
 				
 		# psychopy stimuli
@@ -67,8 +69,8 @@ class PRFStim(object):
 				color_quest_sample = self.session.staircases[self.session.unique_tasks[i] + '_%i'%self.eccentricity_bin].quantile()
 
 				self.present_color_task_sign = np.random.choice([-1,1])
-				RG_color = self.trial.parameters['baseline_color_for_task'] + self.present_color_task_sign * color_quest_sample
-				BY_color = self.trial.parameters['baseline_color_for_task'] + -self.present_color_task_sign * color_quest_sample
+				RG_color = self.trial.parameters['baseline_color_for_task'] + -self.present_color_task_sign * color_quest_sample
+				BY_color = self.trial.parameters['baseline_color_for_task'] + self.present_color_task_sign * color_quest_sample
 
 				log_msg = 'signal in feature: %s ecc bin: %i phase: %1.3f value: %f at %f ' % (self.session.unique_tasks[i], self.eccentricity_bin, self.phase, self.present_color_task_sign * color_quest_sample, self.session.clock.getTime())
 
@@ -79,7 +81,7 @@ class PRFStim(object):
 				self.present_speed_task_sign = np.random.choice([-1,1])
 				self.speed = self.trial.parameters['baseline_speed_for_task'] + self.present_speed_task_sign * speed_quest_sample
 
-				log_msg = 'signal in feature: %s ecc bin: %i phase: %1.3f value: %f at %f ' % (self.session.unique_tasks[i], self.eccentricity_bin, self.phase, self.speed, self.session.clock.getTime())
+				log_msg = 'signal in feature: %s ecc bin: %i phase: %1.3f value: %f at %f ' % (self.session.unique_tasks[i], self.eccentricity_bin, self.phase, self.present_speed_task_sign * speed_quest_sample, self.session.clock.getTime())
 
 			elif self.session.unique_tasks[i] == 'Fix' and this_stim_value_incr:
 				# get quest sample here
@@ -88,7 +90,7 @@ class PRFStim(object):
 				self.present_fix_task_sign = np.random.choice([-1,1])
 				self.fix_gray_value = np.ones(3) * fix_quest_sample * self.present_fix_task_sign
 
-				log_msg = 'signal in feature: %s ecc bin: %i phase: %1.3f value: %f at %f ' % (self.session.unique_tasks[i], self.eccentricity_bin, self.phase, self.fix_gray_value[0], self.session.clock.getTime())
+				log_msg = 'signal in feature: %s ecc bin: %i phase: %1.3f value: %f at %f ' % (self.session.unique_tasks[i], self.eccentricity_bin, self.phase, fix_quest_sample * self.present_fix_task_sign, self.session.clock.getTime())
 
 			if this_stim_value_incr:
 				if self.session.tracker:

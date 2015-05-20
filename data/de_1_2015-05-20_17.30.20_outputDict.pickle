@@ -1,0 +1,168 @@
+(dp0
+S'parameterArray'
+p1
+(lp2
+(dp3
+S'num_elements'
+p4
+I2000
+sS'baseline_color_for_task'
+p5
+F0.75
+sS'task'
+p6
+S'no_color_yes_speed'
+p7
+sS'orientation'
+p8
+F0.0
+sS'element_size'
+p9
+F45.0
+sS'task_index'
+p10
+cnumpy.core.multiarray
+scalar
+p11
+(cnumpy
+dtype
+p12
+(S'i8'
+p13
+I0
+I1
+tp14
+Rp15
+(I3
+S'<'
+p16
+NNNI-1
+I-1
+I0
+tp17
+bS'\x02\x00\x00\x00\x00\x00\x00\x00'
+p18
+tp19
+Rp20
+sS'period'
+p21
+F36.0
+sS'task_rate'
+p22
+F1.0
+sS'mapper_period'
+p23
+F3.0
+sS'bar_width_ratio'
+p24
+F0.1
+sS'baseline_speed_for_task'
+p25
+F5.0
+sS'refresh_frequency'
+p26
+F2.0
+sS'stim_size'
+p27
+F0.66667
+sS'stimulus_repetitions'
+p28
+I10
+sS'element_spatial_frequency'
+p29
+F2.0
+sa(dp30
+g4
+I2000
+sg5
+F0.75
+sg6
+S'yes_color_yes_speed'
+p31
+sg8
+F0.0
+sg9
+F45.0
+sg10
+g11
+(g15
+S'\x03\x00\x00\x00\x00\x00\x00\x00'
+p32
+tp33
+Rp34
+sg21
+F36.0
+sg22
+F1.0
+sg23
+F3.0
+sg24
+F0.1
+sg25
+F5.0
+sg26
+F2.0
+sg27
+F0.66667
+sg28
+I10
+sg29
+F2.0
+sasS'eventArray'
+p35
+(lp36
+(lp37
+S'trial 0 started at 2.19572806358'
+p38
+a(lp39
+I99
+aF0.9497969150543213
+aaS'trial 0 phase 1 started at 3.14552903175'
+p40
+aS'trial 0 event t at 3.14554786682'
+p41
+aS'fix signal 1 at 6.285294 '
+p42
+aS'staircase updated from 0.083568 after response 1 at 7.138221'
+p43
+aS'trial 0 key: m at time: 7.13825488091'
+p44
+aS'trial 0 event m at 7.13826489449'
+p45
+aS'trial 0 phase 2 started at 8.13623404503'
+p46
+aS'fix signal 1 at 8.870317 '
+p47
+aS'trial 0 phase 3 started at 9.13661193848'
+p48
+aS'stimulus draw for phase 0.000010, at 9.184382'
+p49
+aS'staircase updated from 0.075521 after response 1 at 9.903782'
+p50
+aS'trial 0 key: m at time: 9.90380501747'
+p51
+aS'trial 0 event m at 9.90381097794'
+p52
+aS'fix signal -1 at 11.068034 '
+p53
+aS'staircase updated from 0.068528 after response 1 at 11.847809'
+p54
+aS'trial 0 key: z at time: 11.8478450775'
+p55
+aS'trial 0 event z at 11.847853899'
+p56
+aS'trial 0 phase 4 started at 12.1789028645'
+p57
+aa(lp58
+S'trial 1 started at 12.2546110153'
+p59
+aS'trial 1 phase 1 started at 12.2546188831'
+p60
+aS'trial 1 phase 2 started at 12.254625082'
+p61
+a(lp62
+I-99
+aF0.7175509929656982
+aaS'trial 1 event escape at 12.9721970558'
+p63
+aas.

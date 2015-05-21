@@ -19,7 +19,11 @@ standard_parameters = {
 	'bar_width_ratio': 0.1,				# 0.2 times the stimulus radius
 
 	## mapper variables:
-	'stimulus_repetitions': 10,			# for each trial type (of which there are 5)		
+	'stimulus_repetitions': 30,			# for each trial type (of which there are 5)		
 	'mapper_period': 3.0,
 
 }
+
+# screen_res = (2560, 1440)
+screen_res = (1680, 1050)
+background_color = (-0.75,-0.75,-0.75)

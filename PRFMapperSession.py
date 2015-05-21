@@ -25,8 +25,7 @@ class PRFMapperSession(EyelinkSession):
 	def __init__(self, subject_initials, index_number,scanner, tracker_on):
 		super(PRFMapperSession, self).__init__( subject_initials, index_number)
 
-		self.background_color = (-0.75,-0.75,-0.75)
-		self.create_screen( size = (2560, 1440), full_screen = 0, physical_screen_distance = 159.0, background_color = self.background_color, physical_screen_size = (70, 40) )
+		self.create_screen( size = screen_res, full_screen = 0, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
 		self.standard_parameters = standard_parameters
 
 		self.create_output_file_name()
@@ -44,7 +43,7 @@ class PRFMapperSession(EyelinkSession):
 		self.ready_for_next_pulse = True
 		minimum_pulse_gap = 2.0 # in seconds
 		self.pulse_duration = 0.5 # in seconds
-		self.transient_occurrences = np.cumsum(np.random.exponential(self.standard_parameters['task_rate'], size = 200) + minimum_pulse_gap)
+		self.transient_occurrences = np.cumsum(np.random.exponential(self.standard_parameters['task_rate'], size = 20000) + minimum_pulse_gap)
 
 	def prepare_staircases(self):
 		# staircases

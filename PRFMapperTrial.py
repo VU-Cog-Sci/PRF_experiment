@@ -31,14 +31,17 @@ class PRFMapperTrial(Trial):
 		# self.instruct_sound_played = False
 
 		self.response_button_signs = {'z':-1, 'm':1}#'b':1, 'g':-1, 
+		# set this to its default no-answer necessary value of None - this is tested for in PRFTrial when incorporating responses
+		self.last_sampled_staircase = None
+
 	
 	def draw(self):
 		"""docstring for draw"""
 
-		if not (self.ID == 0) * (self.phase == 0):
+		if ((self.ID != 0) * (self.phase != 0)):
 
 			if len((self.session.transient_occurrences - self.run_time)[(self.session.transient_occurrences - self.run_time)<0])>0:
-				if ((self.session.transient_occurrences - self.run_time)[(self.session.transient_occurrences - self.run_time)<0][0] > -self.session.pulse_duration) * self.session.ready_for_next_pulse:
+				if ((self.session.transient_occurrences - self.run_time)[(self.session.transient_occurrences - self.run_time)<0][-1] > -self.session.pulse_duration) * self.session.ready_for_next_pulse:
 
 					self.session.ready_for_next_pulse = False
 					
@@ -59,7 +62,7 @@ class PRFMapperTrial(Trial):
 					self.session.play_sound()
 					self.last_sampled_staircase = 'fix'
 
-				elif ((self.session.transient_occurrences - self.run_time)[(self.session.transient_occurrences - self.run_time)<0][0] < -self.session.pulse_duration) :
+				elif ((self.session.transient_occurrences - self.run_time)[(self.session.transient_occurrences - self.run_time)<0][-1] < -self.session.pulse_duration) :
 					self.session.ready_for_next_pulse = True
 					self.session.fixation.setColor((0,0,0))
 
@@ -114,7 +117,7 @@ class PRFMapperTrial(Trial):
 					if self.phase == 0:
 						self.phase_forward()
 				elif ev in self.response_button_signs.keys():
-					if hasattr(self,'last_sampled_staircase'):
+					if self.last_sampled_staircase is not None: #hasattr(self,'last_sampled_staircase'):
 						# what value were we presenting at?
 						test_value = self.session.staircases[self.last_sampled_staircase].quantile()
 						response = self.response_button_signs[ev]*self.present_fix_task_sign

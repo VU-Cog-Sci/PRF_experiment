@@ -39,9 +39,6 @@ class PRFMapperStim(object):
 		if not hasattr(session, 'element_array'):
 			self.session.element_array = visual.ElementArrayStim(screen, nElements = self.num_elements, sizes = self.element_sizes, sfs = self.element_sfs, xys = self.element_positions, colors = self.colors, colorSpace = 'rgb') 
 
-		# set this to its default no-answer necessary value of None - this is tested for in PRFTrial when incorporating responses
-		self.last_sampled_staircase = None
-
 	
 	def populate_stimulus(self):
 
@@ -89,7 +86,7 @@ class PRFMapperStim(object):
 
 		elif self.task == 'fix_no_stim':
 			
-			red,green,yellow,blue = self.session.background_color,self.session.background_color,self.session.background_color,self.session.background_color
+			red,green,yellow,blue = self.session.screen.background_color,self.session.screen.background_color,self.session.screen.background_color,self.session.screen.background_color
 
 			self.speed = 0
 

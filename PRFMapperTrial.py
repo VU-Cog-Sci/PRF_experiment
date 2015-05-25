@@ -38,7 +38,8 @@ class PRFMapperTrial(Trial):
 		if not (self.ID == 0) * (self.phase == 0):
 
 			if len((self.session.transient_occurrences - self.run_time)[(self.session.transient_occurrences - self.run_time)<0])>0:
-				if ((self.session.transient_occurrences - self.run_time)[(self.session.transient_occurrences - self.run_time)<0][0] > -self.session.pulse_duration) * self.session.ready_for_next_pulse:
+
+				if ((self.session.transient_occurrences - self.run_time)[(self.session.transient_occurrences - self.run_time)<0][-1] > -self.session.pulse_duration) * self.session.ready_for_next_pulse:
 
 					self.session.ready_for_next_pulse = False
 					
@@ -59,7 +60,7 @@ class PRFMapperTrial(Trial):
 					self.session.play_sound()
 					self.last_sampled_staircase = 'fix'
 
-				elif ((self.session.transient_occurrences - self.run_time)[(self.session.transient_occurrences - self.run_time)<0][0] < -self.session.pulse_duration) :
+				elif ((self.session.transient_occurrences - self.run_time)[(self.session.transient_occurrences - self.run_time)<0][-1] < -self.session.pulse_duration) :
 					self.session.ready_for_next_pulse = True
 					self.session.fixation.setColor((0,0,0))
 

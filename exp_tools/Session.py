@@ -91,10 +91,10 @@ class Session(object):
 		the standard screen is assumed to be the Sony FW600, which is set up to start up in the 
 		1280x960@96Hz resolution.
 		"""
-		
+
 		# the actual screen-getting
-		self.display = libscreen.Display(disptype='psychopy', dispsize=size, fgc=(255,0,0), bgc=list((255*bgl for bgl in background_color)), screennr=screen_nr)
-		self.pygaze_scr = libscreen.Screen(disptype='psychopy')
+		self.display = libscreen.Display(disptype='psychopy', dispsize=size, fgc=(255,0,0), bgc=list((255*bgl for bgl in background_color)), screennr=screen_nr,mousevisible=False)
+		# self.pygaze_scr = libscreen.Screen(disptype='psychopy')
 
 		# print dir(self.display)
 		# print self.display
@@ -102,6 +102,7 @@ class Session(object):
 		# print dir(self.pygaze_scr.screen[0])
 
 		self.screen = pygaze.expdisplay
+		self.screen.setMouseVisible(False)
 		self.screen.setColor(background_color)
 		# self.screen = visual.Window( size = size, fullscr = full_screen, allowGUI = False, units = 'pix', allowStencil = True, rgb = background_color, waitBlanking = wait_blanking, winType = 'pyglet' )
 		
@@ -118,7 +119,6 @@ class Session(object):
 		# print 'screen: ' + str(self.screen_height_degrees) + ' degrees tall and pixels per degree: ' + str(self.pixels_per_degree)
 		
 		# self.screen.mousevis = False
-		self.screen.setMouseVisible(False)
 		self.screen.flip()
 	
 	def create_output_file_name(self, data_directory = 'data'):

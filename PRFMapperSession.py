@@ -22,11 +22,12 @@ import appnope
 appnope.nope()
 
 class PRFMapperSession(EyelinkSession):
-	def __init__(self, subject_initials, index_number,scanner, tracker_on):
+	def __init__(self, subject_initials, index_number, scanner, tracker_on):
 		super(PRFMapperSession, self).__init__( subject_initials, index_number)
 
 		# self.background_color = (-0.75,-0.75,-0.75)
 		# self.create_screen( size = (2560, 1440), full_screen = 0, physical_screen_distance = 159.0, background_color = self.background_color, physical_screen_size = (70, 40) )
+		
 		self.create_screen( size = screen_res, full_screen = 0, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
 
 		self.standard_parameters = standard_parameters
@@ -42,11 +43,14 @@ class PRFMapperSession(EyelinkSession):
 		self.prepare_trials()
 		self.prepare_staircases()
 
-		# setup fix transient and redraws in session to let it continuously run:
 		self.ready_for_next_pulse = True
-		# self.pulse_duration = 0.5 # in seconds
 		self.exp_start_time = 0.0
-		self.transient_occurrences = np.round(np.cumsum(np.random.exponential(self.standard_parameters['task_rate'], size = 20000) + self.standard_parameters['minimum_pulse_gap']) * 2.0) / 2.0
+
+		# setup fix transient and redraws in session to let it continuously run. This happens in multitudes of 'time_steps', which is equal to the redraw steps in the PRF experiment.
+		self.time_steps = self.standard.parameters['TR']/self.standard_parameters['redraws_per_TR'] 
+		self.transient_occurrences = np.round(np.cumsum(np.random.exponential(self.standard_parameters['task_rate'], size = 20000) + self.standard_parameters['minimum_pulse_gap']) * (1/self.time_steps))) / (1/self.time_steps)
+
+
 
 	def prepare_staircases(self):
 		# staircases
@@ -74,10 +78,10 @@ class PRFMapperSession(EyelinkSession):
 	def prepare_trials(self):
 		"""docstring for prepare_trials(self):"""
 		
-		# create random m-sequence for the 5 trial types of length (5^3)-1 = 124.
+		# create random m-sequence for the 5 trial types of length (5^3)-1 = 124. I then add the first trial type to the end of the array, so that all trial types have even occurences
 		from psychopy.contrib import mseq
 		self.tasks = np.array(['fix_no_stim','no_color_no_speed','yes_color_no_speed','no_color_yes_speed','yes_color_yes_speed'])
-		self.trial_array = self.tasks[mseq.mseq(5,3,1,np.random.randint(200))] # base (number of trial types), power (sequence length is base^power-1), shift (to shift last values of sequence to first), random sequence out of the 200 possibilities
+		self.trial_array = np.hstack([  self.tasks[mseq.mseq(5,3,1,np.random.randint(200))],self.tasks[0]]) # base (number of trial types), power (sequence length is base^power-1), shift (to shift last values of sequence to first), random sequence out of the 200 possibilities
 			
 		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['mapper_period'], 0.001])
 

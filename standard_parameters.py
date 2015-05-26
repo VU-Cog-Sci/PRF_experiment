@@ -4,10 +4,11 @@
 standard_parameters = {
 	
 	## common parameters:
-	'stim_size': 0.66667,					# twenty degree diameter aperture - ten degree radius
-	'num_elements' : 2000,
-	'period' : 36.0,				
-	'refresh_frequency' : 2.0,				# 1/refresh_frequency is the redraw duration
+	'stim_size': 0.9,					# 13.5 degree stim radius
+	'num_elements' : 4000,
+	'period' : 36.0,
+	'TR':1.495,				
+	'redraws_per_TR' : 3,
 	'task_rate' : 3.0,						# this + minimum_pulse_gap is average of exponential distribution
 	'minimum_pulse_gap':2.0,
 	'baseline_speed_for_task': 5.0,
@@ -16,12 +17,11 @@ standard_parameters = {
 	'element_spatial_frequency': 2.0,
 
 	## attention experiment variables:
-	'orientation' : 0.0,
-	'bar_width_ratio': 0.1,				# 0.2 times the stimulus radius
+	'orientation' : 0.0,				# just for initiation
+	'bar_width_ratio': 0.1,				# 0.2 times the stimulus radius, which is 2.7 degrees
 
 	## mapper variables:
-	'stimulus_repetitions': 30,			# for each trial type (of which there are 5)		
-	'mapper_period': 3.0,
+	'mapper_period': 3.0,				# duration of mapper stimulus
 
 }
 

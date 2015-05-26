@@ -39,7 +39,6 @@ class PRFMapperTrial(Trial):
 	def draw(self):
 		"""docstring for draw"""
 
-
 		# wait with presenting the fixation task after the first phase of the first trial
 		if (self.ID != 0) + (self.phase > 1):
 

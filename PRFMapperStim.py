@@ -133,9 +133,7 @@ class PRFMapperStim(object):
 		# if fmod(self.phase * self.period * self.refresh_frequency, 1.0) > 0.5: 
 		self.session.element_array.setPhases(self.element_speeds * self.phase * self.trial.parameters['mapper_period'] + self.element_phases)
 
-		if self.session.tasks[self.trial.parameters['task_index']] != 'fix_no_stim':
-			self.session.element_array.draw()
-		
+		self.session.element_array.draw()		
 		self.session.fixation_outer_rim.draw()
 		self.session.fixation_rim.draw()
 		self.session.fixation.draw()

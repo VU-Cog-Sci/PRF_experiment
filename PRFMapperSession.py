@@ -74,10 +74,10 @@ class PRFMapperSession(EyelinkSession):
 	def prepare_trials(self):
 		"""docstring for prepare_trials(self):"""
 		
-		# create random m-sequence for the 5 trial types of length (5^2)-1 = 24.
+		# create random m-sequence for the 5 trial types of length (5^3)-1 = 124.
 		from psychopy.contrib import mseq
 		self.tasks = np.array(['fix_no_stim','no_color_no_speed','yes_color_no_speed','no_color_yes_speed','yes_color_yes_speed'])
-		self.trial_array = mseq.mseq(5,2,1,np.random.randint(200)) # base (number of trial types), power (sequence length is base^power-1), shift (to shift last values of sequence to first), random sequence out of the 200 possibilities
+		self.trial_array = self.tasks[mseq.mseq(5,3,1,np.random.randint(200))] # base (number of trial types), power (sequence length is base^power-1), shift (to shift last values of sequence to first), random sequence out of the 200 possibilities
 			
 		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['mapper_period'], 0.001])
 
@@ -107,10 +107,10 @@ class PRFMapperSession(EyelinkSession):
 			# prepare the parameters of the following trial based on the shuffled trial array
 			this_trial_parameters = self.standard_parameters.copy()
 			# this_trial_parameters['orientation'] = self.directions[self.trial_array[i,0]]
-			this_trial_parameters['task_index'] = self.trial_array[i]
+			# this_trial_parameters['task_index'] = self.trial_array[i]
 			# this_trial_parameters['task_instruction'] = self.task_instructions[self.trial_array[i,1]]
 			# this_trial_parameters['task'] = self.tasks[self.trial_array[i,1]]
-			this_trial_parameters['task'] = self.tasks[self.trial_array[i]]
+			this_trial_parameters['task'] = self.trial_array[i]
 			# this_trial_parameters['num_elements'] = self.num_elements[self.trial_array[i,1]]
 
 			these_phase_durations = self.phase_durations.copy()

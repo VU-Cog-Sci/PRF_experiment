@@ -91,6 +91,7 @@ class PRFMapperSession(EyelinkSession):
 		ecc_mask = filters.makeMask(matrixSize = 2048, shape='raisedCosine', radius=self.standard_parameters['stim_size'] * self.screen_pix_size[1] / self.screen_pix_size[0], center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
 		self.mask_stim = visual.PatchStim(self.screen, mask=ecc_mask,tex=None, size=(self.screen_pix_size[0], self.screen_pix_size[0]), pos = np.array((0.0,0.0)), color = self.screen.background_color) # 
 	
+		# this will be roughly 4 * 124 = 496, which is 8:15 minutes
 		self.exp_duration = np.sum(self.phase_durations) * len(self.trial_array)
 
 	def close(self):

@@ -73,17 +73,12 @@ class PRFMapperSession(EyelinkSession):
 	
 	def prepare_trials(self):
 		"""docstring for prepare_trials(self):"""
-		# 8 directions, 5 tasks
-		self.directions = np.linspace(0, 2.0 * pi, self.standard_parameters['stimulus_repetitions'], endpoint = False)
-		self.tasks = ['no_color_no_speed','yes_color_no_speed','no_color_yes_speed','yes_color_yes_speed','fix_no_stim']
 		
-		self.trial_array = []
-		for d in range(len(self.directions)):
-			for t in range(len(self.tasks)):
-				self.trial_array.append([d, t])
-		self.trial_array = np.array(self.trial_array)
-		np.random.shuffle(self.trial_array)
-		
+		# create random m-sequence for the 5 trial types of length (5^2)-1 = 24.
+		from psychopy.contrib import mseq
+		self.tasks = np.array(['fix_no_stim','no_color_no_speed','yes_color_no_speed','no_color_yes_speed','yes_color_yes_speed'])
+		self.trial_array = mseq.mseq(5,2,1,np.random.randint(200)) # base (number of trial types), power (sequence length is base^power-1), shift (to shift last values of sequence to first), random sequence out of the 200 possibilities
+			
 		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['mapper_period'], 0.001])
 
 		# stimuli
@@ -96,7 +91,7 @@ class PRFMapperSession(EyelinkSession):
 		ecc_mask = filters.makeMask(matrixSize = 2048, shape='raisedCosine', radius=self.standard_parameters['stim_size'] * self.screen_pix_size[1] / self.screen_pix_size[0], center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
 		self.mask_stim = visual.PatchStim(self.screen, mask=ecc_mask,tex=None, size=(self.screen_pix_size[0], self.screen_pix_size[0]), pos = np.array((0.0,0.0)), color = self.screen.background_color) # 
 	
-		self.exp_duration = np.sum(self.phase_durations) * len(self.tasks)*len(self.directions)
+		self.exp_duration = np.sum(self.phase_durations) * len(self.trial_array)
 
 	def close(self):
 		super(PRFMapperSession, self).close()
@@ -112,10 +107,10 @@ class PRFMapperSession(EyelinkSession):
 			# prepare the parameters of the following trial based on the shuffled trial array
 			this_trial_parameters = self.standard_parameters.copy()
 			# this_trial_parameters['orientation'] = self.directions[self.trial_array[i,0]]
-			this_trial_parameters['task_index'] = self.trial_array[i,1]
+			this_trial_parameters['task_index'] = self.trial_array[i]
 			# this_trial_parameters['task_instruction'] = self.task_instructions[self.trial_array[i,1]]
 			# this_trial_parameters['task'] = self.tasks[self.trial_array[i,1]]
-			this_trial_parameters['task'] = self.tasks[self.trial_array[i,1]]
+			this_trial_parameters['task'] = self.tasks[self.trial_array[i]]
 			# this_trial_parameters['num_elements'] = self.num_elements[self.trial_array[i,1]]
 
 			these_phase_durations = self.phase_durations.copy()

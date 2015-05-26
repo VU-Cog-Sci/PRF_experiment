@@ -33,8 +33,7 @@ class PRFStim(object):
 		
 		# construct timecourses of tasks
 		# task_rate is in task_rate seconds per occurrence. we add 2x refresh frequency to avoid transients in the first second(s) and those following too quickly, and add an insane number to avoid tasks in the last second(s). 
-		minimum_pulse_gap = 2.0 # in seconds
-		self.transient_occurrences = np.round(np.cumsum(np.random.exponential(task_rate * refresh_frequency, size = (len(self.session.unique_tasks), 20)) + minimum_pulse_gap*refresh_frequency, axis = 1))
+		self.transient_occurrences = np.round(np.cumsum(np.random.exponential(task_rate * refresh_frequency, size = (len(self.session.unique_tasks), 20)) + self.standard_parameters['minimum_pulse_gap']*refresh_frequency, axis = 1))
 		self.transient_occurrences[self.transient_occurrences > (self.trial.parameters['period'] * refresh_frequency - 2.0*refresh_frequency)] += 500000
 				
 		# psychopy stimuli

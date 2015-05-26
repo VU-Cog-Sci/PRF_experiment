@@ -42,7 +42,6 @@ class PRFMapperStim(object):
 		# set this to its default no-answer necessary value of None - this is tested for in PRFTrial when incorporating responses
 		self.last_sampled_staircase = None
 
-	
 	def populate_stimulus(self):
 
 		# what eccentricity bin are we in? phase runs from 0 to 1, so we take the ecc on a linear scale for now
@@ -88,8 +87,8 @@ class PRFMapperStim(object):
 			self.speed = self.trial.parameters['baseline_speed_for_task']	
 
 		elif self.task == 'fix_no_stim':
-			
-			red,green,yellow,blue = self.session.background_color,self.session.background_color,self.session.background_color,self.session.background_color
+		
+			red,green,yellow,blue = self.session.screen.background_color,self.session.screen.background_color,self.session.screen.background_color,self.session.screen.background_color
 
 			self.speed = 0
 

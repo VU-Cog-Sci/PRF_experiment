@@ -27,7 +27,7 @@ class PRFSession(EyelinkSession):
 	def __init__(self, subject_initials, index_number,scanner, tracker_on):
 		super(PRFSession, self).__init__( subject_initials, index_number)
 
-		self.create_screen( size = (2560, 1440), full_screen = 0, physical_screen_distance = 159.0, background_color = (-0.75,-0.75,-0.75), physical_screen_size = (70, 40) )
+		self.create_screen( size = screen_res, full_screen = 0, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
 
 		self.create_output_file_name()
 		if tracker_on:

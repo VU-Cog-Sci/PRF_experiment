@@ -95,8 +95,9 @@ class Session(object):
 		# the actual screen-getting
 		self.display = libscreen.Display(disptype='psychopy', dispsize=size, fgc=(255,0,0), bgc=list((255*bgl for bgl in background_color)), screennr=screen_nr)
 		self.pygaze_scr = libscreen.Screen(disptype='psychopy')
-		print dir(self.display)
-		print self.display
+
+		# print dir(self.display)
+		# print self.display
 		# print dir(self.pygaze_scr)
 		# print dir(self.pygaze_scr.screen[0])
 

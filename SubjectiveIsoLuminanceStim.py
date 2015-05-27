@@ -26,7 +26,7 @@ class SubjectiveIsoLuminanceStim(object):
 		self.RG_offset = RG_offset
 
 		# make this stimulus array a session variable, in order to have to create it only once...
-		self.gabor = visual.GratingStim(screen,tex='sin', mask='gauss')
+		self.gabor = visual.GratingStim(screen,tex='sin', mask='gauss', texRes = 2048)
 		self.gabor.size = size
 		self.gabor.sf = 0.01
 
@@ -35,8 +35,8 @@ class SubjectiveIsoLuminanceStim(object):
 
 		if which_stim == 'RG':
 
-			self.RG_offset = 0.0
-			color_value = np.max([0.1,1-self.RG_offset-self.trial.RG_diff])
+			self.RG_offset = 0.5
+			color_value = np.max([np.max([0.1,self.RG_offset-self.trial.RG_diff]), 1])
 			self.color = np.array([color_value,-color_value,0])
 
 
@@ -44,8 +44,8 @@ class SubjectiveIsoLuminanceStim(object):
 
 		elif which_stim == 'BY':
 
-			self.BY_offset = 0.0
-			color_value = np.max([0.1,1-self.BY_offset-self.trial.BY_diff])
+			self.BY_offset = 0.5
+			color_value = np.max([np.max([0.1,self.BY_offset-self.trial.BY_diff]), 1])
 			self.color = np.array([color_value,color_value,-color_value])
 	
 			self.orientation = 0

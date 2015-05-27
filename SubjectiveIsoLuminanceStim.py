@@ -10,7 +10,7 @@ sys.path.append( 'exp_tools' )
 
 
 class SubjectiveIsoLuminanceStim(object):
-	def __init__(self, screen, trial, session, size = 1, RG_offset = 0, BY_offset = 0):
+	def __init__(self, screen, trial, session, size, RG_offset = 0):
 		# parameters
 		self.trial = trial
 		self.session = session
@@ -22,9 +22,7 @@ class SubjectiveIsoLuminanceStim(object):
 		# psychopy stimuli
 		# self.populate_stimulus()
 
-		self.BY_offset = BY_offset
 		self.RG_offset = RG_offset
-
 		# make this stimulus array a session variable, in order to have to create it only once...
 		self.gabor = visual.GratingStim(screen,tex='sin', mask='gauss', texRes = 2048)
 		self.gabor.size = size
@@ -35,18 +33,15 @@ class SubjectiveIsoLuminanceStim(object):
 
 		if which_stim == 'RG':
 
-			self.RG_offset = 0.5
-			color_value = np.max([np.max([0.1,self.RG_offset-self.trial.RG_diff]), 1])
-			self.color = np.array([color_value,-color_value,0])
 
+			self.color_value = np.min([np.max([0,0.5 + self.RG_offset + self.trial.color_diff]), 1])
+			self.color = np.array([self.color_value,-self.color_value,0])
 
 			self.orientation = 90
 
 		elif which_stim == 'BY':
 
-			self.BY_offset = 0.5
-			color_value = np.max([np.max([0.1,self.BY_offset-self.trial.BY_diff]), 1])
-			self.color = np.array([color_value,color_value,-color_value])
+			self.color = np.array([0.5,0.5,-0.5])
 	
 			self.orientation = 0
 

@@ -25,12 +25,15 @@ class SubjectiveIsoLuminanceSession(EyelinkSession):
 		
 		self.create_screen( size = screen_res, full_screen = 0, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
 
+		self.subject_initials = subject_initials
 		self.standard_parameters = {
 		'period': 30,
 		'num_trials' : 5,
 		'redraws_per_stim': 4,
 		'stim_size': 1000
 		}
+
+		self.all_color_values = []
 
 		self.create_output_file_name()
 		if tracker_on:
@@ -48,8 +51,7 @@ class SubjectiveIsoLuminanceSession(EyelinkSession):
 	def prepare_trials(self):
 		"""docstring for prepare_trials(self):"""
 		
-		self.RG_start_offsets = np.random.rand(self.standard_parameters['num_trials'])/10
-		self.BY_start_offsets = np.random.rand(self.standard_parameters['num_trials'])/10
+		self.RG_offsets = (np.random.rand(self.standard_parameters['num_trials'])-0.5)
 
 		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['period'], 0.001])
 
@@ -62,6 +64,9 @@ class SubjectiveIsoLuminanceSession(EyelinkSession):
 	
 	def close(self):
 		super(SubjectiveIsoLuminanceSession, self).close()
+		text_file = open("data/%s_color_ratios.txt"%self.subject_initials, "w")
+		text_file.write('Mean RG/BY ratio: %.2f\nStdev RG/BY ratio: %.2f'%(np.mean(np.array(self.all_color_values)/0.5),np.std(np.array(self.all_color_values)/0.5)))
+		text_file.close()
 	
 	def run(self):
 		"""docstring for fname"""
@@ -69,8 +74,7 @@ class SubjectiveIsoLuminanceSession(EyelinkSession):
 		for i in range(self.standard_parameters['num_trials']):
 			# prepare the parameters of the following trial based on the shuffled trial array
 			this_trial_parameters = self.standard_parameters.copy()
-			this_trial_parameters['RG_offset'] = self.RG_start_offsets[i]
-			this_trial_parameters['BY_offset'] = self.RG_start_offsets[i]
+			this_trial_parameters['RG_offset'] = self.RG_offsets[i]
 
 			these_phase_durations = self.phase_durations.copy()
 			if i == 0:

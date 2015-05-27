@@ -19,7 +19,8 @@ class PRFMapperTrial(Trial):
 						task = self.parameters['task'],
 						size_pix = self.parameters['stim_size'] * session.screen_pix_size[1], 
 						num_elements = self.parameters['num_elements'] * (1/self.parameters['bar_width_ratio']), 
-						period = self.parameters['mapper_period'], 
+						period = self.parameters['mapper_period'],
+						RG_BY_ratio = self.parameters['RG_BY_ratio'], 
 						task_rate = self.parameters['task_rate'])
 		
 		this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nFix\t\t\t-\tBlack\t\t/\tWhite'# self.parameters['task_instruction']

@@ -10,7 +10,7 @@ sys.path.append( 'exp_tools' )
 
 
 class PRFStim(object):
-	def __init__(self, screen, trial, session, size_pix = 1000, num_elements = 2000, bar_width_ratio = 0.1, orientation = 0.0, period = 24.0, task_rate = 3.5):
+	def __init__(self, screen, trial, session, size_pix = 1000, num_elements = 2000, bar_width_ratio = 0.1, orientation = 0.0, period = 24.0, task_rate = 3.5,RG_BY_ratio=1):
 		# parameters
 		self.num_elements = num_elements
 		self.trial = trial
@@ -105,8 +105,8 @@ class PRFStim(object):
 
 		# Now set the actual stimulus parameters
 
-		self.colors = np.concatenate((np.ones((self.num_elements/4.0,3)) * np.array([1,-1,0]) * RG_color,  # red/green - red
-									np.ones((self.num_elements/4.0,3)) * np.array([-1,1,0]) * RG_color,  # red/green - green
+		self.colors = np.concatenate((np.ones((self.num_elements/4.0,3)) * np.array([1,-1,0]) * RG_color * self.trial.parameters['RG_BY_ratio'],  # red/green - red
+									np.ones((self.num_elements/4.0,3)) * np.array([-1,1,0]) * RG_color * self.trial.parameters['RG_BY_ratio'],  # red/green - green
 									np.ones((self.num_elements/4.0,3)) * np.array([-1,-1,1]) * BY_color,  # blue/yellow - blue
 									np.ones((self.num_elements/4.0,3)) * np.array([1,1,-1]) * BY_color))  # blue/yellow - yellow
 		np.random.shuffle(self.colors)

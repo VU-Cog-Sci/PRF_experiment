@@ -10,7 +10,7 @@ sys.path.append( 'exp_tools' )
 
 
 class PRFMapperStim(object):
-	def __init__(self, screen, trial, session,task, size_pix = 1000, num_elements = 2000, period = 24.0, task_rate = 3.5):
+	def __init__(self, screen, trial, session,task, size_pix = 1000, num_elements = 2000, period = 24.0, RG_BY_ratio=1,task_rate = 3.5):
 		# parameters
 		self.num_elements = num_elements
 		self.trial = trial
@@ -47,42 +47,38 @@ class PRFMapperStim(object):
 		# what eccentricity bin are we in? phase runs from 0 to 1, so we take the ecc on a linear scale for now
 		# self.eccentricity_bin = floor(np.abs(self.phase-0.5) * 2.0 * self.session.nr_staircases_ecc)
 
-		self.fix_gray_value = (0,0,0)
-		self.speed = self.trial.parameters['baseline_speed_for_task']
-
-
-
 		if self.task == np.where(self.session.tasks=='no_color_no_speed')[0][0]:
 
-			red = np.array([-1,-1,-1])
-			green = np.array([1,1,1])
-			yellow = np.array([-1,-1,-1])
-			blue = np.array([1,1,1]) 
+			red = np.array([-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task']])
+			green = np.array([self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task']])
+			yellow = np.array([-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task']])
+			blue = np.array([self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task']]) 
 
 			self.speed = 0.0
 
 		elif self.task == np.where(self.session.tasks=='yes_color_no_speed')[0][0]:
 
-			red = np.array([1,-1,0])
-			green = np.array([-1,1,0])
-			yellow = np.array([1,1,-1])
-			blue = np.array([-1,-1,1]) 
+			red = np.array([ self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task'],0]) * self.trial.parameters['RG_BY_ratio']
+			green = np.array([- self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task'],0]) * self.trial.parameters['RG_BY_ratio']
+			yellow = np.array([ self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task']])
+			blue = np.array([- self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task']]) 
 
 			self.speed = 0.0
 
 		elif self.task == np.where(self.session.tasks=='no_color_yes_speed')[0][0]:
-			red = np.array([-1,-1,-1])
-			green = np.array([1,1,1])
-			yellow = np.array([-1,-1,-1])
-			blue = np.array([1,1,1]) 
+			red = np.array([-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task']])
+			green = np.array([self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task']])
+			yellow = np.array([-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task']])
+			blue = np.array([self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task']]) 
+
 			self.speed = self.trial.parameters['baseline_speed_for_task']
 
 		elif self.task == np.where(self.session.tasks=='yes_color_yes_speed')[0][0]:
 
-			red = np.array([1,-1,0])
-			green = np.array([-1,1,0])
-			yellow = np.array([1,1,-1])
-			blue = np.array([-1,-1,1]) 
+			red = np.array([ self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task'],0]) * self.trial.parameters['RG_BY_ratio']
+			green = np.array([- self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task'],0]) * self.trial.parameters['RG_BY_ratio']
+			yellow = np.array([ self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task']])
+			blue = np.array([- self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task']]) 
 
 			self.speed = self.trial.parameters['baseline_speed_for_task']	
 

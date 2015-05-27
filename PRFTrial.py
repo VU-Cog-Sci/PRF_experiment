@@ -21,7 +21,8 @@ class PRFTrial(Trial):
 						bar_width_ratio = self.parameters['bar_width_ratio'], 
 						orientation = self.parameters['orientation'], 
 						period = self.parameters['period'], 
-						task_rate = self.parameters['task_rate'])
+						task_rate = self.parameters['task_rate'],
+						RG_BY_ratio = self.parameters['RG_BY_ratio'])
 		
 		this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nFix\t\t\t-\tBlack\t\t/\tWhite\nColor\t\t-\tRG\t\t\t/\tBY\nSpeed\t\t-\tDec\t\t/\tAcc'# self.parameters['task_instruction']
 		self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 30, alignHoriz = 'center')

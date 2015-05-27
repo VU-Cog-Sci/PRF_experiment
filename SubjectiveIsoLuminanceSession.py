@@ -27,7 +27,6 @@ class SubjectiveIsoLuminanceSession(EyelinkSession):
 
 		self.subject_initials = subject_initials
 		self.standard_parameters = {
-		'period': 30,
 		'num_trials' : 5,
 		'redraws_per_stim': 4,
 		'stim_size': 1000
@@ -46,14 +45,14 @@ class SubjectiveIsoLuminanceSession(EyelinkSession):
 		self.prepare_trials()
 		self.exp_start_time = 0.0
 
-		self.color_step = 0.05
+		self.color_step = 0.01
 
 	def prepare_trials(self):
 		"""docstring for prepare_trials(self):"""
 		
 		self.RG_offsets = (np.random.rand(self.standard_parameters['num_trials'])-0.5)
 
-		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['period'], 0.001])
+		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, -0.0001, 0.001])
 
 		# stimuli
 		self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (0,0,0), maskParams = {'fringeWidth':0.4})

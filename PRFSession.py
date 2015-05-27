@@ -90,6 +90,11 @@ class PRFSession(EyelinkSession):
 		
 		self.standard_parameters = standard_parameters
 
+		text_file = open("data/%s_color_ratios.txt"%self.subject_initials, "r")
+		RG_BY_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
+		text_file.close()
+		self.standard_parameters['RG_BY_ratio'] = RG_BY_ratio
+		
 		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['period'], 0.001])
 
 

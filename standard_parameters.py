@@ -12,7 +12,7 @@ standard_parameters = {
 	'task_rate' : 2.0,						# this + minimum_pulse_gap is average of exponential distribution
 	'minimum_pulse_gap':2.0,				# the '0' point for the exponential distribution out of which transients are generated
 	'baseline_speed_for_task': 5.0,
-	'baseline_color_for_task': 0.75,
+	'baseline_color_for_task': 0.5,
 	'element_size': 45.0,
 	'element_spatial_frequency': 2.0,
 

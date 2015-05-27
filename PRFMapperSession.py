@@ -22,10 +22,11 @@ import appnope
 appnope.nope()
 
 class PRFMapperSession(EyelinkSession):
-	def __init__(self, subject_initials, index_number,scanner, tracker_on):
+	def __init__(self, subject_initials, index_number, scanner, tracker_on):
 		super(PRFMapperSession, self).__init__( subject_initials, index_number)
-
+		
 		self.create_screen( size = screen_res, full_screen = 0, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
+
 		self.standard_parameters = standard_parameters
 
 		self.create_output_file_name()
@@ -39,11 +40,14 @@ class PRFMapperSession(EyelinkSession):
 		self.prepare_trials()
 		self.prepare_staircases()
 
-		# setup fix transient and redraws in session to let it continuously run:
 		self.ready_for_next_pulse = True
-		minimum_pulse_gap = 2.0 # in seconds
-		self.pulse_duration = 0.5 # in seconds
-		self.transient_occurrences = np.cumsum(np.random.exponential(self.standard_parameters['task_rate'], size = 20000) + minimum_pulse_gap)
+		self.exp_start_time = 0.0
+
+		# setup fix transient and redraws in session to let it continuously run. This happens in multitudes of 'time_steps', which is equal to the redraw steps in the PRF experiment.
+		self.time_steps = self.standard_parameters['TR']/self.standard_parameters['redraws_per_TR']
+		self.transient_occurrences = np.round(np.cumsum(np.random.exponential(self.standard_parameters['task_rate'], size = 20000) + self.standard_parameters['minimum_pulse_gap']) * (1/self.time_steps)) / (1/self.time_steps)
+
+
 
 	def prepare_staircases(self):
 		# staircases
@@ -70,17 +74,12 @@ class PRFMapperSession(EyelinkSession):
 	
 	def prepare_trials(self):
 		"""docstring for prepare_trials(self):"""
-		# 8 directions, 5 tasks
-		self.directions = np.linspace(0, 2.0 * pi, self.standard_parameters['stimulus_repetitions'], endpoint = False)
-		self.tasks = ['no_color_no_speed','yes_color_no_speed','no_color_yes_speed','yes_color_yes_speed','fix_no_stim']
 		
-		self.trial_array = []
-		for d in range(len(self.directions)):
-			for t in range(len(self.tasks)):
-				self.trial_array.append([d, t])
-		self.trial_array = np.array(self.trial_array)
-		np.random.shuffle(self.trial_array)
-		
+		# create random m-sequence for the 5 trial types of length (5^3)-1 = 124. I then add the first trial type to the end of the array, so that all trial types have even occurences
+		from psychopy.contrib import mseq
+		self.tasks = np.array(['fix_no_stim','no_color_no_speed','yes_color_no_speed','no_color_yes_speed','yes_color_yes_speed'])
+		self.trial_array = np.hstack([mseq.mseq(5,3,1,np.random.randint(200)),[0]]) # base (number of trial types), power (sequence length is base^power-1), shift (to shift last values of sequence to first), random sequence out of the 200 possibilities
+			
 		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['mapper_period'], 0.001])
 
 		# stimuli
@@ -93,7 +92,8 @@ class PRFMapperSession(EyelinkSession):
 		ecc_mask = filters.makeMask(matrixSize = 2048, shape='raisedCosine', radius=self.standard_parameters['stim_size'] * self.screen_pix_size[1] / self.screen_pix_size[0], center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
 		self.mask_stim = visual.PatchStim(self.screen, mask=ecc_mask,tex=None, size=(self.screen_pix_size[0], self.screen_pix_size[0]), pos = np.array((0.0,0.0)), color = self.screen.background_color) # 
 	
-		self.exp_duration = np.sum(self.phase_durations) * len(self.tasks)*len(self.directions)
+		# this will be roughly 4 * 124 = 496, which is 8:15 minutes
+		self.exp_duration = np.sum(self.phase_durations) * len(self.trial_array)
 
 	def close(self):
 		super(PRFMapperSession, self).close()
@@ -108,16 +108,11 @@ class PRFMapperSession(EyelinkSession):
 		for i in range(len(self.trial_array)):
 			# prepare the parameters of the following trial based on the shuffled trial array
 			this_trial_parameters = self.standard_parameters.copy()
-			# this_trial_parameters['orientation'] = self.directions[self.trial_array[i,0]]
-			this_trial_parameters['task_index'] = self.trial_array[i,1]
-			# this_trial_parameters['task_instruction'] = self.task_instructions[self.trial_array[i,1]]
-			# this_trial_parameters['task'] = self.tasks[self.trial_array[i,1]]
-			this_trial_parameters['task'] = self.tasks[self.trial_array[i,1]]
-			# this_trial_parameters['num_elements'] = self.num_elements[self.trial_array[i,1]]
+			this_trial_parameters['task'] = self.trial_array[i]
 
 			these_phase_durations = self.phase_durations.copy()
 			if i == 0:
-				these_phase_durations[1] = 5.0
+				these_phase_durations[1] = initial_wait_time
 
 			this_trial = PRFMapperTrial(this_trial_parameters, phase_durations = these_phase_durations, session = self, screen = self.screen, tracker = self.tracker)
 			

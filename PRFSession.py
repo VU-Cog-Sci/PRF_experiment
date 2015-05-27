@@ -90,10 +90,7 @@ class PRFSession(EyelinkSession):
 		
 		self.standard_parameters = standard_parameters
 
-		if self.scanner == 'y':
-			self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['period'], 0.001])
-		elif self.scanner == 'n':
-			self.phase_durations = np.array([-0.0001,-0.0001, 3.00, self.standard_parameters['period'], 0.001])
+		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['period'], 0.001])
 
 
 		# stimuli
@@ -129,7 +126,7 @@ class PRFSession(EyelinkSession):
 
 			these_phase_durations = self.phase_durations.copy()
 			if i == 0:
-				these_phase_durations[1] = 5.0
+				these_phase_durations[1] = initial_wait_time
 
 			this_trial = PRFTrial(this_trial_parameters, phase_durations = these_phase_durations, session = self, screen = self.screen, tracker = self.tracker)
 			

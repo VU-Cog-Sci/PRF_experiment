@@ -39,7 +39,9 @@ class PRFMapperStim(object):
 		if not hasattr(session, 'element_array'):
 			self.session.element_array = visual.ElementArrayStim(screen, nElements = self.num_elements, sizes = self.element_sizes, sfs = self.element_sfs, xys = self.element_positions, colors = self.colors, colorSpace = 'rgb') 
 
-	
+		# set this to its default no-answer necessary value of None - this is tested for in PRFTrial when incorporating responses
+		self.last_sampled_staircase = None
+
 	def populate_stimulus(self):
 
 		# what eccentricity bin are we in? phase runs from 0 to 1, so we take the ecc on a linear scale for now
@@ -50,7 +52,7 @@ class PRFMapperStim(object):
 
 
 
-		if self.task == 'no_color_no_speed':
+		if self.task == np.where(self.session.tasks=='no_color_no_speed')[0][0]:
 
 			red = np.array([-1,-1,-1])
 			green = np.array([1,1,1])
@@ -59,7 +61,7 @@ class PRFMapperStim(object):
 
 			self.speed = 0.0
 
-		elif self.task == 'yes_color_no_speed':
+		elif self.task == np.where(self.session.tasks=='yes_color_no_speed')[0][0]:
 
 			red = np.array([1,-1,0])
 			green = np.array([-1,1,0])
@@ -68,14 +70,14 @@ class PRFMapperStim(object):
 
 			self.speed = 0.0
 
-		elif self.task == 'no_color_yes_speed':
+		elif self.task == np.where(self.session.tasks=='no_color_yes_speed')[0][0]:
 			red = np.array([-1,-1,-1])
 			green = np.array([1,1,1])
 			yellow = np.array([-1,-1,-1])
 			blue = np.array([1,1,1]) 
 			self.speed = self.trial.parameters['baseline_speed_for_task']
 
-		elif self.task == 'yes_color_yes_speed':
+		elif self.task == np.where(self.session.tasks=='yes_color_yes_speed')[0][0]:
 
 			red = np.array([1,-1,0])
 			green = np.array([-1,1,0])
@@ -84,8 +86,8 @@ class PRFMapperStim(object):
 
 			self.speed = self.trial.parameters['baseline_speed_for_task']	
 
-		elif self.task == 'fix_no_stim':
-			
+		elif self.task == np.where(self.session.tasks=='fix_no_stim')[0][0]:
+		
 			red,green,yellow,blue = self.session.screen.background_color,self.session.screen.background_color,self.session.screen.background_color,self.session.screen.background_color
 
 			self.speed = 0
@@ -131,9 +133,7 @@ class PRFMapperStim(object):
 		# if fmod(self.phase * self.period * self.refresh_frequency, 1.0) > 0.5: 
 		self.session.element_array.setPhases(self.element_speeds * self.phase * self.trial.parameters['mapper_period'] + self.element_phases)
 
-		if self.session.tasks[self.trial.parameters['task_index']] != 'fix_no_stim':
-			self.session.element_array.draw()
-		
+		self.session.element_array.draw()		
 		self.session.fixation_outer_rim.draw()
 		self.session.fixation_rim.draw()
 		self.session.fixation.draw()

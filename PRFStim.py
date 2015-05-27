@@ -10,7 +10,7 @@ sys.path.append( 'exp_tools' )
 
 
 class PRFStim(object):
-	def __init__(self, screen, trial, session, size_pix = 1000, num_elements = 2000, bar_width_ratio = 0.1, orientation = 0.0, period = 24.0, refresh_frequency = 4.0, task_rate = 3.5):
+	def __init__(self, screen, trial, session, size_pix = 1000, num_elements = 2000, bar_width_ratio = 0.1, orientation = 0.0, period = 24.0, task_rate = 3.5):
 		# parameters
 		self.num_elements = num_elements
 		self.trial = trial
@@ -21,7 +21,7 @@ class PRFStim(object):
 		self.orientation = orientation	# convert to radians immediately, and use to calculate rotation matrix
 		self.rotation_matrix = np.matrix([[cos(self.orientation), -sin(self.orientation)],[sin(self.orientation), cos(self.orientation)]])
 		self.period = period
-		self.refresh_frequency = refresh_frequency
+		self.refresh_frequency = self.trial.parameters['redraws_per_TR'] / self.trial.parameters['TR']
 		self.task_rate = task_rate
 
 		self.phase = 0
@@ -33,9 +33,8 @@ class PRFStim(object):
 		
 		# construct timecourses of tasks
 		# task_rate is in task_rate seconds per occurrence. we add 2x refresh frequency to avoid transients in the first second(s) and those following too quickly, and add an insane number to avoid tasks in the last second(s). 
-		minimum_pulse_gap = 2.0 # in seconds
-		self.transient_occurrences = np.round(np.cumsum(np.random.exponential(task_rate * refresh_frequency, size = (len(self.session.unique_tasks), 20)) + minimum_pulse_gap*refresh_frequency, axis = 1))
-		self.transient_occurrences[self.transient_occurrences > (self.trial.parameters['period'] * refresh_frequency - 2.0*refresh_frequency)] += 500000
+		self.transient_occurrences = np.round(np.cumsum(np.random.exponential(task_rate * self.refresh_frequency, size = (len(self.session.unique_tasks), 20)) + self.trial.parameters['minimum_pulse_gap']*self.refresh_frequency, axis = 1))
+		self.transient_occurrences[self.transient_occurrences > (self.trial.parameters['period'] * self.refresh_frequency - self.trial.parameters['minimum_pulse_gap']*self.refresh_frequency)] += 500000
 				
 		# psychopy stimuli
 		self.populate_stimulus()
@@ -129,12 +128,14 @@ class PRFStim(object):
 		
 		if self.redraws < (self.phase * self.period * self.refresh_frequency):
 			self.redraws = self.redraws + 1
+
 			self.populate_stimulus()
 			self.session.element_array.setSfs(self.element_sfs)
 			self.session.element_array.setSizes(self.element_sizes)
 			self.session.element_array.setColors(self.colors)
 			self.session.element_array.setOris(self.element_orientations)
-			self.session.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -midpoint])) * self.rotation_matrix)) 
+			if np.mod(self.redraws,self.trial.parameters['redraws_per_TR']) == 1:
+				self.session.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -midpoint])) * self.rotation_matrix)) 
 			log_msg = 'stimulus draw for phase %f, at %f'%(phase, self.session.clock.getTime())
 			self.trial.events.append( log_msg )
 			if self.session.tracker:

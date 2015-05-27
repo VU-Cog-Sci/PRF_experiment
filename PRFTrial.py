@@ -21,7 +21,6 @@ class PRFTrial(Trial):
 						bar_width_ratio = self.parameters['bar_width_ratio'], 
 						orientation = self.parameters['orientation'], 
 						period = self.parameters['period'], 
-						refresh_frequency = self.parameters['refresh_frequency'], 
 						task_rate = self.parameters['task_rate'])
 		
 		this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nFix\t\t\t-\tBlack\t\t/\tWhite\nColor\t\t-\tRG\t\t\t/\tBY\nSpeed\t\t-\tDec\t\t/\tAcc'# self.parameters['task_instruction']
@@ -125,10 +124,12 @@ class PRFTrial(Trial):
 		
 		while not self.stopped:
 			self.run_time = self.session.clock.getTime() - self.start_time
+			# In phase 0, we wait for the t
 			if self.phase == 0:
 				self.instruct_time = self.session.clock.getTime()
-				if (self.ID != 0) * self.session.scanner == 'n':
+				if (self.ID != 0) * (self.session.scanner == 'n'):
 					self.phase_forward()
+			# Phase 1 is an additional wait time, only imposed in trial 1, so that participants can get ready after the instruction text disappears
 			if self.phase == 1:
 				# this trial phase is timed
 				self.initial_wait_time = self.session.clock.getTime()
@@ -136,20 +137,20 @@ class PRFTrial(Trial):
 					self.phase_forward()
 			if self.phase == 2:
 				self.fix_time = self.session.clock.getTime()
-
 				if not self.instruct_sound_played:
 					self.session.play_sound(self.session.unique_tasks[self.parameters['unique_task']].lower())
 					self.instruct_sound_played = True
-
 				# this trial phase is timed
 				if ( self.fix_time  - self.initial_wait_time ) > self.phase_durations[2]:
 					self.phase_forward()
 			if self.phase == 3:
+				# print 'trial %d phase 3 at %.2f'%(self.ID,self.session.clock.getTime())
 				# this trial phase is timed
 				self.stimulus_time = self.session.clock.getTime()
 				if ( self.stimulus_time - self.fix_time ) > self.phase_durations[3]:
 					self.phase_forward()
 			if self.phase == 4:
+				# print 'trial %d phase 4 at %.2f'%(self.ID,self.session.clock.getTime())
 				# this trial phase is timed
 				self.post_stimulus_time = self.session.clock.getTime()
 				if ( self.post_stimulus_time  - self.stimulus_time ) > self.phase_durations[4]:

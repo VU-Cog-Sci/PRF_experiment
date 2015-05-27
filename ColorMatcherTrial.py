@@ -8,29 +8,28 @@ import random, sys
 sys.path.append( 'exp_tools' )
 # sys.path.append( os.environ['EXPERIMENT_HOME'] )
 
-from SubjectiveIsoLuminanceStim import *
+from ColorMatcherStim import *
 from Trial import *
 
-class SubjectiveIsoLuminanceTrial(Trial):
+class ColorMatcherTrial(Trial):
 	def __init__(self, parameters = {}, phase_durations = [], session = None, screen = None, tracker = None):
-		super(SubjectiveIsoLuminanceTrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
-		
-		self.stim = SubjectiveIsoLuminanceStim(self.screen, self, self.session, 
-						size = self.parameters['stim_size'],
-						RG_offset = self.parameters['RG_offset']
-						)
+		super(ColorMatcherTrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
+		self.color_diff = 0.0
 
+		self.stim = ColorMatcherStim(self.screen, self, self.session, 
+						size_pix = self.parameters['stim_size'] * session.screen_pix_size[1], 
+						num_elements = self.parameters['num_elements'] * (1/self.parameters['bar_width_ratio']), 
+						RG_offset = self.parameters['RG_offset'])
+		
 		this_instruction_string = '\tLeft\t\t/\tRight\n\nLess RG\t\t/\tMore RG'# self.parameters['task_instruction']
 		self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 30, alignHoriz = 'center')
 		self.instruction.setSize((1200,50))
 
-		self.color_diff = 0
 		self.run_time = 0.0
 		self.instruct_time = self.fix_time = self.stimulus_time = self.post_stimulus_time = 0.0
 	
 	def draw(self):
 		"""docstring for draw"""
-
 
 		if self.phase == 0:
 			if self.ID == 0:
@@ -62,7 +61,7 @@ class SubjectiveIsoLuminanceTrial(Trial):
 			self.session.fixation.setColor((0,0,0))
 			self.session.fixation.draw()
 			
-		super(SubjectiveIsoLuminanceTrial, self).draw( )
+		super(ColorMatcherTrial, self).draw( )
 
 	def event(self):
 		for ev in event.getKeys():
@@ -87,17 +86,19 @@ class SubjectiveIsoLuminanceTrial(Trial):
 						self.phase_forward()
 				elif (self.phase == 3) * (ev == 'z'):
 					self.color_diff -= self.session.color_step
+					self.stim.redraw=True
 				elif (self.phase == 3) * (ev == 'm'):
 					self.color_diff += self.session.color_step
+					self.stim.redraw=True
 				elif (self.phase ==3 ) * (ev == 'n'):
 					self.phase_forward()
 			
-			super(SubjectiveIsoLuminanceTrial, self).key_event( ev )
+			super(ColorMatcherTrial, self).key_event( ev )
 
 
 	def run(self, ID = 0):
 		self.ID = ID
-		super(SubjectiveIsoLuminanceTrial, self).run()
+		super(ColorMatcherTrial, self).run()
 		
 		while not self.stopped:
 			self.run_time = self.session.clock.getTime() - self.start_time

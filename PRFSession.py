@@ -32,6 +32,8 @@ class PRFSession(EyelinkSession):
 		self.create_output_file_name()
 		if tracker_on:
 			self.create_tracker(auto_trigger_calibration = 1, calibration_type = 'HV9')
+			if self.tracker_on:
+				self.tracker_setup()
 		else:
 			self.create_tracker(tracker_on = False)
 		
@@ -62,7 +64,7 @@ class PRFSession(EyelinkSession):
 					self.staircases.update({t + '_%i'%j:
 								Quest.QuestObject(
 										tGuess = self.initial_values[i], 
-										tGuessSd = self.initial_values[i] * 0.5, 
+										tGuessSd = self.initial_values[i] * 1.0, 
 										pThreshold = 0.9, 
 										beta = 3.5, 
 										delta = 0.01, 
@@ -94,7 +96,7 @@ class PRFSession(EyelinkSession):
 		RG_BY_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
 		text_file.close()
 		self.standard_parameters['RG_BY_ratio'] = RG_BY_ratio
-		
+
 		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['period'], 0.001])
 
 

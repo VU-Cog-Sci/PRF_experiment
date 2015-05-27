@@ -225,7 +225,8 @@ class EyelinkSession(Session):
 			# create actual tracker
 			try:
 				# self.tracker = EyeLink()
-				self.tracker = eyetracker.EyeTracker(self.display, trackertype='dummy', resolution=self.display.dispsize, data_file=self.eyelink_temp_file, bgc=self.display.bgc)
+				# shell()
+				self.tracker = eyetracker.EyeTracker(self.display, trackertype='eyelink', resolution=self.display.dispsize, data_file=self.eyelink_temp_file, bgc=self.display.bgc)
 				self.tracker_on = True
 			except:
 				print '\ncould not connect to tracker'
@@ -429,7 +430,7 @@ class EyelinkSession(Session):
 		"""docstring for play_sound"""
 		super(EyelinkSession, self).play_sound(sound_index = sound_index)
 		if self.tracker != None:
-			self.tracker.log('sound ' + str(sound_index) + ' at ' + str(VisionEgg.time_func()) )
+			self.tracker.log('sound ' + str(sound_index) + ' at ' + str(core.getTime()) )
 
 
 class StarStimSession(EyelinkSession):

@@ -12,7 +12,7 @@ standard_parameters = {
 	'task_rate' : 2.0,						# this + minimum_pulse_gap is average of exponential distribution
 	'minimum_pulse_gap':2.0,				# the '0' point for the exponential distribution out of which transients are generated
 	'baseline_speed_for_task': 5.0,
-	'baseline_color_for_task': 0.5,
+	'baseline_color_for_task': 0.75,
 	'element_size': 45.0,
 	'element_spatial_frequency': 2.0,
 
@@ -23,9 +23,14 @@ standard_parameters = {
 	## mapper variables:
 	'mapper_period': 3.0,					# duration of mapper stimulus
 
+	## Subjective IsoLuminance variables:
+	'num_trials': 5,
+	'redraws_per_stim': 1,
+	'gabor_size': 1000,
+
 }
 
 # screen_res = (2560, 1440)
-screen_res = (1920, 1080)
+screen_res = (1152, 870)
 background_color = (-0.75,-0.75,-0.75)
 initial_wait_time = 0.0

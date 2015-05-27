@@ -9,7 +9,7 @@ standard_parameters = {
 	'period' : 36.0,
 	'TR':1.5,				
 	'redraws_per_TR' : 3,
-	'task_rate' : 3.0,						# this + minimum_pulse_gap is average of exponential distribution
+	'task_rate' : 2.0,						# this + minimum_pulse_gap is average of exponential distribution
 	'minimum_pulse_gap':2.0,				# the '0' point for the exponential distribution out of which transients are generated
 	'baseline_speed_for_task': 5.0,
 	'baseline_color_for_task': 0.75,

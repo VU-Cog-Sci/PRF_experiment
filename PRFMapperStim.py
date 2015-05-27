@@ -52,7 +52,7 @@ class PRFMapperStim(object):
 
 
 
-		if self.task == 'no_color_no_speed':
+		if self.task == np.where(self.session.tasks=='no_color_no_speed')[0][0]:
 
 			red = np.array([-1,-1,-1])
 			green = np.array([1,1,1])
@@ -61,7 +61,7 @@ class PRFMapperStim(object):
 
 			self.speed = 0.0
 
-		elif self.task == 'yes_color_no_speed':
+		elif self.task == np.where(self.session.tasks=='yes_color_no_speed')[0][0]:
 
 			red = np.array([1,-1,0])
 			green = np.array([-1,1,0])
@@ -70,14 +70,14 @@ class PRFMapperStim(object):
 
 			self.speed = 0.0
 
-		elif self.task == 'no_color_yes_speed':
+		elif self.task == np.where(self.session.tasks=='no_color_yes_speed')[0][0]:
 			red = np.array([-1,-1,-1])
 			green = np.array([1,1,1])
 			yellow = np.array([-1,-1,-1])
 			blue = np.array([1,1,1]) 
 			self.speed = self.trial.parameters['baseline_speed_for_task']
 
-		elif self.task == 'yes_color_yes_speed':
+		elif self.task == np.where(self.session.tasks=='yes_color_yes_speed')[0][0]:
 
 			red = np.array([1,-1,0])
 			green = np.array([-1,1,0])
@@ -86,7 +86,7 @@ class PRFMapperStim(object):
 
 			self.speed = self.trial.parameters['baseline_speed_for_task']	
 
-		elif self.task == 'fix_no_stim':
+		elif self.task == np.where(self.session.tasks=='fix_no_stim')[0][0]:
 		
 			red,green,yellow,blue = self.session.screen.background_color,self.session.screen.background_color,self.session.screen.background_color,self.session.screen.background_color
 

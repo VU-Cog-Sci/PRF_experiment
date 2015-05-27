@@ -126,7 +126,7 @@ class PRFSession(EyelinkSession):
 
 			these_phase_durations = self.phase_durations.copy()
 			if i == 0:
-				these_phase_durations[1] = 1.0
+				these_phase_durations[1] = initial_wait_time
 
 			this_trial = PRFTrial(this_trial_parameters, phase_durations = these_phase_durations, session = self, screen = self.screen, tracker = self.tracker)
 			

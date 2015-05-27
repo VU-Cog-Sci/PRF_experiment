@@ -127,7 +127,7 @@ class PRFTrial(Trial):
 			# In phase 0, we wait for the t
 			if self.phase == 0:
 				self.instruct_time = self.session.clock.getTime()
-				if (self.ID != 0) + (self.session.scanner == 'n'):
+				if (self.ID != 0) * (self.session.scanner == 'n'):
 					self.phase_forward()
 			# Phase 1 is an additional wait time, only imposed in trial 1, so that participants can get ready after the instruction text disappears
 			if self.phase == 1:

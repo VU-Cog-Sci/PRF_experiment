@@ -1,3 +1,4 @@
+from __future__ import division
 from psychopy import visual, core, misc, event, filters
 import numpy as np
 from scipy.signal import convolve2d
@@ -10,16 +11,16 @@ sys.path.append( 'exp_tools' )
 
 
 class PRFMapperStim(object):
-	def __init__(self, screen, trial, session,task, size_pix = 1000, num_elements = 2000, period = 24.0, RG_BY_ratio=1,task_rate = 3.5):
+	def __init__(self, screen, trial, session,task):
 		# parameters
-		self.num_elements = num_elements
+		self.num_elements = session.standard_parameters['num_elements'] * (1/session.standard_parameters['bar_width_ratio'])
 		self.trial = trial
 		self.session = session
 		self.screen = screen
-		self.size_pix = size_pix
-		self.period = period
+		self.size_pix = session.standard_parameters['stim_size'] * session.screen_pix_size[1]
+		self.period = session.standard_parameters['period']
 		# self.refresh_frequency = refresh_frequency
-		self.task_rate = task_rate
+		self.task_rate = session.standard_parameters['task_rate']
 		self.task = task
 
 		self.phase = 0
@@ -49,36 +50,39 @@ class PRFMapperStim(object):
 
 		if self.task == np.where(self.session.tasks=='no_color_no_speed')[0][0]:
 
-			red = np.array([-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task']])
-			green = np.array([self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task']])
-			yellow = np.array([-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task']])
-			blue = np.array([self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task']]) 
+			average_color_value = np.mean([self.trial.parameters['RG_color'],self.trial.parameters['BY_color']])
+			red = np.array([-average_color_value,-average_color_value,-average_color_value])
+			green = np.array([average_color_value,average_color_value,average_color_value])
+			yellow = np.array([-average_color_value,-average_color_value,-average_color_value])
+			blue = np.array([average_color_value,average_color_value,average_color_value]) 
 
 			self.speed = 0.0
 
 		elif self.task == np.where(self.session.tasks=='yes_color_no_speed')[0][0]:
 
-			red = np.array([ self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task'],0]) * self.trial.parameters['RG_BY_ratio']
-			green = np.array([- self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task'],0]) * self.trial.parameters['RG_BY_ratio']
-			yellow = np.array([ self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task']])
-			blue = np.array([- self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task']]) 
+			red = np.array([ self.trial.parameters['RG_color'],- self.trial.parameters['RG_color'],0])
+			green = np.array([- self.trial.parameters['RG_color'], self.trial.parameters['RG_color'],0])
+			yellow = np.array([ self.trial.parameters['BY_color'], self.trial.parameters['BY_color'],- self.trial.parameters['BY_color']])
+			blue = np.array([- self.trial.parameters['BY_color'],- self.trial.parameters['BY_color'], self.trial.parameters['BY_color']]) 
 
 			self.speed = 0.0
 
 		elif self.task == np.where(self.session.tasks=='no_color_yes_speed')[0][0]:
-			red = np.array([-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task']])
-			green = np.array([self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task']])
-			yellow = np.array([-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task'],-self.trial.parameters['baseline_color_for_task']])
-			blue = np.array([self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task'],self.trial.parameters['baseline_color_for_task']]) 
+
+			average_color_value = np.mean([self.trial.parameters['RG_color'],self.trial.parameters['BY_color']])
+			red = np.array([-average_color_value,-average_color_value,-average_color_value])
+			green = np.array([average_color_value,average_color_value,average_color_value])
+			yellow = np.array([-average_color_value,-average_color_value,-average_color_value])
+			blue = np.array([average_color_value,average_color_value,average_color_value]) 
 
 			self.speed = self.trial.parameters['baseline_speed_for_task']
 
 		elif self.task == np.where(self.session.tasks=='yes_color_yes_speed')[0][0]:
 
-			red = np.array([ self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task'],0]) * self.trial.parameters['RG_BY_ratio']
-			green = np.array([- self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task'],0]) * self.trial.parameters['RG_BY_ratio']
-			yellow = np.array([ self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task']])
-			blue = np.array([- self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task']]) 
+			red = np.array([ self.trial.parameters['RG_color'],- self.trial.parameters['RG_color'],0]) 
+			green = np.array([- self.trial.parameters['RG_color'], self.trial.parameters['RG_color'],0]) 
+			yellow = np.array([ self.trial.parameters['BY_color'], self.trial.parameters['BY_color'],- self.trial.parameters['BY_color']])
+			blue = np.array([- self.trial.parameters['BY_color'],- self.trial.parameters['BY_color'], self.trial.parameters['BY_color']]) 
 
 			self.speed = self.trial.parameters['baseline_speed_for_task']	
 
@@ -86,11 +90,9 @@ class PRFMapperStim(object):
 		
 			red,green,yellow,blue = self.session.screen.background_color,self.session.screen.background_color,self.session.screen.background_color,self.session.screen.background_color
 
-			self.speed = 0
-
+			self.speed = 0.0
 
 		# Now set the actual stimulus parameters
-
 		self.colors = np.concatenate((np.ones((self.num_elements/4.0,3)) * red,  # red/green - red
 									np.ones((self.num_elements/4.0,3)) * green,  # red/green - green
 									np.ones((self.num_elements/4.0,3)) * blue,  # blue/yellow - blue
@@ -109,8 +111,6 @@ class PRFMapperStim(object):
 		self.phase = phase
 		self.frames += 1
 
-		full_width = self.size_pix * (1.0 + 1.0)
-		midpoint = 0#phase * full_width - 0.5 * full_width
 		
 		if self.frames == 1:#self.redraws < (self.phase * self.period * self.refresh_frequency):
 			self.redraws = self.redraws + 1
@@ -119,7 +119,7 @@ class PRFMapperStim(object):
 			self.session.element_array.setSizes(self.element_sizes)
 			self.session.element_array.setColors(self.colors)
 			self.session.element_array.setOris(self.element_orientations)
-			self.session.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -midpoint])))) 
+			self.session.element_array.setXYs(np.array(np.matrix(self.element_positions))) 
 			log_msg = 'stimulus draw for phase %f, at %f'%(phase, self.session.clock.getTime())
 			self.trial.events.append( log_msg )
 			if self.session.tracker:

@@ -1,3 +1,4 @@
+from __future__ import division
 from psychopy import visual, core, misc, event
 import numpy as np
 from IPython import embed as shell

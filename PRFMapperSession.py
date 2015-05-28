@@ -1,3 +1,4 @@
+from __future__ import division
 from psychopy import visual, core, misc, event
 import numpy as np
 from IPython import embed as shell
@@ -30,13 +31,16 @@ class PRFMapperSession(EyelinkSession):
 		self.standard_parameters = standard_parameters
 
 		text_file_name = "data/%s_color_ratios.txt"%self.subject_initials
-		if os.path.isfile(text_file_name):
-			text_file = open(text_file_name, "r")
-			RG_BY_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
-			text_file.close()
-			self.standard_parameters['RG_BY_ratio'] = RG_BY_ratio
+		assert os.path.isfile(text_file_name), 'NO COLOR RATIO TEXT FILE PRESENT!!!!!!!!'
+		text_file = open(text_file_name, "r")
+		RG_BY_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
+		text_file.close()
+		if RG_BY_ratio > 1:
+			self.standard_parameters['RG_color'] = 1
+			self.standard_parameters['BY_color'] = 1/RG_BY_ratio
 		else:
-			self.standard_parameters['RG_BY_ratio'] = 1
+			self.standard_parameters['BY_color'] = 1
+			self.standard_parameters['RG_color'] = 1/RG_BY_ratio
 
 		self.create_output_file_name()
 		if tracker_on:

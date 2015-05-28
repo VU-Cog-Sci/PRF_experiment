@@ -1,3 +1,4 @@
+from __future__ import division
 from psychopy import visual, core, misc, event, filters
 import numpy as np
 from scipy.signal import convolve2d
@@ -55,6 +56,9 @@ class PRFStim(object):
 		# set this to its default no-answer necessary value of None - this is tested for in PRFTrial when incorporating responses
 		self.last_sampled_staircase = None
 
+	def convert_quest_sample(self,quest_sample):
+
+		return 1 - (1/(np.e**quest_sample+1))
 	
 	def populate_stimulus(self):
 
@@ -75,8 +79,9 @@ class PRFStim(object):
 				# now fill in this value into the different cues/tasks whatever, supplement this with a quest staircase...
 				if self.session.unique_tasks[i] == 'Color':
 					# get quest sample here
+
 					color_quest_sample = self.session.staircases[self.session.unique_tasks[i] + '_%i'%self.eccentricity_bin].quantile()
-					color_1_ratio = 100/(np.e**color_quest_sample+1)*(np.e**color_quest_sample)/100
+					color_1_ratio = self.convert_quest_sample(color_quest_sample)
 					color_2_ratio = 1-color_1_ratio
 
 					self.present_color_task_sign = np.random.choice([-1,1])
@@ -97,7 +102,7 @@ class PRFStim(object):
 					# self.speed = self.trial.parameters['baseline_speed_for_task'] + self.present_speed_task_sign * speed_quest_sample
 
 					speed_quest_sample = self.session.staircases[self.session.unique_tasks[i] + '_%i'%self.eccentricity_bin].quantile()
-					speed_1_ratio = 100/(np.e**speed_quest_sample+1)*(np.e**speed_quest_sample)/100
+					speed_1_ratio = self.convert_quest_sample(speed_quest_sample)
 					speed_2_ratio = 1-speed_1_ratio
 
 					self.present_speed_task_sign = np.random.choice([-1,1])
@@ -118,7 +123,7 @@ class PRFStim(object):
 					# self.fix_gray_value = np.ones(3) * fix_quest_sample * self.present_fix_task_sign
 
 					fix_quest_sample = self.session.staircases[self.session.unique_tasks[i] + '_%i'%self.eccentricity_bin].quantile()
-					fix_value = (100/(np.e**fix_quest_sample+1)*(np.e**fix_quest_sample)/100 -0.5) * 2.0
+					fix_value = (self.convert_quest_sample(fix_quest_sample) - 0.5) * 2.0
 					self.present_fix_task_sign = np.random.choice([-1,1])
 					self.fix_gray_value = np.ones(3) * fix_value * self.present_fix_task_sign
 
@@ -143,6 +148,8 @@ class PRFStim(object):
 
 		self.element_speeds = np.concatenate((np.ones(np.round(self.num_elements*fast_ratio)) * self.trial.parameters['fast_speed'],
 											np.ones(np.round(self.num_elements*slow_ratio)) * self.trial.parameters['slow_speed']))
+		np.random.shuffle(self.element_speeds)
+
 
 		self.element_positions = np.random.rand(self.num_elements, 2) * np.array([self.size_pix, self.size_pix * self.bar_width_ratio]) - np.array([self.size_pix/2.0, (self.size_pix * self.bar_width_ratio)/2.0])
 		self.element_sfs = np.ones((self.num_elements)) * self.trial.parameters['element_spatial_frequency']

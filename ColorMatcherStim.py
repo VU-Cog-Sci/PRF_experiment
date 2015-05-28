@@ -1,3 +1,4 @@
+from __future__ import division
 from psychopy import visual, core, misc, event, filters
 import numpy as np
 from scipy.signal import convolve2d

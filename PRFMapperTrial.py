@@ -1,3 +1,4 @@
+from __future__ import division
 from psychopy import visual, core, misc, event
 import numpy#for maths on arrays
 from numpy.random import random, shuffle #we only need these two commands from this lib
@@ -15,13 +16,7 @@ class PRFMapperTrial(Trial):
 	def __init__(self, parameters = {}, phase_durations = [], session = None, screen = None, tracker = None):
 		super(PRFMapperTrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
 		
-		self.stim = PRFMapperStim(self.screen, self, self.session, 
-						task = self.parameters['task'],
-						size_pix = self.parameters['stim_size'] * session.screen_pix_size[1], 
-						num_elements = self.parameters['num_elements'] * (1/self.parameters['bar_width_ratio']), 
-						period = self.parameters['mapper_period'],
-						RG_BY_ratio = self.parameters['RG_BY_ratio'], 
-						task_rate = self.parameters['task_rate'])
+		self.stim = PRFMapperStim(self.screen, self, self.session, self.parameters['task'])
 		
 		this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nFix\t\t\t-\tBlack\t\t/\tWhite'# self.parameters['task_instruction']
 		self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 30, alignHoriz = 'center')

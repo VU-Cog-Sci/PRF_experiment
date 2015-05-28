@@ -1,3 +1,4 @@
+from __future__ import division
 from psychopy import visual, core, misc, event
 import numpy#for maths on arrays
 from numpy.random import random, shuffle #we only need these two commands from this lib

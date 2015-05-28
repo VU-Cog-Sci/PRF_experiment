@@ -1,3 +1,4 @@
+from __future__ import division
 from psychopy import visual, core, misc, event
 import numpy as np
 # from IPython import embed as shell
@@ -48,11 +49,10 @@ class PRFSession(EyelinkSession):
 			self.read_sound_file('sounds/%s.wav'%ut.lower())
 		
 	def prepare_staircases(self):
-		# staircases
-		# Quest(tGuess,tGuessSd,pThreshold,beta,delta,gamma,grain=0.01,range=None)
+
 		self.nr_staircases_ecc = 4
-		# self.initial_values = [0.25, 2, 0.2] # for self.unique_tasks, 
-		self.initial_values = [2, 2, 2] # for self.unique_tasks, 
+
+		self.initial_values = [2,3,1]
 
 		self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_quest.pickle')
 		if os.path.exists( self.staircase_file_name ):
@@ -65,8 +65,8 @@ class PRFSession(EyelinkSession):
 				for j in range(self.nr_staircases_ecc):
 					self.staircases.update({t + '_%i'%j:
 								Quest.QuestObject(
-										tGuess = self.initial_values[i], 
-										tGuessSd = self.initial_values[i] * 0.5, 
+										tGuess = self.initial_values[i],  
+										tGuessSd = self.initial_values[i]*0.5, 
 										pThreshold = 0.83, 
 										beta = 3.5, 
 										delta = 0.05, 
@@ -98,17 +98,17 @@ class PRFSession(EyelinkSession):
 		
 
 		text_file_name = "data/%s_color_ratios.txt"%self.subject_initials
-		if os.path.isfile(text_file_name):
-			text_file = open(text_file_name, "r")
-			RG_BY_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
-			text_file.close()
-			if RG_BY_ratio > 1:
-				self.standard_parameters['RG_color'] = 1
-				self.standard_parameters['BY_color'] = 1/RG_BY_ratio
-			else:
-				self.standard_parameters['BY_color'] = 1
-				self.standard_parameters['RG_color'] = 1/RG_BY_ratio
-
+		assert os.path.isfile(text_file_name), 'NO COLOR RATIO TEXT FILE PRESENT!!!!!!!!'
+		text_file = open(text_file_name, "r")
+		RG_BY_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
+		text_file.close()
+		if RG_BY_ratio > 1:
+			self.standard_parameters['RG_color'] = 1
+			self.standard_parameters['BY_color'] = 1/RG_BY_ratio
+		else:
+			self.standard_parameters['BY_color'] = 1
+			self.standard_parameters['RG_color'] = 1/RG_BY_ratio
+		
 		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['period'], 0.001])
 
 		# stimuli

@@ -108,6 +108,12 @@ class PRFSession(EyelinkSession):
 		else:
 			self.standard_parameters['BY_color'] = 1
 			self.standard_parameters['RG_color'] = 1/RG_BY_ratio
+
+		text_file_name = "data/%s_speed_ratios.txt"%self.subject_initials
+		assert os.path.isfile(text_file_name), 'NO SPEED RATIO TEXT FILE PRESENT!!!!!!!!'
+		text_file = open(text_file_name, "r")
+		self.fast_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
+		self.slow_ratio = 1-self.fast_ratio
 		
 		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['period'], 0.001])
 

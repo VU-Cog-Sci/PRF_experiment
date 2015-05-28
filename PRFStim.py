@@ -69,8 +69,8 @@ class PRFStim(object):
 
 		RG_ratio = 0.5
 		BY_ratio = 0.5
-		fast_ratio = 0.5
-		slow_ratio = 0.5
+		fast_ratio = self.session.fast_ratio
+		slow_ratio = self.session.slow_ratio
 
 		for i, task in enumerate(self.session.unique_tasks):
 

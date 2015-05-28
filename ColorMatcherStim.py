@@ -24,6 +24,8 @@ class ColorMatcherStim(object):
 		# psychopy stimuli
 		self.populate_stimulus()
 
+		self.frames = 0
+
 		# make this stimulus array a session variable, in order to have to create it only once...
 		if not hasattr(session, 'element_array'):
 			self.session.element_array = visual.ElementArrayStim(screen, nElements = self.num_elements, sizes = self.element_sizes, sfs = self.element_sfs, xys = self.element_positions, colors = self.colors, colorSpace = 'rgb') 
@@ -63,6 +65,10 @@ class ColorMatcherStim(object):
 			if self.session.tracker:
 				self.session.tracker.log( log_msg )
 			self.redraw=False
+
+		if self.frames % 3 == 0:
+			self.redraw = True
+		self.frames += 1
 
 		self.session.element_array.draw()		
 		self.session.fixation_outer_rim.draw()

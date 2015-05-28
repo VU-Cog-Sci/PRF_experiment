@@ -30,7 +30,7 @@ standard_parameters = {
 
 }
 
-# screen_res = (2560, 1440)
-screen_res = (1152, 870)
+screen_res = (2560,1440)
+# screen_res = (1152, 870)
 background_color = (-0.75,-0.75,-0.75)
 initial_wait_time = 0.0

@@ -44,7 +44,7 @@ class ColorMatcherStim(object):
 									np.ones((self.num_elements/4.0,3)) * yellow))  # blue/yellow - yellow
 
 		np.random.shuffle(self.colors)
-
+		self.element_positions = np.random.rand(self.num_elements, 2) * np.array([self.size_pix, self.size_pix]) - np.array([self.size_pix/2.0, (self.size_pix)/2.0])
 		self.element_sfs = np.ones((self.num_elements)) * self.trial.parameters['element_spatial_frequency']
 		self.element_sizes = np.ones((self.num_elements)) * self.trial.parameters['element_size']
 		self.element_orientations = np.random.rand(self.num_elements) * 720.0 - 360.0

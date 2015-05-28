@@ -32,6 +32,8 @@ class ColorMatcherSession(EyelinkSession):
 		self.create_output_file_name()
 		if tracker_on:
 			self.create_tracker(auto_trigger_calibration = 1, calibration_type = 'HV9')
+			if self.tracker_on:
+				self.tracker_setup()
 		else:
 			self.create_tracker(tracker_on = False)
 		
@@ -40,7 +42,7 @@ class ColorMatcherSession(EyelinkSession):
 		self.prepare_trials()
 		self.all_color_values = []
 		self.exp_start_time = 0.0
-		self.color_step = 0.01
+		self.color_step = 0.02
 
 	
 	def prepare_trials(self):

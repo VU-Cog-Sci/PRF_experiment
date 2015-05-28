@@ -51,7 +51,9 @@ class PRFSession(EyelinkSession):
 		# staircases
 		# Quest(tGuess,tGuessSd,pThreshold,beta,delta,gamma,grain=0.01,range=None)
 		self.nr_staircases_ecc = 4
-		self.initial_values = [0.25, 2, 0.2] # for self.unique_tasks, 
+		# self.initial_values = [0.25, 2, 0.2] # for self.unique_tasks, 
+		self.initial_values = [0.25, 4, 0.2] # for self.unique_tasks, 
+
 		self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_quest.pickle')
 		if os.path.exists( self.staircase_file_name ):
 			with open(self.staircase_file_name) as f:
@@ -64,8 +66,8 @@ class PRFSession(EyelinkSession):
 					self.staircases.update({t + '_%i'%j:
 								Quest.QuestObject(
 										tGuess = self.initial_values[i], 
-										tGuessSd = self.initial_values[i] * 1.0, 
-										pThreshold = 0.9, 
+										tGuessSd = self.initial_values[i] * 3.0, 
+										pThreshold = 0.85, 
 										beta = 3.5, 
 										delta = 0.01, 
 										gamma = 0.0, 
@@ -78,9 +80,13 @@ class PRFSession(EyelinkSession):
 		"""docstring for prepare_trials(self):"""
 		# 8 directions, 7 tasks
 		self.directions = np.linspace(0, 2.0 * pi, 8, endpoint = False)
-		self.tasks = ['color', 'speed', 'color', 'speed', 'fix', 'fix', 'fix_no_stim']
-		self.task_instructions = ['Color', 'Speed', 'Color', 'Speed', 'Fix', 'Fix', 'Fix']	
-		self.num_elements = np.ones(len(self.task_instructions)) * 2000
+		self.tasks = ['speed']
+		self.task_instructions = ['Speed']
+		# self.tasks = ['color', 'speed', 'color', 'speed', 'fix', 'fix', 'fix_no_stim']
+		# self.task_instructions = ['Color', 'Speed', 'Color', 'Speed', 'Fix', 'Fix', 'Fix']	
+		self.standard_parameters = standard_parameters
+
+		self.num_elements = np.ones(len(self.task_instructions)) * self.standard_parameters['num_elements']
 		self.unique_tasks = ['Color', 'Speed', 'Fix']
 		
 		self.trial_array = []
@@ -90,15 +96,17 @@ class PRFSession(EyelinkSession):
 		self.trial_array = np.array(self.trial_array)
 		np.random.shuffle(self.trial_array)
 		
-		self.standard_parameters = standard_parameters
 
-		text_file = open("data/%s_color_ratios.txt"%self.subject_initials, "r")
-		RG_BY_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
-		text_file.close()
-		self.standard_parameters['RG_BY_ratio'] = RG_BY_ratio
+		text_file_name = "data/%s_color_ratios.txt"%self.subject_initials
+		if os.path.isfile(text_file_name):
+			text_file = open(text_file_name, "r")
+			RG_BY_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
+			text_file.close()
+			self.standard_parameters['RG_BY_ratio'] = RG_BY_ratio
+		else:
+			self.standard_parameters['RG_BY_ratio'] = 1
 
 		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['period'], 0.001])
-
 
 		# stimuli
 		self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (0,0,0), maskParams = {'fringeWidth':0.4})

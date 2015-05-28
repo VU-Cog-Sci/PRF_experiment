@@ -11,8 +11,10 @@ standard_parameters = {
 	'redraws_per_TR' : 3,
 	'task_rate' : 2.0,						# this + minimum_pulse_gap is average of exponential distribution
 	'minimum_pulse_gap':2.0,				# the '0' point for the exponential distribution out of which transients are generated
-	'baseline_speed_for_task': 5.0,
-	'baseline_color_for_task': 0.75,
+	'fast_speed': 7.5,
+	'slow_speed': 2.5,
+	'RG_color': 1,
+	'BY_color':1,
 	'element_size': 45.0,
 	'element_spatial_frequency': 2.0,
 
@@ -25,9 +27,7 @@ standard_parameters = {
 
 	## Subjective IsoLuminance variables:
 	'num_trials': 5,
-	'redraws_per_stim': 1,
-	'gabor_size': 1000,
-
+	'BY_comparison_color': 0.75
 }
 
 screen_res = (2560,1440)

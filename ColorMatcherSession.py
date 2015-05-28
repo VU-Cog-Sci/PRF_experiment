@@ -65,7 +65,7 @@ class ColorMatcherSession(EyelinkSession):
 	def close(self):
 		super(ColorMatcherSession, self).close()
 		text_file = open("data/%s_color_ratios.txt"%self.subject_initials, "w")
-		text_file.write('Mean RG/BY ratio: %.2f\nStdev RG/BY ratio: %.2f'%(np.mean(np.array(self.all_color_values)/self.standard_parameters['baseline_color_for_task']),np.std(np.array(self.all_color_values)/self.standard_parameters['baseline_color_for_task'])))
+		text_file.write('Mean RG/BY ratio: %.2f\nStdev RG/BY ratio: %.2f'%(np.mean(np.array(self.all_color_values)/self.standard_parameters['BY_comparison_color']),np.std(np.array(self.all_color_values)/self.standard_parameters['BY_comparison_color'])))
 		text_file.close()
 	
 	def run(self):

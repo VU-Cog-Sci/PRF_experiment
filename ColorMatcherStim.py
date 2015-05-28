@@ -36,8 +36,8 @@ class ColorMatcherStim(object):
 
 		red = np.array([ self.color_value, - self.color_value,0]) 
 		green = np.array([- self.color_value, self.color_value,0]) 
-		yellow = np.array([ self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task']])
-		blue = np.array([- self.trial.parameters['baseline_color_for_task'],- self.trial.parameters['baseline_color_for_task'], self.trial.parameters['baseline_color_for_task']]) 
+		yellow = np.array([ self.trial.parameters['BY_comparison_color'], self.trial.parameters['BY_comparison_color'],- self.trial.parameters['BY_comparison_color']])
+		blue = np.array([- self.trial.parameters['BY_comparison_color'],- self.trial.parameters['BY_comparison_color'], self.trial.parameters['BY_comparison_color']]) 
 
 		# Now set the actual stimulus parameters
 		self.colors = np.concatenate((np.ones((self.num_elements/4.0,3)) * red,  # red/green - red

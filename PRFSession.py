@@ -52,7 +52,7 @@ class PRFSession(EyelinkSession):
 		# Quest(tGuess,tGuessSd,pThreshold,beta,delta,gamma,grain=0.01,range=None)
 		self.nr_staircases_ecc = 4
 		# self.initial_values = [0.25, 2, 0.2] # for self.unique_tasks, 
-		self.initial_values = [0.25, 4, 0.2] # for self.unique_tasks, 
+		self.initial_values = [2, 2, 2] # for self.unique_tasks, 
 
 		self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_quest.pickle')
 		if os.path.exists( self.staircase_file_name ):
@@ -66,10 +66,10 @@ class PRFSession(EyelinkSession):
 					self.staircases.update({t + '_%i'%j:
 								Quest.QuestObject(
 										tGuess = self.initial_values[i], 
-										tGuessSd = self.initial_values[i] * 3.0, 
-										pThreshold = 0.85, 
+										tGuessSd = self.initial_values[i] * 0.5, 
+										pThreshold = 0.83, 
 										beta = 3.5, 
-										delta = 0.01, 
+										delta = 0.05, 
 										gamma = 0.0, 
 										grain = 0.01, 
 										range = None 
@@ -80,10 +80,10 @@ class PRFSession(EyelinkSession):
 		"""docstring for prepare_trials(self):"""
 		# 8 directions, 7 tasks
 		self.directions = np.linspace(0, 2.0 * pi, 8, endpoint = False)
-		self.tasks = ['speed']
-		self.task_instructions = ['Speed']
-		# self.tasks = ['color', 'speed', 'color', 'speed', 'fix', 'fix', 'fix_no_stim']
-		# self.task_instructions = ['Color', 'Speed', 'Color', 'Speed', 'Fix', 'Fix', 'Fix']	
+		# self.tasks = ['fix']
+		# self.task_instructions = ['Fix']
+		self.tasks = ['color', 'speed', 'color', 'speed', 'fix', 'fix', 'fix_no_stim']
+		self.task_instructions = ['Color', 'Speed', 'Color', 'Speed', 'Fix', 'Fix', 'Fix']	
 		self.standard_parameters = standard_parameters
 
 		self.num_elements = np.ones(len(self.task_instructions)) * self.standard_parameters['num_elements']
@@ -102,9 +102,12 @@ class PRFSession(EyelinkSession):
 			text_file = open(text_file_name, "r")
 			RG_BY_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
 			text_file.close()
-			self.standard_parameters['RG_BY_ratio'] = RG_BY_ratio
-		else:
-			self.standard_parameters['RG_BY_ratio'] = 1
+			if RG_BY_ratio > 1:
+				self.standard_parameters['RG_color'] = 1
+				self.standard_parameters['BY_color'] = 1/RG_BY_ratio
+			else:
+				self.standard_parameters['BY_color'] = 1
+				self.standard_parameters['RG_color'] = 1/RG_BY_ratio
 
 		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['period'], 0.001])
 

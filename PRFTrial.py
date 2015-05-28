@@ -15,14 +15,7 @@ class PRFTrial(Trial):
 	def __init__(self, parameters = {}, phase_durations = [], session = None, screen = None, tracker = None):
 		super(PRFTrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
 		
-		self.stim = PRFStim(self.screen, self, self.session, 
-						size_pix = self.parameters['stim_size'] * session.screen_pix_size[1], 
-						num_elements = self.parameters['num_elements'], 
-						bar_width_ratio = self.parameters['bar_width_ratio'], 
-						orientation = self.parameters['orientation'], 
-						period = self.parameters['period'], 
-						task_rate = self.parameters['task_rate'],
-						RG_BY_ratio = self.parameters['RG_BY_ratio'])
+		self.stim = PRFStim(self.screen, self, self.session, orientation = self.parameters['orientation'])
 		
 		this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nFix\t\t\t-\tBlack\t\t/\tWhite\nColor\t\t-\tRG\t\t\t/\tBY\nSpeed\t\t-\tDec\t\t/\tAcc'# self.parameters['task_instruction']
 		self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 30, alignHoriz = 'center')

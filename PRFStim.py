@@ -43,9 +43,10 @@ class PRFStim(object):
 		
 		# construct timecourses of tasks
 		# task_rate is in task_rate seconds per occurrence. we add 2x refresh frequency to avoid transients in the first second(s) and those following too quickly, and add an insane number to avoid tasks in the last second(s). 
-		self.transient_occurrences = np.round(np.cumsum(np.random.exponential(self.task_rate * self.refresh_frequency, size = (len(self.session.unique_tasks), 20)) + self.trial.parameters['minimum_pulse_gap']*self.refresh_frequency, axis = 1))
-		self.transient_occurrences[self.transient_occurrences > (self.trial.parameters['period'] * self.refresh_frequency - self.trial.parameters['minimum_pulse_gap']*self.refresh_frequency)] += 500000
-				
+		self.transient_occurrences = np.round(np.cumsum(np.random.exponential(self.task_rate * self.refresh_frequency, size = (len(self.session.unique_tasks), 20)) + self.session.standard_parameters['minimum_pulse_gap']*self.refresh_frequency, axis = 1))
+		self.transient_occurrences[self.transient_occurrences > (self.session.standard_parameters['period'] * self.refresh_frequency - self.session.standard_parameters['minimum_pulse_gap']*self.refresh_frequency)] += 500000
+		self.transient_occurrences[self.transient_occurrences < (self.session.standard_parameters['TR'] * self.refresh_frequency)] += 500000
+
 		# psychopy stimuli
 		self.populate_stimulus()
 
@@ -146,14 +147,14 @@ class PRFStim(object):
 									np.ones((np.round(self.num_elements*BY_ratio/2.0),3)) * np.array([1,1,-1]) * self.BY_color))  # blue/yellow - yellow
 		np.random.shuffle(self.colors)
 
-		self.element_speeds = np.concatenate((np.ones(np.round(self.num_elements*fast_ratio)) * self.trial.parameters['fast_speed'],
-											np.ones(np.round(self.num_elements*slow_ratio)) * self.trial.parameters['slow_speed']))
+		self.element_speeds = np.concatenate((np.ones(np.round(self.num_elements*fast_ratio)) * self.session.standard_parameters['fast_speed'],
+											np.ones(np.round(self.num_elements*slow_ratio)) * self.session.standard_parameters['slow_speed']))
 		np.random.shuffle(self.element_speeds)
 
 
 		self.element_positions = np.random.rand(self.num_elements, 2) * np.array([self.size_pix, self.size_pix * self.bar_width_ratio]) - np.array([self.size_pix/2.0, (self.size_pix * self.bar_width_ratio)/2.0])
-		self.element_sfs = np.ones((self.num_elements)) * self.trial.parameters['element_spatial_frequency']
-		self.element_sizes = np.ones((self.num_elements)) * self.trial.parameters['element_size']
+		self.element_sfs = np.ones((self.num_elements)) * self.session.standard_parameters['element_spatial_frequency']
+		self.element_sizes = np.ones((self.num_elements)) * self.session.standard_parameters['element_size']
 		self.element_phases = np.zeros(self.num_elements)
 		self.element_orientations = np.random.rand(self.num_elements) * 720.0 - 360.0
 		
@@ -162,8 +163,7 @@ class PRFStim(object):
 		self.phase = phase
 		self.frames += 1
 
-		
-		if self.redraws < (self.phase * self.period * self.refresh_frequency):
+		if self.redraws <= (self.phase * self.period * self.refresh_frequency):
 			self.redraws = self.redraws + 1
 
 			self.populate_stimulus()
@@ -171,7 +171,7 @@ class PRFStim(object):
 			self.session.element_array.setSizes(self.element_sizes)
 			self.session.element_array.setColors(self.colors)
 			self.session.element_array.setOris(self.element_orientations)
-			if np.mod(self.redraws,self.trial.parameters['redraws_per_TR']) == 1:
+			if np.mod(self.redraws,self.session.standard_parameters['redraws_per_TR']) == 1:
 				self.midpoint = phase * self.full_width - 0.5 * self.full_width
 			self.session.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -self.midpoint])) * self.rotation_matrix)) 
 			log_msg = 'stimulus draw for phase %f, at %f'%(phase, self.session.clock.getTime())
@@ -181,7 +181,7 @@ class PRFStim(object):
 
 			
 		# if fmod(self.phase * self.period * self.refresh_frequency, 1.0) > 0.5: 
-		self.session.element_array.setPhases(self.element_speeds * self.phase * self.trial.parameters['period'] + self.element_phases)
+		self.session.element_array.setPhases(self.element_speeds * self.phase * self.session.standard_parameters['period'] + self.element_phases)
 
 		if self.session.tasks[self.trial.parameters['task_index']] != 'fix_no_stim':
 			self.session.element_array.draw()

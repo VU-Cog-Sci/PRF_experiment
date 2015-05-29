@@ -29,6 +29,7 @@ class SpeedMatcherSession(EyelinkSession):
 		self.create_screen( size = screen_res, full_screen = 0, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
 
 		self.standard_parameters = standard_parameters
+		self.response_button_signs = response_button_signs
 
 		text_file_name = "data/%s_color_ratios.txt"%self.subject_initials
 		assert os.path.isfile(text_file_name), 'NO COLOR RATIO TEXT FILE PRESENT!!!!!!!!'

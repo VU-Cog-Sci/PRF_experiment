@@ -247,7 +247,7 @@ class EyelinkSession(Session):
 		
 		# set EDF file contents 
 		self.tracker.send_command("file_event_filter = LEFT,RIGHT,FIXATION,SACCADE,BLINK,MESSAGE,BUTTON")
-		self.tracker.send_command("file_sample_filter = LEFT,RIGHT,GAZE,SACCADE,BLINK,MESSAGE,AREA,GAZERES,STATUS,HTARGET")
+		# self.tracker.send_command("file_sample_filter = LEFT,RIGHT,GAZE,SACCADE,BLINK,MESSAGE,AREA")#,GAZERES,STATUS,HTARGET")
 		self.tracker.send_command("file_sample_data = LEFT,RIGHT,GAZE,AREA,GAZERES,STATUS,HTARGET")
 		# set link da (used for gaze cursor) 
 		self.tracker.send_command("link_event_filter = LEFT,RIGHT,FIXATION,FIXUPDATE,SACCADE,BLINK")

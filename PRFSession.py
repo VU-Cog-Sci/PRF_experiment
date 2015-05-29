@@ -109,20 +109,25 @@ class PRFSession(EyelinkSession):
 			self.standard_parameters['BY_color'] = 1
 			self.standard_parameters['RG_color'] = 1/RG_BY_ratio
 
-		text_file_name = "data/%s_speed_ratios.txt"%self.subject_initials
-		assert os.path.isfile(text_file_name), 'NO SPEED RATIO TEXT FILE PRESENT!!!!!!!!'
-		text_file = open(text_file_name, "r")
-		self.fast_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
-		self.slow_ratio = 1-self.fast_ratio
-		
-		self.phase_durations = np.array([-0.0001,-0.0001, 1.00, self.standard_parameters['period'], 0.001])
+		# text_file_name = "data/%s_speed_ratios.txt"%self.subject_initials
+		# assert os.path.isfile(text_file_name), 'NO SPEED RATIO TEXT FILE PRESENT!!!!!!!!'
+		# text_file = open(text_file_name, "r")
+		# self.fast_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
+		# self.slow_ratio = 1-self.fast_ratio
+		self.fast_ratio = self.slow_ratio = 0.5
 
-		# stimuli
+		
+		# phase 0: text instruction presentation, not timed but ends when first t arrives
+		# phase 1: auditory task instruction
+		# phase 2: wait for the t
+		# phase 3: stimulus presentation
+		# phase 4: ITI
+		self.phase_durations = np.array([-0.0001,1.00,-0.0001, self.standard_parameters['period'], self.standard_parameters['ITI']])
+
+		# fixation point
 		self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (0,0,0), maskParams = {'fringeWidth':0.4})
 		self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=17.5, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
 		self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=5.0, pos = np.array((0.0,0.0)), color = (0,0,0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
-
-		screen_width, screen_height = self.screen_pix_size
 		
 		ecc_mask = filters.makeMask(matrixSize = 2048, shape='raisedCosine', radius=self.standard_parameters['stim_size'] * self.screen_pix_size[1] / self.screen_pix_size[0], center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
 		self.mask_stim = visual.PatchStim(self.screen, mask=ecc_mask,tex=None, size=(self.screen_pix_size[0], self.screen_pix_size[0]), pos = np.array((0.0,0.0)), color = self.screen.background_color) # 
@@ -143,10 +148,7 @@ class PRFSession(EyelinkSession):
 			this_trial_parameters = self.standard_parameters.copy()
 			this_trial_parameters['orientation'] = self.directions[self.trial_array[i,0]]
 			this_trial_parameters['task_index'] = self.trial_array[i,1]
-			# this_trial_parameters['task_instruction'] = self.task_instructions[self.trial_array[i,1]]
-			# this_trial_parameters['task'] = self.tasks[self.trial_array[i,1]]
 			this_trial_parameters['unique_task'] = self.unique_tasks.index(self.task_instructions[self.trial_array[i,1]])
-			this_trial_parameters['num_elements'] = self.num_elements[self.trial_array[i,1]]
 
 			these_phase_durations = self.phase_durations.copy()
 			if i == 0:

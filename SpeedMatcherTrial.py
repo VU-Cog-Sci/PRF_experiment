@@ -82,14 +82,16 @@ class SpeedMatcherTrial(Trial):
 					self.events.append([99,self.session.clock.getTime()-self.start_time])
 					if self.phase == 0:
 						self.phase_forward()
-				elif (self.phase == 3) * (ev == 'z'):
-					self.speed_ratio_diff -= self.session.speed_ratio_step
-					self.stim.redraw=True
-				elif (self.phase == 3) * (ev == 'm'):
-					self.speed_ratio_diff += self.session.speed_ratio_step
-					self.stim.redraw=True
-				elif (self.phase ==3 ) * (ev == 'n'):
-					self.phase_forward()
+				elif ev in self.session.response_button_signs.keys():
+					if self.phase == 3:
+						if self.session.response_button_signs[ev] == -1:
+							self.speed_ratio_diff -= self.session.speed_ratio_step
+							self.stim.redraw=True
+						elif self.session.response_button_signs[ev] == 1:
+							self.speed_ratio_diff += self.session.speed_ratio_step
+							self.stim.redraw=True
+						elif self.session.response_button_signs[ev] == 2:
+							self.phase_forward()
 			
 			super(SpeedMatcherTrial, self).key_event( ev )
 

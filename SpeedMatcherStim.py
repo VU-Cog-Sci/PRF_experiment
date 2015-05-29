@@ -61,8 +61,6 @@ class SpeedMatcherStim(object):
 
 		self.speed_ratio = np.min([np.max([0,self.speed_offset + self.trial.speed_ratio_diff]), 1])
 
-		if self.speed_ratio > 1:
-			shell()
 		self.element_speeds = np.concatenate((np.ones(np.round(self.num_elements*(self.speed_ratio))) * self.session.standard_parameters['fast_speed'],
 											np.ones(np.round(self.num_elements*(1-self.speed_ratio))) * self.session.standard_parameters['slow_speed']))
 
@@ -74,6 +72,7 @@ class SpeedMatcherStim(object):
 		self.phase = phase
 
 		if self.redraw:
+			self.populate_stimulus()
 			self.update_speeds()
 			log_msg = 'stimulus redraw at %f'%(self.session.clock.getTime())
 			self.trial.events.append( log_msg )
@@ -84,7 +83,10 @@ class SpeedMatcherStim(object):
 			self.session.element_array.setSizes(self.element_sizes)
 			self.session.element_array.setColors(self.colors)
 			self.session.element_array.setOris(self.element_orientations)
-
+	
+		if self.frames % 15 == 0:
+			self.redraw = True
+		self.frames += 1
 
 		self.session.element_array.setPhases(self.element_speeds * self.phase * self.session.standard_parameters['period'] + self.element_phases)
 

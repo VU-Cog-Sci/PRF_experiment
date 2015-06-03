@@ -18,7 +18,7 @@ class MapperStim(object):
 		self.session = session
 		self.screen = screen
 		self.size_pix = session.standard_parameters['stim_size'] * session.screen_pix_size[1]
-		self.period = session.standard_parameters['period']
+		self.period = session.standard_parameters['mapper_stim_in_TR'] * session.standard_parameters['TR']
 		# self.refresh_frequency = refresh_frequency
 		self.task_rate = session.standard_parameters['task_rate']
 		self.task = task
@@ -135,7 +135,7 @@ class MapperStim(object):
 
 			
 		# if fmod(self.phase * self.period * self.refresh_frequency, 1.0) > 0.5: 
-		self.session.element_array.setPhases(self.element_speeds * self.phase * self.session.standard_parameters['mapper_period'] + self.element_phases)
+		self.session.element_array.setPhases(self.element_speeds * self.phase * self.period + self.element_phases)
 
 		if self.session.tasks[self.task] != 'fix_no_stim':
 			self.session.element_array.draw()	

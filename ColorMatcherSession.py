@@ -57,7 +57,7 @@ class ColorMatcherSession(EyelinkSession):
 		# stimuli
 		self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (0,0,0), maskParams = {'fringeWidth':0.4})
 		self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=17.5, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
-		self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=5.0, pos = np.array((0.0,0.0)), color = (0,0,0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
+		self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=9.0, pos = np.array((0.0,0.0)), color = (0,0,0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
 
 		screen_width, screen_height = self.screen_pix_size
 		
@@ -79,8 +79,6 @@ class ColorMatcherSession(EyelinkSession):
 			this_trial_parameters['RG_offset'] = self.RG_offsets[i]
 
 			these_phase_durations = self.phase_durations.copy()
-			if i == 0:
-				these_phase_durations[1] = initial_wait_time
 
 			this_trial = ColorMatcherTrial(this_trial_parameters, phase_durations = these_phase_durations, session = self, screen = self.screen, tracker = self.tracker)
 			

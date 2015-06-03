@@ -23,18 +23,21 @@ class MapperTrial(Trial):
 		self.instruction.setSize((1200,50))
 
 		self.run_time = 0.0
-		self.instruct_time = self.fix_time = self.stimulus_time = self.post_stimulus_time = 0.0
+		self.instruct_time = self.trial_start_time =self.stimulus_time = self.post_stimulus_time = 0.0
 		# self.instruct_sound_played = False
 
 		# set this to its default no-answer necessary value of None - this is tested for in PRFTrial when incorporating responses
 		self.last_sampled_staircase = None
 
-	
+	def convert_quest_sample(self,quest_sample):
+
+		return 1 - (1/(np.e**quest_sample+1))
+
 	def draw(self):
 		"""docstring for draw"""
 
-		# wait with presenting the fixation task after the first phase of the first trial
-		if (self.ID != 0) + (self.phase > 1):
+		# wait with presenting the fixation task after the first trial
+		if (self.ID != 0):
 
 			time_elapsed_since_start = self.session.clock.getTime() - self.session.exp_start_time
 			# see whether the elapsed time divided in 0.5 second steps is in transient occurences, and whether this pulse has not yet bee presented
@@ -43,11 +46,11 @@ class MapperTrial(Trial):
 				self.session.ready_for_next_pulse = False
 				
 				fix_quest_sample = self.session.staircases['fix'].quantile()
-
+				fix_value = (self.convert_quest_sample(fix_quest_sample) - 0.5) * 2.0
 				self.present_fix_task_sign = np.random.choice([-1,1])
-				self.fix_gray_value = np.ones(3) * fix_quest_sample * self.present_fix_task_sign
+				self.fix_gray_value = np.ones(3) * fix_value * self.present_fix_task_sign
 
-				log_msg = 'fix signal %d at %f ' % (self.present_fix_task_sign, self.session.clock.getTime())
+				log_msg = 'fix signal value: %f at %f ' % (fix_value, self.session.clock.getTime())
 
 				self.session.fixation.setColor(self.fix_gray_value)
 
@@ -63,31 +66,24 @@ class MapperTrial(Trial):
 				self.session.ready_for_next_pulse = True
 				self.session.fixation.setColor((0,0,0))
 
+		if (self.phase == 0) * (self.ID == 0):
+			self.instruction.draw()
+			
+		elif self.phase == 1:
 
-		if self.phase == 0:
-			if self.ID == 0:
-				self.instruction.draw()
-			else:
-				self.session.fixation_outer_rim.draw()
-				self.session.fixation_rim.draw()
-				self.session.fixation.draw()
-		if self.phase == 1:
 			self.session.fixation_outer_rim.draw()
 			self.session.fixation_rim.draw()
 			self.session.fixation.draw()
 
 		elif self.phase == 2:
+			self.stim.draw(phase = (self.stimulus_time - self.trial_start_time) / self.phase_durations[2])
 			self.session.fixation_outer_rim.draw()
 			self.session.fixation_rim.draw()
 			self.session.fixation.draw()
-			
+
 		elif self.phase == 3:
-			self.stim.draw(phase = (self.stimulus_time - self.fix_time) / self.phase_durations[3])
-		
-		elif self.phase == 4:
 			self.session.fixation_outer_rim.draw()
 			self.session.fixation_rim.draw()
-			self.session.fixation.setColor((0,0,0))
 			self.session.fixation.draw()
 			
 		super(MapperTrial, self).draw( )
@@ -111,7 +107,7 @@ class MapperTrial(Trial):
 						print 'trial canceled by user'
 				elif ev == 't': # TR pulse
 					self.events.append([99,self.session.clock.getTime()-self.start_time])
-					if self.phase == 0:
+					if (self.phase == 0) + (self.phase == 1):
 						self.phase_forward()
 				elif ev in self.session.response_button_signs.keys():
 
@@ -144,33 +140,29 @@ class MapperTrial(Trial):
 		
 		while not self.stopped:
 			self.run_time = self.session.clock.getTime() - self.start_time
+			# Only in trial 1, phase 0 represents the instruction period.
+			# After the first trial, this phase is skipped immediately
 			if self.phase == 0:
 				self.instruct_time = self.session.clock.getTime()
-				if (self.ID != 0) * (self.session.scanner == 'n'):
+				if self.ID != 0:
 					self.phase_forward()
-			if self.phase == 1:
-				# this trial phase is timed
-				self.initial_wait_time = self.session.clock.getTime()
-				if ( self.initial_wait_time  - self.instruct_time ) > self.phase_durations[1]:
-					self.phase_forward()
-			if self.phase == 2:
+			# in phase 1, waiting for t if in the scanner
+			elif self.phase == 1:
 				if self.session.exp_start_time == 0.0:
 					self.session.exp_start_time = self.session.clock.getTime()
-
-				self.fix_time = self.session.clock.getTime()
-
-				# this trial phase is timed
-				if ( self.fix_time  - self.initial_wait_time ) > self.phase_durations[2]:
-					self.phase_forward()
-			if self.phase == 3:
-				# this trial phase is timed
+	
+				self.trial_start_time = self.session.clock.getTime()
+				if self.session.scanner == 'n':
+					self.phase_forward()		
+			# phase 2 is stimulus presentation phase
+			elif self.phase == 2:
 				self.stimulus_time = self.session.clock.getTime()
-				if ( self.stimulus_time - self.fix_time ) > self.phase_durations[3]:
+				if ( self.stimulus_time - self.trial_start_time ) > self.phase_durations[2]:
 					self.phase_forward()
-			if self.phase == 4:
-				# this trial phase is timed
+			# phase 3 is ITI
+			elif self.phase == 3:
 				self.post_stimulus_time = self.session.clock.getTime()
-				if ( self.post_stimulus_time  - self.stimulus_time ) > self.phase_durations[4]:
+				if ( self.post_stimulus_time  - self.stimulus_time ) > self.phase_durations[3]:
 					self.stopped = True
 		
 			# events and draw

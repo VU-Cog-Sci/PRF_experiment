@@ -75,7 +75,7 @@ class MapperSession(EyelinkSession):
 
 	def prepare_staircases(self):
 		# staircases
-		self.initial_value = 0.2 # for self.unique_tasks, 
+		self.initial_value = 2 # for self.unique_tasks, 
 		self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_mapper_quest.pickle')
 		if os.path.exists( self.staircase_file_name ):
 			with open(self.staircase_file_name) as f:
@@ -86,8 +86,8 @@ class MapperSession(EyelinkSession):
 			self.staircases.update({'fix':
 						Quest.QuestObject(
 								tGuess = self.initial_value, 
-								tGuessSd = self.initial_value * 0.5, 
-								pThreshold = 0.9, 
+								tGuessSd = self.initial_value * 0.35, 
+								pThreshold = 0.83, 
 								beta = 3.5, 
 								delta = 0.01, 
 								gamma = 0.0, 
@@ -96,7 +96,6 @@ class MapperSession(EyelinkSession):
 								) 
 							})
 
-		bbbybgybgybgreeeeee
 	
 	def prepare_trials(self):
 		"""docstring for prepare_trials(self):"""
@@ -104,14 +103,18 @@ class MapperSession(EyelinkSession):
 		# create random m-sequence for the 5 trial types of length (5^3)-1 = 124. I then add the first trial type to the end of the array, so that all trial types have even occurences
 		from psychopy.contrib import mseq
 		self.tasks = np.array(['fix_no_stim','no_color_no_speed','yes_color_no_speed','no_color_yes_speed','yes_color_yes_speed'])
-		self.trial_array = np.hstack([mseq.mseq(5,3,1,np.random.randint(200)),[0]]) # base (number of trial types), power (sequence length is base^power-1), shift (to shift last values of sequence to first), random sequence out of the 200 possibilities
+		self.trial_array = np.hstack([[0],mseq.mseq(5,3,1,np.random.randint(200))]) # base (number of trial types), power (sequence length is base^power-1), shift (to shift last values of sequence to first), random sequence out of the 200 possibilities
 			
-		self.phase_durations = np.array([-0.0001,-0.0001, -0.001, self.standard_parameters['mapper_period'], self.standard_parameters['mapper_ITI'] ])
+		self.phase_durations = np.array([
+			-0.001, # instruct time
+			-0.001, # wait for t at beginnning of every trial
+			self.standard_parameters['TR'] * self.standard_parameters['mapper_stim_in_TR'],   #stimulation time
+			self.standard_parameters['TR'] * self.standard_parameters['mapper_ITI_in_TR'] ]) # ITI time
 
 		# stimuli
 		self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (0,0,0), maskParams = {'fringeWidth':0.4})
 		self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=17.5, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
-		self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=5.0, pos = np.array((0.0,0.0)), color = (0,0,0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
+		self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=9.0, pos = np.array((0.0,0.0)), color = (0,0,0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
 
 		screen_width, screen_height = self.screen_pix_size
 		
@@ -137,9 +140,6 @@ class MapperSession(EyelinkSession):
 			this_trial_parameters['task'] = self.trial_array[i]
 
 			these_phase_durations = self.phase_durations.copy()
-			if i == 0:
-				these_phase_durations[1] = initial_wait_time
-
 			this_trial = MapperTrial(this_trial_parameters, phase_durations = these_phase_durations, session = self, screen = self.screen, tracker = self.tracker)
 			
 			# run the prepared trial

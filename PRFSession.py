@@ -22,8 +22,6 @@ from Staircase import YesNoStaircase
 import appnope
 appnope.nope()
 
-
-
 class PRFSession(EyelinkSession):
 	def __init__(self, subject_initials, index_number,scanner, tracker_on):
 		super(PRFSession, self).__init__( subject_initials, index_number)
@@ -38,6 +36,8 @@ class PRFSession(EyelinkSession):
 		else:
 			self.create_tracker(tracker_on = False)
 		
+		self.response_button_signs = response_button_signs
+
 		self.scanner = scanner
 		# trials can be set up independently of the staircases that support their parameters
 		self.prepare_trials()
@@ -45,14 +45,15 @@ class PRFSession(EyelinkSession):
 		self.prepare_sounds()
 
 	def prepare_sounds(self):
-		for ut in self.unique_tasks:
+		for ut in np.unique(self.task_instructions):
 			self.read_sound_file('sounds/%s.wav'%ut.lower())
 		
 	def prepare_staircases(self):
 
-		self.nr_staircases_ecc = 4
+		self.nr_staircases_ecc = 3
 
-		self.initial_values = [2,3,1]
+		# Color, Speed, Fix, Fix_no_stim
+		self.initial_values = [1,2.5,2,2]
 
 		self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_quest.pickle')
 		if os.path.exists( self.staircase_file_name ):
@@ -61,12 +62,26 @@ class PRFSession(EyelinkSession):
 		else:
 			# create staircases
 			self.staircases = {}
-			for i, t in enumerate(self.unique_tasks):
-				for j in range(self.nr_staircases_ecc):
-					self.staircases.update({t + '_%i'%j:
+			for i, t in enumerate(self.tasks):
+				if t != 'Fix_no_stim':
+					for j in range(self.nr_staircases_ecc):
+						self.staircases.update({t + '_%i'%j:
+									Quest.QuestObject(
+											tGuess = self.initial_values[i],  
+											tGuessSd = self.initial_values[i]*0.5, 
+											pThreshold = 0.83, 
+											beta = 3.5, 
+											delta = 0.05, 
+											gamma = 0.0, 
+											grain = 0.01, 
+											range = None 
+											) 
+										})
+				else:
+					self.staircases.update({t:
 								Quest.QuestObject(
 										tGuess = self.initial_values[i],  
-										tGuessSd = self.initial_values[i]*0.5, 
+										tGuessSd = self.initial_values[i]*0.35, 
 										pThreshold = 0.83, 
 										beta = 3.5, 
 										delta = 0.05, 
@@ -78,21 +93,21 @@ class PRFSession(EyelinkSession):
 	
 	def prepare_trials(self):
 		"""docstring for prepare_trials(self):"""
-		# 8 directions, 7 tasks
+
 		self.directions = np.linspace(0, 2.0 * pi, 8, endpoint = False)
-		# self.tasks = ['fix']
-		# self.task_instructions = ['Fix']
-		self.tasks = ['color', 'speed', 'color', 'speed', 'fix', 'fix', 'fix_no_stim']
-		self.task_instructions = ['Color', 'Speed', 'Color', 'Speed', 'Fix', 'Fix', 'Fix']	
 		self.standard_parameters = standard_parameters
 
-		self.num_elements = np.ones(len(self.task_instructions)) * self.standard_parameters['num_elements']
-		self.unique_tasks = ['Color', 'Speed', 'Fix']
+		self.tasks = np.array(['Color', 'Speed', 'Fix', 'Fix_no_stim'])
+		self.task_instructions = ['Color', 'Speed', 'Fix', 'Fix']	
+
+		self.num_elements = np.ones(len(self.tasks)) * self.standard_parameters['num_elements']
 		
 		self.trial_array = []
 		for d in range(len(self.directions)):
-			for t in range(len(self.tasks)):
+			for t in range(len(self.tasks[self.tasks != 'Fix_no_stim'])):
 				self.trial_array.append([d, t])
+		for fnsti in range(self.standard_parameters['num_fns_trials']):
+			self.trial_array.append([0,np.arange(len(self.tasks))[self.tasks == 'Fix_no_stim']])
 		self.trial_array = np.array(self.trial_array)
 		np.random.shuffle(self.trial_array)
 		
@@ -109,25 +124,19 @@ class PRFSession(EyelinkSession):
 			self.standard_parameters['BY_color'] = 1
 			self.standard_parameters['RG_color'] = 1/RG_BY_ratio
 
-		# text_file_name = "data/%s_speed_ratios.txt"%self.subject_initials
-		# assert os.path.isfile(text_file_name), 'NO SPEED RATIO TEXT FILE PRESENT!!!!!!!!'
-		# text_file = open(text_file_name, "r")
-		# self.fast_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
-		# self.slow_ratio = 1-self.fast_ratio
 		self.fast_ratio = self.slow_ratio = 0.5
-
-		
-		# phase 0: text instruction presentation, not timed but ends when first t arrives
-		# phase 1: auditory task instruction
-		# phase 2: wait for the t
-		# phase 3: stimulus presentation
-		# phase 4: ITI
-		self.phase_durations = np.array([-0.0001,1.00,-0.0001, self.standard_parameters['period'], self.standard_parameters['ITI']])
+	
+		self.phase_durations = np.array([
+			-0.0001, # instruct time
+			1.00,	 # present instruction auditorily
+			-0.0001, # wait for scan pulse
+			self.standard_parameters['PRF_period_in_TR'] * self.standard_parameters['TR'], # present stimulus
+			self.standard_parameters['PRF_ITI_in_TR'] * self.standard_parameters['TR'] ])	# ITI
 
 		# fixation point
 		self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (0,0,0), maskParams = {'fringeWidth':0.4})
 		self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=17.5, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
-		self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=5.0, pos = np.array((0.0,0.0)), color = (0,0,0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
+		self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=9.0, pos = np.array((0.0,0.0)), color = (0,0,0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
 		
 		ecc_mask = filters.makeMask(matrixSize = 2048, shape='raisedCosine', radius=self.standard_parameters['stim_size'] * self.screen_pix_size[1] / self.screen_pix_size[0], center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
 		self.mask_stim = visual.PatchStim(self.screen, mask=ecc_mask,tex=None, size=(self.screen_pix_size[0], self.screen_pix_size[0]), pos = np.array((0.0,0.0)), color = self.screen.background_color) # 
@@ -148,11 +157,8 @@ class PRFSession(EyelinkSession):
 			this_trial_parameters = self.standard_parameters.copy()
 			this_trial_parameters['orientation'] = self.directions[self.trial_array[i,0]]
 			this_trial_parameters['task_index'] = self.trial_array[i,1]
-			this_trial_parameters['unique_task'] = self.unique_tasks.index(self.task_instructions[self.trial_array[i,1]])
 
 			these_phase_durations = self.phase_durations.copy()
-			if i == 0:
-				these_phase_durations[1] = initial_wait_time
 
 			this_trial = PRFTrial(this_trial_parameters, phase_durations = these_phase_durations, session = self, screen = self.screen, tracker = self.tracker)
 			

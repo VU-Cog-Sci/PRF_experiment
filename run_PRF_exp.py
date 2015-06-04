@@ -18,10 +18,10 @@ def main():
 
 	appnope.nope()
 
-	# ts = PRFSession( initials, run_nr, scanner, tracker_on )
-	# ts.run()
+	ts = PRFSession( initials, run_nr, scanner, tracker_on )
+	ts.run()
 
-	plot_staircases(initials, run_nr)
+	# plot_staircases(initials, run_nr)
 	
 if __name__ == '__main__':
 	main()

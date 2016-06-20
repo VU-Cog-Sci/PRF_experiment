@@ -18,7 +18,7 @@ class PRFTrial(Trial):
 		
 		self.stim = PRFStim(self.screen, self, self.session, orientation = self.parameters['orientation'])
 		
-		this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nFix\t\t\t-\tBlack\t\t/\tWhite\nColor\t\t-\tRG\t\t\t/\tBY\nSpeed\t\t-\tDec\t\t/\tAcc'# self.parameters['task_instruction']
+		this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nColor\t\t-\tBY\t\t\t/\tRG'# self.parameters['task_instruction']
 		self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 30, alignHoriz = 'center')
 		self.instruction.setSize((1200,50))
 
@@ -40,21 +40,17 @@ class PRFTrial(Trial):
 			self.session.fixation_outer_rim.draw()
 			self.session.fixation_rim.draw()
 			self.session.fixation.draw()
-
 		elif self.phase == 2:
 			self.session.fixation_outer_rim.draw()
 			self.session.fixation_rim.draw()
 			self.session.fixation.draw()
-			
 		elif self.phase == 3:
 			self.stim.draw(phase = np.max([(self.stimulus_time - self.t_time) / self.phase_durations[3],0]))
-		
 		elif self.phase == 4:
 			self.session.fixation_outer_rim.draw()
 			self.session.fixation_rim.draw()
 			self.session.fixation.setColor((0,0,0))
 			self.session.fixation.draw()
-			
 		super(PRFTrial, self).draw( )
 
 	def event(self):
@@ -135,7 +131,7 @@ class PRFTrial(Trial):
 			if self.phase == 1:
 				self.fix_time = self.session.clock.getTime()
 				if not self.instruct_sound_played:
-					self.session.play_sound(self.session.task_instructions[self.parameters['task_index']].lower())
+					# self.session.play_sound(self.session.task_instructions[self.parameters['task_index']].lower())
 					self.instruct_sound_played = True
 				# this trial phase is timed
 				if ( self.fix_time  - self.instruct_time ) > self.phase_durations[1]:
@@ -144,6 +140,7 @@ class PRFTrial(Trial):
 			if self.phase == 2:
 				self.t_time = self.session.clock.getTime()
 				if self.session.scanner == 'n':
+					# self.pulse_id = np.random.randint(5)+1
 					self.phase_forward()
 			# In phase 3, the stimulus is presented
 			if self.phase == 3:

@@ -43,9 +43,12 @@ class PRFStim(object):
 		
 		# construct timecourses of tasks
 		# task_rate is in task_rate seconds per occurrence. we add 2x refresh frequency to avoid transients in the first second(s) and those following too quickly, and add an insane number to avoid tasks in the last second(s). 
-		self.transient_occurrences = np.round(np.cumsum(np.random.exponential(self.task_rate * self.refresh_frequency, size = (len(self.session.tasks), 20)) + self.session.standard_parameters['minimum_pulse_gap']*self.refresh_frequency, axis = 1))
-		self.transient_occurrences[self.transient_occurrences > (self.period * self.refresh_frequency - self.session.standard_parameters['TR'] * self.refresh_frequency)] += 500000
-		self.transient_occurrences[self.transient_occurrences < (self.session.standard_parameters['TR'] * 2 * self.refresh_frequency)] += 500000
+		# self.transient_occurrences = np.round(np.cumsum(np.random.exponential(self.task_rate * self.refresh_frequency, size = (len(self.session.tasks), 20)) + self.session.standard_parameters['minimum_pulse_gap']*self.refresh_frequency, axis = 1))
+		# self.transient_occurrences[self.transient_occurrences > (self.period * self.refresh_frequency - self.session.standard_parameters['TR'] * self.refresh_frequency)] += 500000
+		# self.transient_occurrences[self.transient_occurrences < (self.session.standard_parameters['TR'] * 2 * self.refresh_frequency)] += 500000
+
+		# self.transient_occurrences = np.random.randint(low=1,high=5,size=100)#session.standard_parameters['PRF_period_in_TR'])
+		# self.transient_occurrences = np.ones(100)*3#session.standard_parameters['PRF_period_in_TR'])
 
 		# psychopy stimuli
 		self.populate_stimulus()
@@ -57,11 +60,14 @@ class PRFStim(object):
 		# set this to its default no-answer necessary value of None - this is tested for in PRFTrial when incorporating responses
 		self.last_sampled_staircase = None
 
+		# self.orientation_text = visual.TextStim(self.screen, text = '%d'%np.degrees(self.orientation), font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 30, alignHoriz = 'center')
+
+
 	def convert_quest_sample(self,quest_sample):
 
 		return 1 - (1/(np.e**quest_sample+1))
 	
-	def populate_stimulus(self):
+	def populate_stimulus(self,pulse=False):
 
 		# what eccentricity bin are we in? phase runs from 0 to 1, so we take the ecc on a linear scale for now
 		self.eccentricity_bin = floor(np.abs(self.phase-0.5) * 2.0 * self.session.nr_staircases_ecc)
@@ -73,9 +79,12 @@ class PRFStim(object):
 		fast_ratio = self.session.fast_ratio
 		slow_ratio = self.session.slow_ratio
 
+		self.colors = np.ones((self.num_elements,3)) * 0.75
+
 		for i, task in enumerate(self.session.tasks):
 
-			if self.redraws in list(self.transient_occurrences[i]):
+			if pulse:
+			# if self.redraws in list(self.transient_occurrences[i]):
 
 				# now fill in this value into the different cues/tasks whatever, supplement this with a quest staircase...
 				if self.session.tasks[i] == 'Color':
@@ -85,68 +94,42 @@ class PRFStim(object):
 					color_2_ratio = 1-color_1_ratio
 
 					self.present_color_task_sign = np.random.choice([-1,1])
-					if self.present_color_task_sign == -1:
+					if self.present_color_task_sign == 1:
 						RG_ratio = color_1_ratio
 						BY_ratio = color_2_ratio
-					elif self.present_color_task_sign == 1:
+					elif self.present_color_task_sign == -1:
 						RG_ratio = color_2_ratio
 						BY_ratio = color_1_ratio
 
 					log_msg = 'signal in feature: %s ecc bin: %i phase: %1.3f value: %f at %f ' % (self.session.tasks[i], self.eccentricity_bin, self.phase, color_quest_sample, self.session.clock.getTime())
 
-				elif self.session.tasks[i] == 'Speed':
 
-					speed_quest_sample = self.session.staircases[self.session.tasks[i] + '_%i'%self.eccentricity_bin].quantile()
-					speed_1_ratio = self.convert_quest_sample(speed_quest_sample)
-					speed_2_ratio = 1-speed_1_ratio
+					if 'log_msg' in locals():
+						if self.session.tracker:
+							self.session.tracker.log( log_msg )
+						self.trial.events.append( log_msg )
+						print log_msg
+					
+					# tell the subject he/she has something to do, for the task-relevant shizzle that gets shown during this stimulus refresh.
+					if i == self.trial.parameters['task_index']:
+						# self.session.play_sound()	
+						if self.session.tasks[i] != 'Fix_no_stim':
+							self.last_sampled_staircase = self.session.tasks[i] + '_%i'%self.eccentricity_bin
+						else:
+							self.last_sampled_staircase = self.session.tasks[i] 
 
-					self.present_speed_task_sign = np.random.choice([-1,1])
-					if self.present_speed_task_sign == -1:
-						slow_ratio = speed_1_ratio
-						fast_ratio = speed_2_ratio
-					elif self.present_speed_task_sign == 1:
-						slow_ratio = speed_2_ratio
-						fast_ratio = speed_1_ratio
-
-					log_msg = 'signal in feature: %s ecc bin: %i phase: %1.3f value: %f at %f ' % (self.session.tasks[i], self.eccentricity_bin, self.phase, speed_quest_sample, self.session.clock.getTime())
-
-				elif (self.session.tasks[i] == 'Fix') * (self.session.tasks[self.trial.parameters['task_index']] != 'Fix_no_stim'):
-
-					fix_quest_sample = self.session.staircases[self.session.tasks[i] + '_%i'%self.eccentricity_bin].quantile()
-					fix_value = (self.convert_quest_sample(fix_quest_sample) - 0.5) * 2.0
-					self.present_fix_task_sign = np.random.choice([-1,1])
-					self.fix_gray_value = np.ones(3) * fix_value * self.present_fix_task_sign
-
-					log_msg = 'signal in feature: %s ecc bin: %i phase: %1.3f value: %f at %f ' % (self.session.tasks[i], self.eccentricity_bin, self.phase, fix_quest_sample, self.session.clock.getTime())
-
-				elif (self.session.tasks[i] == 'Fix_no_stim') * (self.session.tasks[self.trial.parameters['task_index']] == 'Fix_no_stim'):
-
-					fns_quest_sample = self.session.staircases[self.session.tasks[i]].quantile()
-					fns_value = (self.convert_quest_sample(fns_quest_sample) - 0.5) * 2.0
-					self.present_fns_task_sign = np.random.choice([-1,1])
-					self.fix_gray_value = np.ones(3) * fns_value * self.present_fns_task_sign
-
-					log_msg = 'signal in feature: %s value: %f at %f ' % (self.session.tasks[i], fns_quest_sample, self.session.clock.getTime())
-
-				if 'log_msg' in locals():
-					if self.session.tracker:
-						self.session.tracker.log( log_msg )
-					self.trial.events.append( log_msg )
-					print log_msg
-				
-				# tell the subject he/she has something to do, for the task-relevant shizzle that gets shown during this stimulus refresh.
-				if i == self.trial.parameters['task_index']:
-					self.session.play_sound()
-					if self.session.tasks[i] != 'Fix_no_stim':
-						self.last_sampled_staircase = self.session.tasks[i] + '_%i'%self.eccentricity_bin
-					else:
-						self.last_sampled_staircase = self.session.tasks[i] 
-
+				# Now set the actual stimulus parameters
+				self.colors = np.concatenate((np.ones((np.round(self.num_elements*RG_ratio/2.0),3)) * np.array([1,-1,0]) * self.RG_color,  # red/green - red
+											np.ones((np.round(self.num_elements*RG_ratio/2.0),3)) * np.array([-1,1,0]) * self.RG_color,  # red/green - green
+											np.ones((np.round(self.num_elements*BY_ratio/2.0),3)) * np.array([-1,-1,1]) * self.BY_color,  # blue/yellow - blue
+											np.ones((np.round(self.num_elements*BY_ratio/2.0),3)) * np.array([1,1,-1]) * self.BY_color))  # blue/yellow - yellow
 		# Now set the actual stimulus parameters
-		self.colors = np.concatenate((np.ones((np.round(self.num_elements*RG_ratio/2.0),3)) * np.array([1,-1,0]) * self.RG_color,  # red/green - red
-									np.ones((np.round(self.num_elements*RG_ratio/2.0),3)) * np.array([-1,1,0]) * self.RG_color,  # red/green - green
-									np.ones((np.round(self.num_elements*BY_ratio/2.0),3)) * np.array([-1,-1,1]) * self.BY_color,  # blue/yellow - blue
-									np.ones((np.round(self.num_elements*BY_ratio/2.0),3)) * np.array([1,1,-1]) * self.BY_color))  # blue/yellow - yellow
+
+		# self.colors = np.concatenate((np.ones((np.round(self.num_elements*RG_ratio/2.0),3)) * np.array([1,-1,0]) * self.RG_color,  # red/green - red
+		# 							np.ones((np.round(self.num_elements*RG_ratio/2.0),3)) * np.array([-1,1,0]) * self.RG_color,  # red/green - green
+		# 							np.ones((np.round(self.num_elements*BY_ratio/2.0),3)) * np.array([-1,-1,1]) * self.BY_color,  # blue/yellow - blue
+		# 							np.ones((np.round(self.num_elements*BY_ratio/2.0),3)) * np.array([1,1,-1]) * self.BY_color))  # blue/yellow - yellow
+
 		np.random.shuffle(self.colors)
 
 		self.element_speeds = np.concatenate((np.ones(np.round(self.num_elements*fast_ratio)) * self.session.standard_parameters['fast_speed'],
@@ -155,31 +138,48 @@ class PRFStim(object):
 
 
 		self.element_positions = np.random.rand(self.num_elements, 2) * np.array([self.size_pix, self.size_pix * self.bar_width_ratio]) - np.array([self.size_pix/2.0, (self.size_pix * self.bar_width_ratio)/2.0])
-		self.element_sfs = np.ones((self.num_elements)) * self.session.standard_parameters['element_spatial_frequency']
+		# self.element_sfs = np.ones((self.num_elements)) * self.session.standard_parameters['element_spatial_frequency']
+		self.element_sfs = np.random.rand(self.num_elements)*5+0.5
 		self.element_sizes = np.ones((self.num_elements)) * self.session.standard_parameters['element_size']
 		self.element_phases = np.zeros(self.num_elements)
 		self.element_orientations = np.random.rand(self.num_elements) * 720.0 - 360.0
 		
 	
 	def draw(self, phase = 0):
+
 		self.phase = phase
 		self.frames += 1
 
-		if self.redraws <= (self.phase * self.period * self.refresh_frequency):
-			self.redraws = self.redraws + 1
+		# update parameters
+		#self.redraw_length = 4		
+		# self.pulse_length = 3
 
-			self.populate_stimulus()
+		# period = np.floor(self.redraws/9)			
+		# pulse_id = self.transient_occurrences[period] + period*self.session.standard_parameters['redraws_per_TR']
+
+		if self.redraws <= (self.phase * self.period * self.refresh_frequency):
+
+			# define midpoint
+			if np.mod(self.redraws,self.session.standard_parameters['redraws_per_TR']) == 0:
+				self.midpoint = phase * self.full_width - 0.5 * self.full_width
+
+			if np.mod(self.redraws,self.session.standard_parameters['redraws_per_TR']) == 1:
+				self.populate_stimulus(pulse=True)
+			else:
+				self.populate_stimulus(pulse=False)
+
+			#if np.mod(self.redraws, self.redraw_length) == 0:			
 			self.session.element_array.setSfs(self.element_sfs)
 			self.session.element_array.setSizes(self.element_sizes)
 			self.session.element_array.setColors(self.colors)
 			self.session.element_array.setOris(self.element_orientations)
-			if np.mod(self.redraws,self.session.standard_parameters['redraws_per_TR']) == 1:
-				self.midpoint = phase * self.full_width - 0.5 * self.full_width
 			self.session.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -self.midpoint])) * self.rotation_matrix)) 
 			log_msg = 'stimulus draw for phase %f, at %f'%(phase, self.session.clock.getTime())
 			self.trial.events.append( log_msg )
 			if self.session.tracker:
 				self.session.tracker.log( log_msg )
+			
+			self.redraws = self.redraws + 1
 
 			
 		# if fmod(self.phase * self.period * self.refresh_frequency, 1.0) > 0.5: 

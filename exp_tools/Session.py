@@ -93,7 +93,7 @@ class Session(object):
 		"""
 
 		# the actual screen-getting
-		self.display = libscreen.Display(disptype='psychopy', dispsize=size, fgc=(255,0,0), bgc=list((255*bgl for bgl in background_color)), screennr=screen_nr,mousevisible=False)
+		self.display = libscreen.Display(disptype='psychopy', dispsize=size, fgc=(255,0,0), bgc=list((255*bgl for bgl in background_color)), screennr=screen_nr,mousevisible=False,fullscr=full_screen)
 		# self.pygaze_scr = libscreen.Screen(disptype='psychopy')
 
 		# print dir(self.display)
@@ -107,6 +107,7 @@ class Session(object):
 		# self.screen = visual.Window( size = size, fullscr = full_screen, allowGUI = False, units = 'pix', allowStencil = True, rgb = background_color, waitBlanking = wait_blanking, winType = 'pyglet' )
 		
 		self.screen.background_color = background_color
+		
 #		worked = pygame.display.set_gamma(gamma_scale[0],gamma_scale[1],gamma_scale[2])
 		self.screen_pix_size = size
 		self.max_lums = max_lums
@@ -225,7 +226,6 @@ class EyelinkSession(Session):
 			# create actual tracker
 			try:
 				# self.tracker = EyeLink()
-				# shell()
 				self.tracker = eyetracker.EyeTracker(self.display, trackertype='eyelink', resolution=self.display.dispsize, data_file=self.eyelink_temp_file, bgc=self.display.bgc)
 				self.tracker_on = True
 			except:

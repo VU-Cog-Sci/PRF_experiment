@@ -26,7 +26,8 @@ class PRFSession(EyelinkSession):
 	def __init__(self, subject_initials, index_number,scanner, tracker_on):
 		super(PRFSession, self).__init__( subject_initials, index_number)
 
-		self.create_screen( size = screen_res, full_screen = 0, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
+		screen = self.create_screen( size = screen_res, full_screen =1, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
+		event.Mouse(visible=False, win=screen)
 
 		self.create_output_file_name()
 		if tracker_on:
@@ -52,8 +53,10 @@ class PRFSession(EyelinkSession):
 
 		self.nr_staircases_ecc = 3
 
-		# Color, Speed, Fix, Fix_no_stim
-		self.initial_values = [1,2.5,2,2]
+		# Color,Fix_no_stim
+
+		# self.initial_values = [1,2.5]
+		self.initial_values = [2.5,2.5]
 
 		self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_quest.pickle')
 		if os.path.exists( self.staircase_file_name ):
@@ -61,6 +64,7 @@ class PRFSession(EyelinkSession):
 				self.staircases = pickle.load(f)
 		else:
 			# create staircases
+
 			self.staircases = {}
 			for i, t in enumerate(self.tasks):
 				if t != 'Fix_no_stim':
@@ -97,19 +101,33 @@ class PRFSession(EyelinkSession):
 		self.directions = np.linspace(0, 2.0 * pi, 8, endpoint = False)
 		self.standard_parameters = standard_parameters
 
-		self.tasks = np.array(['Color', 'Speed', 'Fix', 'Fix_no_stim'])
-		self.task_instructions = ['Color', 'Speed', 'Fix', 'Fix']	
+		# self.tasks = np.array(['Color', 'Speed', 'Fix', 'Fix_no_stim'])
+		# self.task_instructions = ['Color', 'Speed', 'Fix', 'Fix']	
+
+		self.tasks = np.array(['Color', 'Fix_no_stim'])
+		self.task_instructions = ['Color', 'Fix']
 
 		self.num_elements = np.ones(len(self.tasks)) * self.standard_parameters['num_elements']
 		
-		self.trial_array = []
-		for d in range(len(self.directions)):
-			for t in range(len(self.tasks[self.tasks != 'Fix_no_stim'])):
-				self.trial_array.append([d, t])
-		for fnsti in range(self.standard_parameters['num_fns_trials']):
-			self.trial_array.append([0,np.arange(len(self.tasks))[self.tasks == 'Fix_no_stim']])
-		self.trial_array = np.array(self.trial_array)
-		np.random.shuffle(self.trial_array)
+		if self.standard_parameters['practice']:
+			self.subtasks = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+			self.subdirections = [0,1,5,4,7,6,3,2,0,1,5,4,7,6,3,2,]
+		else:
+			self.subtasks = [1,0,1,0,0,1,0,0,1,0,0,1,0,1]
+			self.subdirections = [0,0,0,3,5,0,6,1,0,2,4,0,7,0,0]
+
+		self.trial_array = np.array([[self.subdirections[i], self.subtasks[i]] for i in range(len(self.subtasks))])
+
+		# self.trial_array = []
+		# for d in range(len(self.directions)):
+		# 	for t in range(len(self.tasks[self.tasks != 'Fix_no_stim'])):
+		# 		self.trial_array.append([d, t])
+		# for fnsti in range(self.standard_parameters['num_fns_trials']):
+		# 	self.trial_array.append([0,np.arange(len(self.tasks))[self.tasks == 'Fix_no_stim']])
+		# self.trial_array = np.array(self.trial_array)
+		# # np.random.shuffle(self.trial_array)
+
+		# self.trial_array = np.array([[3,0],[6,1],[1,2]])
 		
 
 		text_file_name = "data/%s_color_ratios.txt"%self.subject_initials

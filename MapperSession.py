@@ -26,7 +26,8 @@ class MapperSession(EyelinkSession):
 	def __init__(self, subject_initials, index_number, scanner, tracker_on):
 		super(MapperSession, self).__init__( subject_initials, index_number)
 		
-		self.create_screen( size = screen_res, full_screen = 0, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
+		screen=self.create_screen( size = screen_res, full_screen = 0, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
+		event.Mouse(visible=False, win=screen)
 
 		self.standard_parameters = standard_parameters
 		self.response_button_signs = response_button_signs

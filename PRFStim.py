@@ -72,7 +72,7 @@ class PRFStim(object):
 		# what eccentricity bin are we in? phase runs from 0 to 1, so we take the ecc on a linear scale for now
 		self.eccentricity_bin = floor(np.abs(self.phase-0.5) * 2.0 * self.session.nr_staircases_ecc)
 
-		self.fix_gray_value = (0,0,0)
+		self.fix_gray_value = (1.0, 1.0, 1.0)#(0,0,0)
 
 		RG_ratio = 0.5
 		BY_ratio = 0.5

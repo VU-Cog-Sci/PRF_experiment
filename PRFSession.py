@@ -113,8 +113,8 @@ class PRFSession(EyelinkSession):
 			self.subtasks = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 			self.subdirections = [0,1,5,4,7,6,3,2,0,1,5,4,7,6,3,2,]
 		else:
-			self.subtasks = [1,0,1,0,0,1,0,0,1,0,0,1,0,1]
-			self.subdirections = [0,0,0,3,5,0,6,1,0,2,4,0,7,0,0]
+			self.subtasks =      [1,0,1,0,0,1,0,0,1,0,0,1,0,1]
+			self.subdirections = [0,0,0,1,6,0,7,4,0,3,2,0,5,0]
 
 		self.trial_array = np.array([[self.subdirections[i], self.subtasks[i]] for i in range(len(self.subtasks))])
 
@@ -152,11 +152,11 @@ class PRFSession(EyelinkSession):
 			self.standard_parameters['PRF_ITI_in_TR'] * self.standard_parameters['TR'] ])	# ITI
 
 		# fixation point
-		self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (0,0,0), maskParams = {'fringeWidth':0.4})
-		self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=17.5, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
-		self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=9.0, pos = np.array((0.0,0.0)), color = (0,0,0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
+		self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
+		self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=22.5, pos = np.array((0.0,0.0)), color = (0.0,0.0,0.0), maskParams = {'fringeWidth':0.4})
+		self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=9.0, pos = np.array((0.0,0.0)), color = (1.0,1.0,1.0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
 		
-		ecc_mask = filters.makeMask(matrixSize = 2048, shape='raisedCosine', radius=self.standard_parameters['stim_size'] * self.screen_pix_size[1] / self.screen_pix_size[0], center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
+		ecc_mask = filters.makeMask(matrixSize = 2048, shape='raisedCosine', radius=self.standard_parameters['stim_size']*self.screen_pix_size[1]/self.screen_pix_size[0], center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
 		self.mask_stim = visual.PatchStim(self.screen, mask=ecc_mask,tex=None, size=(self.screen_pix_size[0], self.screen_pix_size[0]), pos = np.array((0.0,0.0)), color = self.screen.background_color) # 
 	
 	def close(self):

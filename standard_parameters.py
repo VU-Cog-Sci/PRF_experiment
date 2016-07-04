@@ -3,7 +3,7 @@
 # standard parameters
 standard_parameters = {
 	
-	'practice':					True,
+	'practice':					False,
 	## common parameters:
 	'stim_size': 		          1.,		# that means 0.5 * 15 degrees = 7.5 degree stim diameter (3.6 radius)
 	'num_elements':             1500,		# amount of elements in bar, this will be num_elements * (1/bar_width_ratio) = 8000 for Mapper
@@ -32,10 +32,10 @@ standard_parameters = {
 }
 
 response_button_signs = {
-'f':-1,  # left 'less' answer  e
-'j':1,   # right 'more' answer   b
-'d':2}   # confirm color match y 
+'e':-1,  # left 'less' answer  e
+'b':1,   # right 'more' answer   b
+'y':2}   # confirm color match y 
 # }  	
 
 screen_res = (1920,1080)
-background_color = (0,0,0)#-0.75,-0.75,-0.75)
+background_color = (0.5,0.5,0.5)#-0.75,-0.75,-0.75)

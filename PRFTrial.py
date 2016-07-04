@@ -75,8 +75,8 @@ class PRFTrial(Trial):
 					if (self.phase == 0) + (self.phase==2):
 						self.phase_forward()
 				elif ev in self.session.response_button_signs.keys():
-					if self.phase == 0:
-						self.phase_forward()
+					# if self.phase == 0:
+						# self.phase_forward()
 					# first check, do we even need an answer?
 					if self.phase == 3:
 						if self.stim.last_sampled_staircase != None:

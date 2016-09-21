@@ -34,7 +34,7 @@ standard_parameters = {
 response_button_signs = {
 'e':-1,  # left 'less' answer  e
 'b':1,   # right 'more' answer   b
-'y':2}   # confirm color match y 
+'y':0}   # confirm color match y 
 # }  	
 
 screen_res = (1920,1080)

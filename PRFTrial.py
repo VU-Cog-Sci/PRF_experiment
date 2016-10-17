@@ -124,13 +124,11 @@ class PRFTrial(Trial):
 			# Only in trial 1, phase 0 represents the instruction period.
 			# After the first trial, this phase is skipped immediately
 			if self.phase == 0:
-				print 'phase 0 started at:%s'%(self.session.clock.getTime())
 				self.instruct_time = self.session.clock.getTime()
 				if self.ID != 0:
 					self.phase_forward()
 			# In phase 1, we present the task instruction auditorily
 			if self.phase == 1:
-				print 'phase 1 started at:%s'%(self.session.clock.getTime())
 				self.fix_time = self.session.clock.getTime()
 				if not self.instruct_sound_played:
 					# self.session.play_sound(self.session.task_instructions[self.parameters['task_index']].lower())
@@ -140,20 +138,17 @@ class PRFTrial(Trial):
 					self.phase_forward()
 			# In phase 2, we wait for the scanner pulse (t)
 			if self.phase == 2:
-				print 'phase 2 started at:%s'%(self.session.clock.getTime())
 				self.t_time = self.session.clock.getTime()
 				if self.session.scanner == 'n':
 					# self.pulse_id = np.random.randint(5)+1
 					self.phase_forward()
 			# In phase 3, the stimulus is presented
 			if self.phase == 3:
-				print 'phase 3 started at:%s'%(self.session.clock.getTime())
 				self.stimulus_time = self.session.clock.getTime()
 				if ( self.stimulus_time - self.t_time ) > self.phase_durations[3]:
 					self.phase_forward()
 			# Phase 4 reflects the ITI
 			if self.phase == 4:
-				print 'phase 4 started at:%s'%(self.session.clock.getTime())
 				self.post_stimulus_time = self.session.clock.getTime()
 				if ( self.post_stimulus_time  - self.stimulus_time ) > self.phase_durations[4]:
 					self.stopped = True

@@ -3,7 +3,7 @@
 # standard parameters
 standard_parameters = {
 	
-	'practice':					False,
+	'practice':					True,
 	## common parameters:
 	'stim_size': 		          1.,		# that means 0.5 * 15 degrees = 7.5 degree stim diameter (3.6 radius)
 	'num_elements':             1500,		# amount of elements in bar, this will be num_elements * (1/bar_width_ratio) = 8000 for Mapper

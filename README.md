@@ -1,8 +1,17 @@
-# PRF_experiment
-experimental software for prf experiment, using psychopy as a backend and pygaze for the eyetracking.
+# Smooth pursuit experiment
+experimental software for smooth pursuit experiment, using psychopy as a backend and pygaze for the eyetracking.
 
 # TODO
 
-* make sure all messages are entered correctly, this includes Quest messages, event messages, trial messages, etc.
-* check out Quest progress by analyzing the staircase trajectories. 
-* make the parameters for the trials contain as much information as possible, and for these:
+TK: 
+Finish the basic design, now at inter-trial intervals. 
+Draw stimuli, always at midline +/- a test value. 
+Before/after experiment, blanks. Check timing. 
+
+Further:
+Custom Eyelink Calibrations
+
+To test:
+Make-up, eyedrops, darkness. 
+Recruit cohort of subjects with record-able eyes in total darkness
+

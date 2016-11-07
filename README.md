@@ -3,11 +3,6 @@ experimental software for smooth pursuit experiment, using psychopy as a backend
 
 # TODO
 
-TK: 
-Finish the basic design, now at inter-trial intervals. 
-Draw stimuli, always at midline +/- a test value. 
-Before/after experiment, blanks. Check timing. 
-
 Further:
 Custom Eyelink Calibrations
 

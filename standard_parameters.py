@@ -6,14 +6,15 @@ standard_parameters = {
     'practice':                         True,
     ## common parameters:
     'TR':                               0.944,        # VERY IMPORTANT TO FILL IN AFTER PLANNING IN!            
-    'minimal_iti':                      2.0
+    'minimal_iti':                      2.0,
     ## SP experiment variables:
+    'test_stim_y_offset':                 2,
     'test_stim_width':                  0.1,        # 0.125 * 0.
-    'test_stim_height':                 4,        # 
+    'test_stim_height':                 2,        # 
     'sp_target_size':                   4,        #
     'sp_path_temporal_frequency':       1.0,        #
-    'sp_path_amplitude':                0.8,        # ratio of screen widht (1.0 for full width, 0 for standstill at fixation)
-    'sp_path_elevation':                0.8,        # ratio of screen height (0.5 for middle)
+    'sp_path_amplitude':                0.95,        # ratio of screen widht (1.0 for full width, 0 for standstill at fixation)
+    'sp_path_elevation':                0.0,        # ratio of screen height (0.5 for middle)
     'test_stim_1_color':                (1, -1, -1),        # 
     'test_stim_2_color':                (-1, 1, -1),        # 
 

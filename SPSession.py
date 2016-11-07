@@ -7,6 +7,7 @@ from math import *
 import os, sys, time, pickle
 import pygame
 from pygame.locals import *
+import copy
 # from pygame import mixer, time
 
 import Quest
@@ -15,7 +16,7 @@ sys.path.append( 'exp_tools' )
 # sys.path.append( os.environ['EXPERIMENT_HOME'] )
 
 from Session import *
-from PRFTrial import *
+from SPTrial import *
 from standard_parameters import *
 
 import appnope
@@ -25,7 +26,7 @@ class SPSession(EyelinkSession):
     def __init__(self, subject_initials, index_number,scanner, tracker_on):
         super(SPSession, self).__init__( subject_initials, index_number)
 
-        screen = self.create_screen( size = screen_res, full_screen =1, physical_screen_distance = 225.0, background_color = background_color, physical_screen_size = (70, 40) )
+        screen = self.create_screen( size = screen_res, full_screen =0, physical_screen_distance = 225.0, background_color = background_color, physical_screen_size = (70, 40) )
         event.Mouse(visible=False, win=screen)
 
         self.create_output_file_name()
@@ -41,11 +42,11 @@ class SPSession(EyelinkSession):
         self.scanner = scanner
         # trials can be set up independently of the staircases that support their parameters
         self.prepare_trials()
-        self.prepare_sounds()
+        # self.prepare_sounds()
 
-    def prepare_sounds(self):
-        for ut in np.unique(self.task_instructions):
-            self.read_sound_file('sounds/%s.wav'%ut.lower())
+    # def prepare_sounds(self):
+    #     for ut in np.unique(self.task_instructions):
+    #         self.read_sound_file('sounds/%s.wav'%ut.lower())
             
     def prepare_trials(self):
         """docstring for prepare_trials(self):"""
@@ -57,26 +58,39 @@ class SPSession(EyelinkSession):
 
         y_test_positions = np.concatenate((-1 * np.ones(x_test_positions.shape[0]), np.ones(x_test_positions.shape[0])))
 
-        x_test_positions = np.array([np.repeat(x1, 4), np.repeat(x2, 4)]).T
-        y_test_positions = np.repeat(y_test_positions, 2)
+        x_test_positions_tiled = np.array([np.tile(x1, 4), np.tile(x2, 4)]).T
+        y_test_positions_tiled = np.tile(y_test_positions, 2)
 
-        self.trial_array = np.array([[self.subdirections[i], self.subtasks[i]] for i in range(len(self.subtasks))])
+        # define directions
+        eye_dir = np.concatenate((-1 * np.ones(x_test_positions_tiled.shape[0]/2), np.ones(x_test_positions_tiled.shape[0]/2)))
 
-        self.trial_order = np.arange(y_test_positions.shape[0])
+        # make iti's of 2 or 3
+        ITIs = (eye_dir+1)/2 + 2
+        for direction in [0,1]:
+            # add per-direction exponentially distributed random ITIs, 
+            # while keeping the sign of the ITIs the same.
+            direction_order = np.arange(direction * 50, (direction+1) * 50)
+            np.random.shuffle(direction_order)
+            ITIs[direction_order[:12]] += 2
+            ITIs[direction_order[12:18]] += 4
+            ITIs[direction_order[18:21]] += 6
+            ITIs[direction_order[21:22]] += 8
+
+        self.trial_order = np.arange(ITIs.shape[0])
+
         np.random.shuffle(self.trial_order)
 
         # stopped here. 
-        inter_trial_intervals = 
+        # inter_trial_intervals = 
 
-    
-        self.phase_durations = np.array([
+
+        self.phase_durations = np.array([[
             -0.0001, # instruct time, skipped in all trials but the first
-            0.5, # smooth pursuit
-            0.5 / self.standard_parameters['sp_path_temporal_frequency'], # play the sound for 'upcoming stimulus'
-            0.5 / self.standard_parameters['sp_path_temporal_frequency'], # present stimulus 1 at onset of this phase
-            0.5 / self.standard_parameters['sp_path_temporal_frequency'], # present stimulus 2 at onset of this phase
-            self.standard_parameters['minimal_iti'] 
-            ] )    
+            ITI * self.standard_parameters['TR'], # smooth pursuit before stim
+            self.standard_parameters['TR'], # smooth pursuit after stim 1
+            self.standard_parameters['TR'] # smooth pursuit after stim 2
+            ] for ITI in ITIs] )    
+        
 
         # fixation point
         self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
@@ -84,13 +98,35 @@ class SPSession(EyelinkSession):
         self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=9.0, pos = np.array((0.0,0.0)), color = (1.0,1.0,1.0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
         
         self.test_stim_1 = visual.Rect(self.screen, 
-                            width = self.standard_parameters['sp_path_temporal_frequency'], 
-                            height = self.standard_parameters['test_stim_height'], 
-                            color = self.standard_parameters['test_stim_1_color'])
+                            width = self.standard_parameters['test_stim_width']*self.pixels_per_degree,  
+                            height = self.standard_parameters['test_stim_height']*self.pixels_per_degree, 
+                            fillColor = self.standard_parameters['test_stim_1_color'])
+
         self.test_stim_2 = visual.Rect(self.screen, 
-                            width = self.standard_parameters['sp_path_temporal_frequency'], 
-                            height = self.standard_parameters['test_stim_height'], 
-                            color = self.standard_parameters['test_stim_2_color'])
+                            width = self.standard_parameters['test_stim_width']*self.pixels_per_degree, 
+                            height = self.standard_parameters['test_stim_height']*self.pixels_per_degree, 
+                            fillColor = self.standard_parameters['test_stim_2_color'])
+
+        self.start_time = 0.0
+        self.cumulative_phase_durations = np.cumsum(np.r_[0,self.phase_durations[self.trial_order,1:].ravel()][:-1]).reshape((self.phase_durations.shape[0], -1))
+
+        self.all_trials = []
+        for i in self.trial_order:
+
+            # this_trial_parameters = copy.copy(standard_parameters)
+            this_trial_parameters={
+                                    'x_pos_1': x_test_positions_tiled[i,0], 
+                                    'x_pos_2': x_test_positions_tiled[i,1], 
+                                    'y_order': y_test_positions_tiled[i],
+                                    'eye_dir': eye_dir[i],
+                                    'ITI': ITIs[i],
+                                    'TR': self.standard_parameters['TR'],
+                                    'sp_amplitude':self.standard_parameters['sp_path_amplitude'],
+                                    'test_stim_y_offset':self.standard_parameters['test_stim_y_offset'],
+                                    'sp_path_elevation':self.standard_parameters['sp_path_elevation'],
+                                     }
+
+            self.all_trials.append(SPTrial(this_trial_parameters, phase_durations = self.phase_durations[i], session = self, screen = self.screen, tracker = self.tracker))
 
     
     def close(self):
@@ -99,16 +135,9 @@ class SPSession(EyelinkSession):
     def run(self):
         """docstring for fname"""
         # cycle through trials
-        for i in range(len(self.trial_array)):
-            # prepare the parameters of the following trial based on the shuffled trial array
-            this_trial_parameters = self.standard_parameters.copy()
-
-            these_phase_durations = self.phase_durations.copy()
-
-            this_trial = PRFTrial(this_trial_parameters, phase_durations = these_phase_durations, session = self, screen = self.screen, tracker = self.tracker)
-            
+        for i, trial in enumerate(self.all_trials):
             # run the prepared trial
-            this_trial.run(ID = i)
+            trial.run(ID = i)
             if self.stopped == True:
                 break
         self.close()

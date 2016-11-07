@@ -2,8 +2,7 @@ import sys
 
 sys.path.append( 'exp_tools' )
 
-from PRFSession import *
-from plot_staircases import *
+from SPSession import *
 import appnope
 
 def main():

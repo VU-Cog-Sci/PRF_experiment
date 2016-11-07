@@ -132,6 +132,11 @@ Desktop.ini
 #############
 
 *.py[co]
+/exp_tools.*py[co]
+
+# the data folders
+data/*
+old/*
 
 # Packages
 *.egg

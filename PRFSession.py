@@ -128,7 +128,7 @@ class PRFSession(EyelinkSession):
 	
 		self.phase_durations = np.array([
 			-0.0001, # instruct time
-			1.00,	 # present instruction auditorily
+			-0.0001,	 # present instruction auditorily
 			-0.0001, # wait for scan pulse
 			self.standard_parameters['PRF_period_in_TR'] * self.standard_parameters['TR'], # present stimulus
 			self.standard_parameters['PRF_ITI_in_TR'] * self.standard_parameters['TR'] ])	# ITI

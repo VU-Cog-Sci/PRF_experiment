@@ -132,6 +132,7 @@ Desktop.ini
 #############
 
 *.py[co]
+exp_tools/*.py[co]
 
 # Packages
 *.egg

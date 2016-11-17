@@ -60,7 +60,7 @@ class Session(object):
     def setup_sound_system(self):
         """initialize pyaudio backend, and create dictionary of sounds."""
         self.pyaudio = pyaudio.PyAudio()
-        self.sound_files = subprocess.Popen('ls ' + os.path.join(os.environ['EXPERIMENT_HOME'], 'sounds', '*.wav'), shell=True, stdout=subprocess.PIPE).communicate()[0].split('\n')[0:-1]
+        self.sound_files = subprocess.Popen('ls ' + os.path.join('exp_toos', 'sounds', '*.wav'), shell=True, stdout=subprocess.PIPE).communicate()[0].split('\n')[0:-1]
         self.sounds = {}
         for sf in self.sound_files:
             self.read_sound_file(file_name = sf)

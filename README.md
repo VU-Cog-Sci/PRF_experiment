@@ -5,7 +5,6 @@ experimental software for smooth pursuit experiment, using psychopy as a backend
 
 Further:
 2. calibratie scherm moet zwart zijn of wit: invert optie
-4. appnope alleen als mac draait
 
 # overleggen met Tomas:
 1. eventdetection: 'pygaze' or 'native'

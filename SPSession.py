@@ -30,11 +30,11 @@ class SPSession(EyelinkSession):
     def __init__(self, subject_initials, index_number,scanner, tracker_on):
         super(SPSession, self).__init__( subject_initials, index_number)
 
-        screen = self.create_screen( size = DISPSIZE, full_screen =full_screen, physical_screen_distance = SCREENDIST, background_color = background_color, physical_screen_size = SCREENSIZE )
+        screen = self.create_screen( size = DISPSIZE, full_screen =full_screen, physical_screen_distance = SCREENDIST, 
+            background_color = background_color, physical_screen_size = SCREENSIZE )
         event.Mouse(visible=False, win=screen)
 
         # define the effective screen dimensions for stimulus presentation
-        # note: 0,0 is middle of screen
         self.ywidth = (1-standard_parameters['sp_path_elevation'])*DISPSIZE[1]*2
 
         self.create_output_file_name()
@@ -45,11 +45,15 @@ class SPSession(EyelinkSession):
 
             # creat tracker
             self.create_tracker(auto_trigger_calibration = 0, calibration_type = 'HV%d'%n_points)
+            # set the background and foreground to what we want:
+            # self.tracker.target_foreground_color(0,0,0)
+            # self.tracker.target_background_color(255,255,255)
 
             # create the calibration targets:
             # note: 0,0 is the upper left corner of the screen
-            x_edge = (1-standard_parameters['sp_path_amplitude'])*DISPSIZE[0]/2
-            xs = DISPSIZE[0]/2+np.round(np.linspace(x_edge,DISPSIZE[0]-x_edge,n_points))
+            x_ratio_covered = standard_parameters['sp_path_amplitude']/(DISPSIZE[0]/self.pixels_per_degree)
+            x_edge = (1-x_ratio_covered)*DISPSIZE[0]/2*0.5
+            xs = np.round(np.linspace(x_edge,DISPSIZE[0]-x_edge,n_points))
             ys = np.round([self.ywidth/3*[1,2][pi%2] for pi in range(n_points)])
 
             # put the points in format that eyelink wants them, which is

@@ -3,7 +3,11 @@ import sys
 sys.path.append( 'exp_tools' )
 
 from SPSession import *
-import appnope
+try:
+    import appnope
+    appnope.nope()
+except:
+    'APPNOPE NOT ACTIVE!'
 
 def main():
     initials = raw_input('Your initials: ')
@@ -15,7 +19,6 @@ def main():
     elif track_eyes == 'n':
         tracker_on = False
 
-    appnope.nope()
 
     ts = SPSession( initials, run_nr, scanner, tracker_on )
     ts.run()

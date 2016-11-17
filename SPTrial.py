@@ -26,12 +26,13 @@ class SPTrial(Trial):
         self.stim2_drawn = False
         
     def update_fix_pos(self,time,frequency=0.5):
-        amplitude = self.parameters['sp_amplitude'] * self.screen.size[0] /2
+        amplitude = self.parameters['sp_amplitude']*self.session.pixels_per_degree/2# * self.screen.size[0] /2
         f = frequency/self.parameters['TR']
         x_pos = amplitude * np.sin(2*np.pi*f*time)# + self.screen.size[0]/2
-        self.session.fixation_outer_rim.setPos([x_pos,self.screen.size[1]/2*self.parameters['sp_path_elevation']])
-        self.session.fixation_rim.setPos([x_pos,self.screen.size[1]/2*self.parameters['sp_path_elevation']])
-        self.session.fixation.setPos([x_pos,self.screen.size[1]/2*self.parameters['sp_path_elevation']])
+        y_pos = self.screen.size[1]*self.parameters['sp_path_elevation']-self.screen.size[1]/2
+        self.session.fixation_outer_rim.setPos([x_pos,y_pos])
+        self.session.fixation_rim.setPos([x_pos,y_pos])
+        self.session.fixation.setPos([x_pos,y_pos])
 
     def draw(self):
         """docstring for draw"""
@@ -83,43 +84,19 @@ class SPTrial(Trial):
                         # print 'trial %d start time %.2f'%(self.ID,self.trial_onset_time)
                         self.phase_forward()
                 # elif ev in self.session.response_button_signs.keys():
-                #     # if self.phase == 0:
-                #         # self.phase_forward()
+                #     log_msg = 'trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime())
                 #     # first check, do we even need an answer?
-                #     if self.phase == 3:
-                #         if self.stim.last_sampled_staircase != None:
-                #             # what value were we presenting at?
-                #             test_value = self.session.staircases[self.stim.last_sampled_staircase].quantile()
-                #             if self.session.tasks[self.parameters['task_index']] == 'Color':
-                #                 response = self.session.response_button_signs[ev]*self.stim.present_color_task_sign
-                #             elif self.session.tasks[self.parameters['task_index']] == 'Speed':
-                #                 response = self.session.response_button_signs[ev]*self.stim.present_speed_task_sign
-                #             elif self.session.tasks[self.parameters['task_index']] == 'Fix':
-                #                 response = self.session.response_button_signs[ev]*self.stim.present_fix_task_sign
-                #             elif self.session.tasks[self.parameters['task_index']] == 'Fix_no_stim':
-                #                 response = self.session.response_button_signs[ev]*self.stim.present_fns_task_sign
+                #     self.events.append( log_msg )
+                #     if self.session.tracker:
+                #         self.session.tracker.log( log_msg )
 
-                #             # update the staircase
-                #             self.session.staircases[self.stim.last_sampled_staircase].update(test_value,(response+1)/2)
-                #             # now block the possibility of further updates
-                #             self.stim.last_sampled_staircase = None
-
-                #             if self.session.tasks[self.parameters['task_index']] != 'Fix_no_stim':
-                #                 log_msg = 'staircase %s bin %d updated from %f after response %s at %f'%( self.session.tasks[self.parameters['task_index']], self.stim.eccentricity_bin,test_value, str((response+1)/2), self.session.clock.getTime() )
-                #             else:
-                #                 log_msg = 'staircase %s updated from %f after response %s at %f'%( self.session.tasks[self.parameters['task_index']], test_value, str((response+1)/2), self.session.clock.getTime() )
-
-                #             self.events.append( log_msg )
-                #             print log_msg
-                #             if self.session.tracker:
-                #                 self.session.tracker.log( log_msg )
-
-
-
-                # add answers based on stimulus changes, and interact with the staircases at hand
-                # elif ev == 'b' or ev == 'right': # answer pulse
-                event_msg = 'trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime())
-                self.events.append(event_msg)
+                log_msg = 'trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime())
+                print log_msg
+                # add to tracker log
+                if self.session.tracker:
+                    self.session.tracker.log( log_msg )                
+                # add to self.events for adding to behavioral pickle
+                self.events.append(log_msg)
         
             super(SPTrial, self).key_event( ev )
 
@@ -127,12 +104,15 @@ class SPTrial(Trial):
         self.ID = ID
         super(SPTrial, self).run()
 
+        fp_y = self.screen.size[1]*self.parameters['sp_path_elevation']-self.screen.size[1]/2
+        target_y_offset = self.parameters['y_order']*self.parameters['test_stim_y_offset']*self.session.pixels_per_degree
+      
         x_pos_1 = self.parameters['x_pos_1']*self.session.pixels_per_degree
-        y_pos_1 = self.screen.size[1]/2*self.parameters['sp_path_elevation'] + self.parameters['y_order']*self.parameters['test_stim_y_offset']*self.session.pixels_per_degree
+        y_pos_1 = fp_y + target_y_offset
         self.session.test_stim_1.setPos([x_pos_1,y_pos_1 ])
 
         x_pos_2 = self.parameters['x_pos_2']*self.session.pixels_per_degree
-        y_pos_2 = self.screen.size[1]/2*self.parameters['sp_path_elevation'] - self.parameters['y_order']*self.parameters['test_stim_y_offset']*self.session.pixels_per_degree
+        y_pos_2 = fp_y - target_y_offset
         self.session.test_stim_2.setPos([x_pos_2,y_pos_2 ])
 
         # we are fascists on timing issues

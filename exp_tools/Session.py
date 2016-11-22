@@ -85,7 +85,7 @@ class Session(object):
         self.sounds.update({sound_name: stream_data})
 
     def create_screen(self, size = (1280, 960), full_screen = False, background_color = (0.0,0.0,0.0), 
-                        gamma_scale = (2.475,2.25,2.15), physical_screen_size = (48, 32), physical_screen_distance = 71.0, max_lums = (24.52, 78.8, 10.19), wait_blanking = True, screen_nr = 0 ):
+                        gamma_scale = (2.475,2.25,2.15), physical_screen_size = (48, 32), physical_screen_distance = 71.0, max_lums = (24.52, 78.8, 10.19), wait_blanking = True, screen_nr = 2 ):
         """
         create_screen take a screen to display the stimuli on. 
         the standard screen is assumed to be the Sony FW600, which is set up to start up in the 
@@ -93,7 +93,7 @@ class Session(object):
         """
 
         # the actual screen-getting
-        self.display = libscreen.Display(disptype='psychopy', dispsize=size, fgc=(255,0,0), bgc=list((255*bgl for bgl in background_color)), screennr=screen_nr,mousevisible=False,fullscr=full_screen)
+        self.display = libscreen.Display(disptype='psychopy', dispsize=size, fgc=(255,0,0), bgc=list((255*bgl for bgl in background_color)), screennr=screen_nr, mousevisible=False,fullscr=full_screen)
         # self.pygaze_scr = libscreen.Screen(disptype='psychopy')
 
         # print dir(self.display)

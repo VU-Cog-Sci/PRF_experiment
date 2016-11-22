@@ -31,7 +31,7 @@ class SPSession(EyelinkSession):
         super(SPSession, self).__init__( subject_initials, index_number)
 
         screen = self.create_screen( size = DISPSIZE, full_screen =full_screen, physical_screen_distance = SCREENDIST, 
-            background_color = background_color, physical_screen_size = SCREENSIZE )
+            background_color = background_color, physical_screen_size = SCREENSIZE, wait_blanking = False, screen_nr = 1 )
         event.Mouse(visible=False, win=screen)
 
         # define the effective screen dimensions for stimulus presentation
@@ -129,10 +129,15 @@ class SPSession(EyelinkSession):
             ] for ITI in ITIs] )    
         
         # fixation point
-        self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
-        self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=22.5, pos = np.array((0.0,0.0)), color = (0.0,0.0,0.0), maskParams = {'fringeWidth':0.4})
-        self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=9.0, pos = np.array((0.0,0.0)), color = (1.0,1.0,1.0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
-        
+        # self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
+        # self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=22.5, pos = np.array((0.0,0.0)), color = (0.0,0.0,0.0), maskParams = {'fringeWidth':0.4})
+        # self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=9.0, pos = np.array((0.0,0.0)), color = (1.0,1.0,1.0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
+
+        # self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=35, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
+        # self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=45, pos = np.array((0.0,0.0)), color = (0.0,0.0,0.0), maskParams = {'fringeWidth':0.4})
+        self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=50, pos = np.array((0.0,0.0)), color = (1.0,1.0,1.0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
+        # x_positions = 
+
         # now define the test stim sizes dependent on screen size available:
         if self.standard_parameters['test_stim_height'] == 0:
             self.standard_parameters['test_stim_height'] = self.ywidth/4/self.pixels_per_degree
@@ -165,6 +170,7 @@ class SPSession(EyelinkSession):
                                     'sp_amplitude':self.standard_parameters['sp_path_amplitude'],
                                     'test_stim_y_offset':self.standard_parameters['test_stim_y_offset'],
                                     'sp_path_elevation':self.standard_parameters['sp_path_elevation'],
+                                    'sp_path_temporal_frequency':self.standard_parameters['sp_path_temporal_frequency'],
                                      }
 
             self.all_trials.append(SPTrial(this_trial_parameters, phase_durations = self.phase_durations[i], session = self, screen = self.screen, tracker = self.tracker))

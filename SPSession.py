@@ -150,9 +150,11 @@ class SPSession(EyelinkSession):
         # thus add 1 TR when n_switches are uneven:
         padd_TR = n_switches%2
 
+        # now add the first and last empty trials:
         x_test_positions_tiled_shuffled = np.vstack([[-1e3,-1e3],x_test_positions_tiled_shuffled,[-1e3,-1e3]]) #-1e3 means off the screen)
         y_test_positions_tiled_shuffled = np.hstack([-1e3,y_test_positions_tiled_shuffled,-1e3]) #-1e3 means off the screen)
         ITIs = np.hstack([self.standard_parameters['warming_up_n_TRs'],ITIs,self.standard_parameters['warming_up_n_TRs']+padd_TR])
+        eye_dir = np.hstack([self.standard_parameters['warming_up_n_TRs'],ITIs,self.standard_parameters['warming_up_n_TRs']+padd_TR])
 
         # define all durations per trial
         self.phase_durations = np.array([[

@@ -5,14 +5,15 @@ standard_parameters = {
 
     # for pilotting
     # define screen size:
-    'sp_path_amplitude':               19,# 0.95,       # ratio of screen widht (1.0 for full width, 0 for standstill at fixation)
+    'sp_path_amplitude':                0,# 0.95,       # ratio of screen widht (1.0 for full width, 0 for standstill at fixation)
     'sp_path_elevation':                0.6,        # ratio of screen height (0.5 for middle)
     
     ## common parameters:
     'TR':                               0.944,        # VERY IMPORTANT TO FILL IN AFTER PLANNING IN!            
-    'minimal_iti':                      2,  # int
+    'minimal_iti':                      2,  # int should be eve number 
+    'warming_up_n_TRs':                 18, # this + 2 is the period before and after experiment while scanner is running
     ## SP experiment variables:
-    'test_stim_y_offset':                2,# 2,    #if 0, takes mid between fp and y boundary
+    'test_stim_y_offset':               2,# 2,    #if 0, takes mid between fp and y boundary
     'test_stim_height':                 2,#3,        # if 0, takes 1/3 of available y space
     'test_stim_width':                  0.4,        # 0.125 * 0.
     'sp_target_size':                   1,        #
@@ -35,7 +36,7 @@ standard_parameters = {
 # screen settings 
 #############################################
 
-full_screen = True
+full_screen = False
 FGC = (255,0,0)
 BGC = (0,0,0) # this is converted to -1<->1 in SPSession
 

@@ -24,14 +24,17 @@ try:
     import appnope
     appnope.nope()
 except:
-    'APPNOPE NOT ACTIVE!'
+    print 'APPNOPE NOT ACTIVE!'
 
 class SPSession(EyelinkSession):
     def __init__(self, subject_initials, index_number,scanner, tracker_on):
         super(SPSession, self).__init__( subject_initials, index_number)
-
+		
+        self.background_color = (np.array(BGC)/255*2)-1
+        self.stim_color = (np.array(FGC)/255*2)-1
+		
         screen = self.create_screen( size = DISPSIZE, full_screen =full_screen, physical_screen_distance = SCREENDIST, 
-            background_color = background_color, physical_screen_size = SCREENSIZE, wait_blanking = False, screen_nr = 1 )
+            background_color = self.background_color, physical_screen_size = SCREENSIZE, wait_blanking = False, screen_nr = 1 )
         event.Mouse(visible=False, win=screen)
 
         # define the effective screen dimensions for stimulus presentation
@@ -100,25 +103,76 @@ class SPSession(EyelinkSession):
         x_test_positions_tiled = np.array([np.tile(x1, 4), np.tile(x2, 4)]).T
         y_test_positions_tiled = np.tile(y_test_positions, 2)
 
-        # eye direction will be -1 for first 50, and 1 for last 50 trials:
-        eye_dir = np.concatenate((-1 * np.ones(x_test_positions_tiled.shape[0]/2), np.ones(x_test_positions_tiled.shape[0]/2)))
+        # ITI will be minimal ITI duration for first 50, and minimal ITI duration + 1 for last 50 trials:
+        ITIs = np.concatenate([np.ones(x_test_positions_tiled.shape[0]/2)*self.standard_parameters['minimal_iti'], 
+                               np.ones(x_test_positions_tiled.shape[0]/2)*self.standard_parameters['minimal_iti']+1])
 
-        # make iti's of minimal_iti or minimal_iti+1 (in terms of TRs)
-        ITIs = (eye_dir+1)/2 + self.standard_parameters['minimal_iti']
+        # add per-direction exponentially distributed random ITIs, 
+        # while keeping the evenness of the ITIs the same (by only adding even intervals)
         for direction in [0,1]:
-            # add per-direction exponentially distributed random ITIs, 
-            # while keeping the sign of the ITIs the same.
             direction_order = np.arange(direction * 50, (direction+1) * 50)
             np.random.shuffle(direction_order)
             # now approach exponential ITI distribution:
-            ITIs[direction_order[:12]] += 2
-            ITIs[direction_order[12:18]] += 4
-            ITIs[direction_order[18:21]] += 6
-            ITIs[direction_order[21:22]] += 8
+            ITIs[direction_order[:12]] += 2   # 12 trials
+            ITIs[direction_order[12:18]] += 4 # 6 trials
+            ITIs[direction_order[18:21]] += 6 #  trials
+            ITIs[direction_order[21:22]] += 8 # 2 trials
+                                              # 54 remaining
+            # this should yield:
+            # 2 TRs: 27 (0+2)
+            # 3 TRs: 27 (0+3)
+            # 4 TRs: 12 (2+2)
+            # 5 TRs: 12 (2+3) 
+            # 6 TRs: 6  (4+2)
+            # 7 TRs: 6  (4+3)
+            # 8 TRs: 3  (6+2)
+            # 9 TRs: 3  (6+3)
+            # 10 TRs: 1 (8+2)
+            # 11 TRs: 1 (8+3)
 
-        # create random trial order:
-        self.trial_order = np.arange(ITIs.shape[0])
-        np.random.shuffle(self.trial_order)
+        # If a trial_order_file exists, read the trial order from there, otherwise create it.
+        # An identical trial_order between runs creates the opportunity to average runs if so desired
+        import inspect
+        exp_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        fn = os.path.join(exp_dir,'trial_order.npy')
+        if os.path.isfile(fn):
+            self.trial_order = np.load(fn)
+            # set eye_dir according to the cumsums
+            # sort ITIs
+            ITIs_in_order = ITIs[self.trial_order]
+            cum_ITIs = np.cumsum(ITIs_in_order)
+            # trials to the right
+            eye_dir = (cum_ITIs%2==0)
+        else:
+            # create random trial order as often such that everything is balanced
+            balanced = False # probably unbalanced first time so let's just enter the loop
+            while balanced == False:
+                eye_dir_balanced = False; y_order_balanced = False
+
+                # define new random trial order
+                self.trial_order = np.arange(ITIs.shape[0])
+                np.random.shuffle(self.trial_order)
+
+                # sort ITIs
+                ITIs_in_order = ITIs[self.trial_order]
+                cum_ITIs = np.cumsum(ITIs_in_order)
+                # trials to the right
+                eye_dir = (cum_ITIs%2==0)
+                right_trials = (eye_dir==1)
+                if np.sum(right_trials)==50:
+                    eye_dir_balanced = True
+                # now from those right trials, half (25 out of 50) should have y_pos of 1
+                y_positions_in_order = y_test_positions_tiled[self.trial_order]
+                lower_first = (y_positions_in_order==-1)
+                if (right_trials*lower_first).sum() == 25:
+                    y_order_balanced = True
+                # if this is the case, then also the left trials are balanced in their y-order
+                balanced = eye_dir_balanced * y_order_balanced
+
+            # save the self.trial_order
+            np.save(fn,self.trial_order)
+            # write protect it so it can only be deleted after specifically altering rights
+            os.chmod(fn,0444)
 
         # define all durations per trial
         self.phase_durations = np.array([[
@@ -135,8 +189,15 @@ class SPSession(EyelinkSession):
 
         # self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=35, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
         # self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=45, pos = np.array((0.0,0.0)), color = (0.0,0.0,0.0), maskParams = {'fringeWidth':0.4})
-        self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=50, pos = np.array((0.0,0.0)), color = (1.0,1.0,1.0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
-        # x_positions = 
+        # self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=50, pos = np.array((0.0,0.0)), color = (1.0,1.0,1.0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
+        self.fixation = visual.PatchStim(self.screen,
+			mask='raisedCos',
+			tex=None, 
+			size=self.standard_parameters['sp_target_size']*self.pixels_per_degree, 
+			pos = np.array((0.0,0.0)), 
+			color = self.stim_color, 
+			opacity = 1.0, 
+			maskParams = {'fringeWidth':0.4})
 
         # now define the test stim sizes dependent on screen size available:
         if self.standard_parameters['test_stim_height'] == 0:
@@ -146,12 +207,14 @@ class SPSession(EyelinkSession):
         self.test_stim_1 = visual.Rect(self.screen, 
                             width = self.standard_parameters['test_stim_width']*self.pixels_per_degree,  
                             height = self.standard_parameters['test_stim_height']*self.pixels_per_degree, 
-                            fillColor = self.standard_parameters['test_stim_1_color'])
+                            lineColor = self.stim_color,
+                            fillColor = self.stim_color)
 
         self.test_stim_2 = visual.Rect(self.screen, 
                             width = self.standard_parameters['test_stim_width']*self.pixels_per_degree, 
                             height = self.standard_parameters['test_stim_height']*self.pixels_per_degree, 
-                            fillColor = self.standard_parameters['test_stim_2_color'])
+                            lineColor = self.stim_color,
+                            fillColor = self.stim_color)
 
         self.start_time = 0.0
         self.cumulative_phase_durations = np.cumsum(np.r_[0,self.phase_durations[self.trial_order,1:].ravel()][:-1]).reshape((self.phase_durations.shape[0], -1))

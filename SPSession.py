@@ -76,7 +76,6 @@ class SPSession(EyelinkSession):
         else:
             self.create_tracker(tracker_on = False)
         
-        self.response_button_signs = response_button_signs
 
         self.scanner = scanner
         # trials can be set up independently of the staircases that support their parameters
@@ -103,76 +102,57 @@ class SPSession(EyelinkSession):
         x_test_positions_tiled = np.array([np.tile(x1, 4), np.tile(x2, 4)]).T
         y_test_positions_tiled = np.tile(y_test_positions, 2)
 
-        # ITI will be minimal ITI duration for first 50, and minimal ITI duration + 1 for last 50 trials:
-        ITIs = np.concatenate([np.ones(x_test_positions_tiled.shape[0]/2)*self.standard_parameters['minimal_iti'], 
-                               np.ones(x_test_positions_tiled.shape[0]/2)*self.standard_parameters['minimal_iti']+1])
+        # all combinations of parameters are now repeated twice, so we add the eye dir to first 50 and last 50
+        eye_dir = np.concatenate([np.ones(x_test_positions_tiled.shape[0]/2),np.zeros(x_test_positions_tiled.shape[0]/2)])
 
-        # add per-direction exponentially distributed random ITIs, 
-        # while keeping the evenness of the ITIs the same (by only adding even intervals)
-        for direction in [0,1]:
-            direction_order = np.arange(direction * 50, (direction+1) * 50)
-            np.random.shuffle(direction_order)
-            # now approach exponential ITI distribution:
-            ITIs[direction_order[:12]] += 2   # 12 trials
-            ITIs[direction_order[12:18]] += 4 # 6 trials
-            ITIs[direction_order[18:21]] += 6 #  trials
-            ITIs[direction_order[21:22]] += 8 # 2 trials
-                                              # 54 remaining
-            # this should yield:
-            # 2 TRs: 27 (0+2)
-            # 3 TRs: 27 (0+3)
-            # 4 TRs: 12 (2+2)
-            # 5 TRs: 12 (2+3) 
-            # 6 TRs: 6  (4+2)
-            # 7 TRs: 6  (4+3)
-            # 8 TRs: 3  (6+2)
-            # 9 TRs: 3  (6+3)
-            # 10 TRs: 1 (8+2)
-            # 11 TRs: 1 (8+3)
+        # now let's create a random trial order 
+        self.trial_order = np.arange(eye_dir.shape[0])
+        np.random.shuffle(self.trial_order)
 
-        # If a trial_order_file exists, read the trial order from there, otherwise create it.
-        # An identical trial_order between runs creates the opportunity to average runs if so desired
-        import inspect
-        exp_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-        fn = os.path.join(exp_dir,'trial_order.npy')
-        if os.path.isfile(fn):
-            self.trial_order = np.load(fn)
-            # set eye_dir according to the cumsums
-            # sort ITIs
-            ITIs_in_order = ITIs[self.trial_order]
-            cum_ITIs = np.cumsum(ITIs_in_order)
-            # trials to the right
-            eye_dir = (cum_ITIs%2==0)
-        else:
-            # create random trial order as often such that everything is balanced
-            balanced = False # probably unbalanced first time so let's just enter the loop
-            while balanced == False:
-                eye_dir_balanced = False; y_order_balanced = False
+        # and apply
+        x_test_positions_tiled_shuffled = x_test_positions_tiled[self.trial_order]
+        y_test_positions_tiled_shuffled = y_test_positions_tiled[self.trial_order]
+        eye_dir_shuffled = eye_dir[self.trial_order]
 
-                # define new random trial order
-                self.trial_order = np.arange(ITIs.shape[0])
-                np.random.shuffle(self.trial_order)
+        ITIs = np.zeros(len(self.trial_order))#*self.standard_parameters['minimal_iti']
+        # and here's the distribution of ITIs:
+        unique_ITIs = {
+        1: 37,
+        2: 22,
+        3: 15,
+        4: 10,
+        5: 7,
+        6: 4,
+        7: 3,
+        8: 2
+        }
 
-                # sort ITIs
-                ITIs_in_order = ITIs[self.trial_order]
-                cum_ITIs = np.cumsum(ITIs_in_order)
-                # trials to the right
-                eye_dir = (cum_ITIs%2==0)
-                right_trials = (eye_dir==1)
-                if np.sum(right_trials)==50:
-                    eye_dir_balanced = True
-                # now from those right trials, half (25 out of 50) should have y_pos of 1
-                y_positions_in_order = y_test_positions_tiled[self.trial_order]
-                lower_first = (y_positions_in_order==-1)
-                if (right_trials*lower_first).sum() == 25:
-                    y_order_balanced = True
-                # if this is the case, then also the left trials are balanced in their y-order
-                balanced = eye_dir_balanced * y_order_balanced
+        # randomly distribute ITI's over the trial combinations:
+        ITI_order = np.arange(len(ITIs))
+        np.random.shuffle(ITI_order)        
+        k = 0
+        for this_ITI in unique_ITIs.keys():
+            ITIs[ITI_order[k:k+unique_ITIs[this_ITI]]] = this_ITI
+            k += unique_ITIs[this_ITI]
 
-            # save the self.trial_order
-            np.save(fn,self.trial_order)
-            # write protect it so it can only be deleted after specifically altering rights
-            os.chmod(fn,0444)
+        # and add or subtract 1 when a switch in eye dir is required:
+        n_switches = 0
+        for ti, this_eye_dir in enumerate(eye_dir_shuffled):
+            ITI_cumsum = np.cumsum(ITIs)[ti]
+            current_direction = ITI_cumsum%2
+            if current_direction != this_eye_dir:
+                ITIs[ti] += [-1,1][n_switches%2]
+                n_switches += 1
+
+        ITIs += self.standard_parameters['minimal_iti']
+       
+        # the total number of TRs can now be either 661 or 662, depending on whether there even or even n_switches
+        # thus add 1 TR when n_switches are uneven:
+        padd_TR = n_switches%2
+
+        x_test_positions_tiled_shuffled = np.vstack([[-1e3,-1e3],x_test_positions_tiled_shuffled,[-1e3,-1e3]]) #-1e3 means off the screen)
+        y_test_positions_tiled_shuffled = np.hstack([-1e3,y_test_positions_tiled_shuffled,-1e3]) #-1e3 means off the screen)
+        ITIs = np.hstack([self.standard_parameters['warming_up_n_TRs'],ITIs,self.standard_parameters['warming_up_n_TRs']+padd_TR])
 
         # define all durations per trial
         self.phase_durations = np.array([[
@@ -190,6 +170,7 @@ class SPSession(EyelinkSession):
         # self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=35, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
         # self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=45, pos = np.array((0.0,0.0)), color = (0.0,0.0,0.0), maskParams = {'fringeWidth':0.4})
         # self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=50, pos = np.array((0.0,0.0)), color = (1.0,1.0,1.0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
+        
         self.fixation = visual.PatchStim(self.screen,
 			mask='raisedCos',
 			tex=None, 
@@ -217,20 +198,23 @@ class SPSession(EyelinkSession):
                             fillColor = self.stim_color)
 
         self.start_time = 0.0
-        self.cumulative_phase_durations = np.cumsum(np.r_[0,self.phase_durations[self.trial_order,1:].ravel()][:-1]).reshape((self.phase_durations.shape[0], -1))
+        # self.cumulative_phase_durations = np.cumsum(np.r_[0,self.phase_durations[self.trial_order,1:].ravel()][:-1]).reshape((self.phase_durations.shape[0], -1))
+        self.cumulative_phase_durations = np.cumsum(np.r_[0,self.phase_durations[:,1:].ravel()][:-1]).reshape((self.phase_durations.shape[0], -1))
 
         self.all_trials = []
-        for i in self.trial_order:
+        for i in range(len(eye_dir)):#self.trial_order:
 
-            # this_trial_parameters = copy.copy(standard_parameters)
             this_trial_parameters={
-                                    'x_pos_1': x_test_positions_tiled[i,0], 
-                                    'x_pos_2': x_test_positions_tiled[i,1], 
-                                    'y_order': y_test_positions_tiled[i],
-                                    'eye_dir': eye_dir[i],
-                                    'ITI': ITIs[i],
+                                    # trial varying params:
+                                    'x_pos_1': x_test_positions_tiled_shuffled[i,0],
+                                    'x_pos_2': x_test_positions_tiled_shuffled[i,1], 
+                                    'y_order': y_test_positions_tiled_shuffled[i],
+                                    'eye_dir': eye_dir_shuffled[i],
+                                    'ITI': ITIs[i], # this should not be _shuffled
+
+                                    # these params don't vary over trials:
                                     'TR': self.standard_parameters['TR'],
-                                    'sp_amplitude':self.standard_parameters['sp_path_amplitude'],
+                                    'sp_path_amplitude':self.standard_parameters['sp_path_amplitude'],
                                     'test_stim_y_offset':self.standard_parameters['test_stim_y_offset'],
                                     'sp_path_elevation':self.standard_parameters['sp_path_elevation'],
                                     'sp_path_temporal_frequency':self.standard_parameters['sp_path_temporal_frequency'],

@@ -220,7 +220,8 @@ class SPSession(EyelinkSession):
                                     'test_stim_y_offset':self.standard_parameters['test_stim_y_offset'],
                                     'sp_path_elevation':self.standard_parameters['sp_path_elevation'],
                                     'sp_path_temporal_frequency':self.standard_parameters['sp_path_temporal_frequency'],
-                                     }
+                                    'warming_up_n_TRs':self.standard_parameters['warming_up_n_TRs']
+                                    }
 
             self.all_trials.append(SPTrial(this_trial_parameters, phase_durations = self.phase_durations[i], session = self, screen = self.screen, tracker = self.tracker))
 

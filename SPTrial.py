@@ -35,7 +35,7 @@ class SPTrial(Trial):
     def update_fix_pos(self,time,frequency=0.5):
 
         # note: this loop takes in extreme cases 1 ms, but median is 0.0004 ms. 
-        amplitude = self.parameters['sp_amplitude']*self.session.pixels_per_degree/2# * self.screen.size[0] /2
+        amplitude = self.parameters['sp_path_amplitude']*self.session.pixels_per_degree/2# * self.screen.size[0] /2
         f = self.parameters['sp_path_temporal_frequency']/self.parameters['TR']
         # f = frequency/self.parameters['TR']
         x_pos = amplitude * np.sin(2*np.pi*f*time) # costs about 

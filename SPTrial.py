@@ -16,7 +16,14 @@ class SPTrial(Trial):
         super(SPTrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
                 
         this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nColor\t\t-\tBY\t\t\t/\tRG'# self.parameters['task_instruction']
-        self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 30, alignHoriz = 'center')
+        self.instruction = visual.TextStim(self.screen, 
+		    text = this_instruction_string, 
+		    font = 'Helvetica Neue',
+		    pos = (0, 0),
+		    italic = True, 
+			height = 30, 
+			alignHoriz = 'center',
+			color=self.session.stim_color)
         self.instruction.setSize((1200,50))
 
         self.run_time = 0.0

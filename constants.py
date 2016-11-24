@@ -29,6 +29,14 @@ standard_parameters = {
     'mapper_period_in_TR':                10, # 
     'mapper_n_trials':                    10, # should be even number (otherwise more SP than fix trials)
 
+    ##############
+    # HRF Mapper vars
+    ##############
+    'HRF_mapper_period_in_TR':                10, # 
+    'HRF_mapper_n_trials':                    10, # should be even number (otherwise more up than down trials)
+    'nframes':                                60, # nframes per flash 
+    'square_width_deg':                      1, # stim should be about 20 degrees wide, so 0.5 means about 40 squares
+
 }
 
     

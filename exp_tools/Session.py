@@ -27,7 +27,7 @@ import pygame
 from pygame.locals import *
 from scipy.io import wavfile
 
-import pyaudio, wave
+# import pyaudio, wave
 
 from pylink import *
 
@@ -44,7 +44,7 @@ class Session(object):
         self.subject_initials = subject_initials
         self.index_number = index_number
         
-        self.setup_sound_system()
+        # self.setup_sound_system()
         # pygame.mixer.init()
         # os.chdir('sounds')
         # self.sound_files = ['%d.wav' % i for i in range(3)] # subprocess.Popen('ls *.*', shell=True, stdout=subprocess.PIPE).communicate()[0].split('\n')[0:-1]
@@ -94,6 +94,7 @@ class Session(object):
 
         # the actual screen-getting
         self.display = libscreen.Display(disptype='psychopy', dispsize=size, fgc=(255,0,0), bgc=list((255*bgl for bgl in background_color)), screennr=screen_nr, mousevisible=False,fullscr=full_screen)
+        
         # self.pygaze_scr = libscreen.Screen(disptype='psychopy')
 
         # print dir(self.display)
@@ -117,7 +118,7 @@ class Session(object):
         self.pixels_per_degree = (size[1]) / self.screen_height_degrees
         self.centimeters_per_degree = physical_screen_size[1] / self.screen_height_degrees
         self.pixels_per_centimeter = self.pixels_per_degree / self.centimeters_per_degree
-        # print 'screen: ' + str(self.screen_height_degrees) + ' degrees tall and pixels per degree: ' + str(self.pixels_per_degree)
+        print 'screen: ' + str(self.screen_height_degrees) + ' degrees tall and pixels per degree: ' + str(self.pixels_per_degree)
         
         # self.screen.mousevis = False
         self.screen.flip()
@@ -211,14 +212,17 @@ class EyelinkSession(Session):
     def __init__(self, subject_initials, index_number):
         super(EyelinkSession, self).__init__(subject_initials, index_number)
     
-    def create_tracker(self, tracker_on = True, sensitivity_class = 0, split_screen = False, screen_half = 'L', auto_trigger_calibration = 1, calibration_type = 'HV9', sample_rate = 1000):
+    def create_tracker(self, tracker_on = True, sensitivity_class = 0, split_screen = False, screen_half = 'L', auto_trigger_calibration = 1, calibration_type = 'HV9', sample_rate = 500):
         """
         tracker sets up the connection and inputs the parameters.
         only start tracker after the screen is taken, its parameters are set,
          and output file names are created.
         """
 
-        self.eyelink_temp_file = self.subject_initials[:2] + '_' + str(self.index_number) + '_' + str(np.random.randint(99)) + '.edf'
+        import string
+        randstr = ''.join(np.random.choice(np.array([s for s in string.ascii_lowercase+string.digits]),3))
+        #self.eyelink_temp_file = self.subject_initials[:2] + '_' + str(self.index_number) + '_' + str(np.random.randint(99)) + '.edf'
+        self.eyelink_temp_file = self.subject_initials[:2] + str(self.index_number) + '_' + randstr + '.edf'
         # self.tracker.openDataFile(self.eyelink_temp_file)
 
 
@@ -266,7 +270,7 @@ class EyelinkSession(Session):
         self.tracker.send_command('validation_sequence=%s'%point_indices)
         self.tracker.send_command('validation_targets = %s'%validation_targets)
          
-    def apply_settings(self, sensitivity_class = 0, split_screen = False, screen_half = 'L', auto_trigger_calibration = True, sample_rate = 1000, calibration_type = 'HV9', margin = 60,pupil_tracking_mode = 'centroid'):
+    def apply_settings(self, sensitivity_class = 0, split_screen = False, screen_half = 'L', auto_trigger_calibration = True, sample_rate = 500, calibration_type = 'HV9', margin = 60,pupil_tracking_mode = 'ellipse'):
         
         # set EDF file contents 
         self.tracker.send_command("file_event_filter = LEFT,RIGHT,FIXATION,SACCADE,BLINK,MESSAGE,BUTTON")
@@ -287,9 +291,11 @@ class EyelinkSession(Session):
         self.tracker.send_command("saccade_acceleration_threshold = %d" %[9500, 5000][sensitivity_class])
         self.tracker.send_command("saccade_motion_threshold = %d" %[0.15, 0][sensitivity_class])
         
-#        self.tracker.send_command("file_sample_control = 1,0,0")
-        self.tracker.send_command("screen_phys_coords = %d %d %d %d" %(-self.physical_screen_size[0] / 2.0, self.physical_screen_size[1] / 2.0, self.physical_screen_size[0] / 2.0, -self.physical_screen_size[1] / 2.0))
-        self.tracker.send_command("simulation_screen_distance = " + str(self.physical_screen_distance))
+        # self.tracker.send_command("file_sample_control = 1,0,0")
+        #self.tracker.send_command("screen_phys_coords = %d %d %d %d" %(-self.physical_screen_size[0] / 2.0, self.physical_screen_size[1] / 2.0, self.physical_screen_size[0] / 2.0, -self.physical_screen_size[1] / 2.0))
+        self.tracker.send_command("screen_phys_coords = %d %d %d %d" %(-self.physical_screen_size[0] / 2.0*10, self.physical_screen_size[1] / 2.0*10, self.physical_screen_size[0] / 2.0*10, -self.physical_screen_size[1] / 2.0*10))
+        # self.tracker.send_command("simulation_screen_distance = " + str(self.physical_screen_distance))
+        self.tracker.send_command("screen_distance = %d %d"%(self.physical_screen_distance*10,self.physical_screen_distance*10))
 
 
         if pupil_tracking_mode == 'ellipse':        
@@ -335,7 +341,7 @@ class EyelinkSession(Session):
         else:
             self.tracker.send_command("calibration_type = " + calibration_type)
             
-    def tracker_setup(self, sensitivity_class = 0, split_screen = False, screen_half = 'L', auto_trigger_calibration = True, calibration_type = 'HV9', sample_rate = 1000):
+    def tracker_setup(self, sensitivity_class = 0, split_screen = False, screen_half = 'L', auto_trigger_calibration = True, calibration_type = 'HV9', sample_rate = 500):
         if self.tracker.connected():
                         
             self.tracker.calibrate()

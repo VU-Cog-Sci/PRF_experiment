@@ -42,10 +42,13 @@ class SPMapperSession(EyelinkSession):
 
         self.create_output_file_name()
         if tracker_on:
-            
-            # how many points do we want:
-            n_points = 5
+           # how many points do we want:
+            n_points = 9
 
+			# order should be with 5 points: center-up-down-left-right
+			# order should be with 9 points: center-up-down-left-right-leftup-rightup-leftdown-rightdown 
+			# order should be with 13: center-up-down-left-right-leftup-rightup-leftdown-rightdown-midleftmidup-midrightmidup-midleftmiddown-midrightmiddown
+			# so always: up->down or left->right
             # creat tracker
             self.create_tracker(auto_trigger_calibration = 0, calibration_type = 'HV%d'%n_points)
             # set the background and foreground to what we want:
@@ -54,23 +57,76 @@ class SPMapperSession(EyelinkSession):
 
             # create the calibration targets:
             # note: 0,0 is the upper left corner of the screen
-            x_ratio_covered = standard_parameters['sp_path_amplitude']/(DISPSIZE[0]/self.pixels_per_degree)
-            x_edge = (1-x_ratio_covered)*DISPSIZE[0]/2*0.5
-            xs = np.round(np.linspace(x_edge,DISPSIZE[0]-x_edge,n_points))
-            ys = np.round([self.ywidth/3*[1,2][pi%2] for pi in range(n_points)])
+
+            x_ratio_covered = standard_parameters['eyetracking_amplitude']/(DISPSIZE[0]/self.pixels_per_degree)
+            x_edge = (1-x_ratio_covered)*DISPSIZE[0]/2
+
+            y_portion = 5
+			
+            # set calibration targets
+            cal_center_x = DISPSIZE[0]/2
+            cal_right_x = DISPSIZE[0]-x_edge
+            cal_left_x = x_edge
+            cal_center_y = self.ywidth/2# self.ymid
+            cal_up_y = self.ywidth/y_portion
+            cal_down_y = self.ywidth/y_portion*(y_portion-1)
+            
+            cal_center = [cal_center_x,cal_center_y]
+            cal_left = [cal_left_x,cal_center_y]
+            cal_right = [cal_right_x,cal_center_y]
+            cal_up = [cal_center_x,cal_up_y]
+            cal_down = [cal_center_x,cal_down_y]
+            cal_leftup = [cal_left_x,cal_up_y]
+            cal_rightup = [cal_right_x,cal_up_y]
+            cal_leftdown = [cal_left_x,cal_down_y]
+            cal_rightdown = [cal_right_x,cal_down_y]			
+            
+            # set validation targets			
+            val_center_x = DISPSIZE[0]/2
+            val_right_x = DISPSIZE[0]-(x_edge*2)
+            val_left_x = x_edge*2
+            val_center_y = self.ywidth/2
+            val_up_y = self.ywidth/y_portion*2
+            val_down_y =  self.ywidth-self.ywidth/y_portion*2	
+            
+            val_center = [val_center_x,val_center_y]
+            val_left = [val_left_x,val_center_y]
+            val_right = [val_right_x,val_center_y]
+            val_up = [val_center_x,val_up_y]
+            val_down = [val_center_x,val_down_y]
+            val_leftup = [val_left_x,val_up_y]
+            val_rightup = [val_right_x,val_up_y]
+            val_leftdown = [val_left_x,val_down_y]
+            val_rightdown = [val_right_x,val_down_y]	
+            
+            # get them in the right order
+            if n_points == 5:
+                cal_xs = np.round([cal_center[0],cal_up[0],cal_down[0],cal_left[0],cal_right[0]])
+                cal_ys = np.round([cal_center[1],cal_up[1],cal_down[1],cal_left[1],cal_right[1]])
+                val_xs = np.round([val_center[0],val_up[0],val_down[0],val_left[0],val_right[0]])
+                val_ys = np.round([val_center[1],val_up[1],val_down[1],val_left[1],val_right[1]])
+            elif n_points == 9:
+                cal_xs = np.round([cal_center[0],cal_up[0],cal_down[0],cal_left[0],cal_right[0],cal_leftup[0],cal_rightup[0],cal_leftdown[0],cal_rightdown[0]])
+                cal_ys = np.round([cal_center[1],cal_up[1],cal_down[1],cal_left[1],cal_right[1],cal_leftup[1],cal_rightup[1],cal_leftdown[1],cal_rightdown[1]])			
+                val_xs = np.round([val_center[0],val_up[0],val_down[0],val_left[0],val_right[0],val_leftup[0],val_rightup[0],val_leftdown[0],val_rightdown[0]])
+                val_ys = np.round([val_center[1],val_up[1],val_down[1],val_left[1],val_right[1],val_leftup[1],val_rightup[1],val_leftdown[1],val_rightdown[1]])						
+            #xs = np.round(np.linspace(x_edge,DISPSIZE[0]-x_edge,n_points))
+            #ys = np.round([self.ywidth/3*[1,2][pi%2] for pi in range(n_points)])
 
             # put the points in format that eyelink wants them, which is
             # calibration_targets / validation_targets: 'x1,y1 x2,y2 ... xz,yz'
-            calibration_targets = ' '.join(['%d,%d'%(xs[pi],ys[pi]) for pi in range(n_points)])
+            calibration_targets = ' '.join(['%d,%d'%(cal_xs[pi],cal_ys[pi]) for pi in range(n_points)])
             # just copy calibration targets as validation for now:
-            validation_targets = calibration_targets
+            #validation_targets = calibration_targets
+            validation_targets = ' '.join(['%d,%d'%(val_xs[pi],val_ys[pi]) for pi in range(n_points)])
+
             # point_indices: '0, 1, ... n'
             point_indices = ', '.join(['%d'%pi for pi in range(n_points)])
 
             # and send these targets to the custom calibration function:
             self.custom_calibration(calibration_targets=calibration_targets,
                 validation_targets=validation_targets,point_indices=point_indices,
-                n_points=n_points,randomize_order=False,repeat_first_target=False,)
+                n_points=n_points,randomize_order=True,repeat_first_target=True,)
             # reapply settings:
             self.tracker_setup()
         else:

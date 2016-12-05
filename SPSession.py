@@ -27,12 +27,15 @@ except:
     print 'APPNOPE NOT ACTIVE!'
 
 class SPSession(EyelinkSession):
-    def __init__(self, subject_initials, index_number,scanner, tracker_on):
+    def __init__(self, subject_initials, index_number,scanner, tracker_on,fix_sp):
         super(SPSession, self).__init__( subject_initials, index_number)
 		
         self.background_color = (np.array(BGC)/255*2)-1
         self.stim_color = (np.array(FGC)/255*2)-1
 		
+        if fix_sp == 'y':
+            standard_parameters['sp_path_amplitude'] = 0
+
         screen = self.create_screen( size = DISPSIZE, full_screen =full_screen, physical_screen_distance = SCREENDIST, 
             background_color = self.background_color, physical_screen_size = SCREENSIZE, wait_blanking = True, screen_nr = 1 )
         event.Mouse(visible=False, win=screen)

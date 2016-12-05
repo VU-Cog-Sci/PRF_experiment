@@ -65,6 +65,7 @@ class SPSession(EyelinkSession):
             x_ratio_covered = standard_parameters['eyetracking_amplitude']/(DISPSIZE[0]/self.pixels_per_degree)
             x_edge = (1-x_ratio_covered)*DISPSIZE[0]/2
 
+            # max y will be (y_portion-1)/y_portion of screen height, and min y 1/y_portion
             y_portion = 5
 			
             # set calibration targets
@@ -174,6 +175,7 @@ class SPSession(EyelinkSession):
         y_test_positions_tiled_shuffled = y_test_positions_tiled[self.trial_order]
         eye_dir_shuffled = eye_dir[self.trial_order]
 
+        shell()
         ITIs = np.zeros(len(self.trial_order))#*self.standard_parameters['minimal_iti']
         # and here's the distribution of ITIs:
         unique_ITIs = {

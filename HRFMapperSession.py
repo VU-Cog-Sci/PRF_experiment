@@ -44,8 +44,12 @@ class HRFMapperSession(EyelinkSession):
         if tracker_on:
             
             # how many points do we want:
-            n_points = 5
+            n_points = 9
 
+			# order should be with 5 points: center-up-down-left-right
+			# order should be with 9 points: center-up-down-left-right-leftup-rightup-leftdown-rightdown 
+			# order should be with 13: center-up-down-left-right-leftup-rightup-leftdown-rightdown-midleftmidup-midrightmidup-midleftmiddown-midrightmiddown
+			# so always: up->down or left->right
             # creat tracker
             self.create_tracker(auto_trigger_calibration = 0, calibration_type = 'HV%d'%n_points)
             # set the background and foreground to what we want:
@@ -54,23 +58,76 @@ class HRFMapperSession(EyelinkSession):
 
             # create the calibration targets:
             # note: 0,0 is the upper left corner of the screen
-            x_ratio_covered = standard_parameters['sp_path_amplitude']/(DISPSIZE[0]/self.pixels_per_degree)
-            x_edge = (1-x_ratio_covered)*DISPSIZE[0]/2*0.5
-            xs = np.round(np.linspace(x_edge,DISPSIZE[0]-x_edge,n_points))
-            ys = np.round([self.ywidth/3*[1,2][pi%2] for pi in range(n_points)])
+
+            x_ratio_covered = standard_parameters['eyetracking_amplitude']/(DISPSIZE[0]/self.pixels_per_degree)
+            x_edge = (1-x_ratio_covered)*DISPSIZE[0]/2
+
+            y_portion = 5
+			
+            # set calibration targets
+            cal_center_x = DISPSIZE[0]/2
+            cal_right_x = DISPSIZE[0]-x_edge
+            cal_left_x = x_edge
+            cal_center_y = self.ywidth/2# self.ymid
+            cal_up_y = self.ywidth/y_portion
+            cal_down_y = self.ywidth/y_portion*(y_portion-1)
+            
+            cal_center = [cal_center_x,cal_center_y]
+            cal_left = [cal_left_x,cal_center_y]
+            cal_right = [cal_right_x,cal_center_y]
+            cal_up = [cal_center_x,cal_up_y]
+            cal_down = [cal_center_x,cal_down_y]
+            cal_leftup = [cal_left_x,cal_up_y]
+            cal_rightup = [cal_right_x,cal_up_y]
+            cal_leftdown = [cal_left_x,cal_down_y]
+            cal_rightdown = [cal_right_x,cal_down_y]			
+            
+            # set validation targets			
+            val_center_x = DISPSIZE[0]/2
+            val_right_x = DISPSIZE[0]-(x_edge*2)
+            val_left_x = x_edge*2
+            val_center_y = self.ywidth/2
+            val_up_y = self.ywidth/y_portion*2
+            val_down_y =  self.ywidth-self.ywidth/y_portion*2	
+            
+            val_center = [val_center_x,val_center_y]
+            val_left = [val_left_x,val_center_y]
+            val_right = [val_right_x,val_center_y]
+            val_up = [val_center_x,val_up_y]
+            val_down = [val_center_x,val_down_y]
+            val_leftup = [val_left_x,val_up_y]
+            val_rightup = [val_right_x,val_up_y]
+            val_leftdown = [val_left_x,val_down_y]
+            val_rightdown = [val_right_x,val_down_y]	
+            
+            # get them in the right order
+            if n_points == 5:
+                cal_xs = np.round([cal_center[0],cal_up[0],cal_down[0],cal_left[0],cal_right[0]])
+                cal_ys = np.round([cal_center[1],cal_up[1],cal_down[1],cal_left[1],cal_right[1]])
+                val_xs = np.round([val_center[0],val_up[0],val_down[0],val_left[0],val_right[0]])
+                val_ys = np.round([val_center[1],val_up[1],val_down[1],val_left[1],val_right[1]])
+            elif n_points == 9:
+                cal_xs = np.round([cal_center[0],cal_up[0],cal_down[0],cal_left[0],cal_right[0],cal_leftup[0],cal_rightup[0],cal_leftdown[0],cal_rightdown[0]])
+                cal_ys = np.round([cal_center[1],cal_up[1],cal_down[1],cal_left[1],cal_right[1],cal_leftup[1],cal_rightup[1],cal_leftdown[1],cal_rightdown[1]])			
+                val_xs = np.round([val_center[0],val_up[0],val_down[0],val_left[0],val_right[0],val_leftup[0],val_rightup[0],val_leftdown[0],val_rightdown[0]])
+                val_ys = np.round([val_center[1],val_up[1],val_down[1],val_left[1],val_right[1],val_leftup[1],val_rightup[1],val_leftdown[1],val_rightdown[1]])						
+            #xs = np.round(np.linspace(x_edge,DISPSIZE[0]-x_edge,n_points))
+            #ys = np.round([self.ywidth/3*[1,2][pi%2] for pi in range(n_points)])
 
             # put the points in format that eyelink wants them, which is
             # calibration_targets / validation_targets: 'x1,y1 x2,y2 ... xz,yz'
-            calibration_targets = ' '.join(['%d,%d'%(xs[pi],ys[pi]) for pi in range(n_points)])
+            calibration_targets = ' '.join(['%d,%d'%(cal_xs[pi],cal_ys[pi]) for pi in range(n_points)])
             # just copy calibration targets as validation for now:
-            validation_targets = calibration_targets
+            #validation_targets = calibration_targets
+            validation_targets = ' '.join(['%d,%d'%(val_xs[pi],val_ys[pi]) for pi in range(n_points)])
+
             # point_indices: '0, 1, ... n'
             point_indices = ', '.join(['%d'%pi for pi in range(n_points)])
 
             # and send these targets to the custom calibration function:
             self.custom_calibration(calibration_targets=calibration_targets,
                 validation_targets=validation_targets,point_indices=point_indices,
-                n_points=n_points,randomize_order=False,repeat_first_target=False,)
+                n_points=n_points,randomize_order=True,repeat_first_target=True,)
             # reapply settings:
             self.tracker_setup()
         else:
@@ -91,14 +148,37 @@ class HRFMapperSession(EyelinkSession):
 
         self.standard_parameters = standard_parameters
 
-        checker_y_loc = np.hstack([1e3,np.tile([1,-1],self.standard_parameters['HRF_mapper_n_trials']/2),1e3]) * (self.ywidth/4)
-        trial_durations = np.hstack([self.standard_parameters['warming_up_n_TRs'],np.tile([1,1],self.standard_parameters['HRF_mapper_n_trials']/2)* self.standard_parameters['HRF_mapper_period_in_TR'],self.standard_parameters['warming_up_n_TRs']]) 
+
+        # and here's the distribution of ITIs:
+        unique_ITIs = {
+        2: 33,
+        3: 22,
+        4: 11,
+        5: 5,
+        6: 3,
+        }
+
+        n_trials = sum(unique_ITIs.values())
+        ITIs = np.zeros(n_trials)
+
+        # randomly distribute ITI's over the trial combinations:
+        ITI_order = np.arange(len(ITIs))
+        np.random.shuffle(ITI_order)        
+        k = 0
+        for this_ITI in unique_ITIs.keys():
+            ITIs[ITI_order[k:k+unique_ITIs[this_ITI]]] = this_ITI
+            k += unique_ITIs[this_ITI]
+
+        ITIs = np.hstack([self.standard_parameters['warming_up_n_TRs'],ITIs,self.standard_parameters['warming_up_n_TRs']])
+        checker_y_loc = np.hstack([1e3,np.zeros(len(ITIs)),1e3]) * (self.ywidth/2)
+        stim_durations = np.hstack([0,np.ones(len(ITIs))*self.standard_parameters['stim_duration'],0])
 
         # define all durations per trial
         self.phase_durations = np.array([[
             -0.0001, # instruct time, skipped in all trials but the first (wait for t)
-            trial_durations[i]*self.standard_parameters['TR'], # smooth pursuit before stim
-            ] for i in range(len(trial_durations))] )    
+            stim_durations[ti]*self.standard_parameters['TR'], 
+            ITIs[ti]*self.standard_parameters['TR'], 
+            ] for ti in range(len(ITIs))] ) 
         
         # fixation point
         # self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
@@ -120,26 +200,28 @@ class HRFMapperSession(EyelinkSession):
 
         # the checkerboards:
         n_squares_x = np.round((self.standard_parameters['sp_path_amplitude'])/self.standard_parameters['square_width_deg'])
-        n_squares_y = np.round(self.ywidth/2/self.pixels_per_degree/self.standard_parameters['square_width_deg'])
+        print n_squares_x
+        n_squares_y = np.round(self.ywidth/self.pixels_per_degree/self.standard_parameters['square_width_deg'])
         self.stim1 = visual.GratingStim(self.screen, 
             tex = np.tile(np.tile([[-1,1],[1,-1]],n_squares_y).T,n_squares_x),
-            size = [self.standard_parameters['sp_path_amplitude']*self.pixels_per_degree,self.ywidth/2],
-            color = (1,1,1))
+            size = [self.standard_parameters['sp_path_amplitude']*self.pixels_per_degree,self.ywidth*0.9],
+            color = (1,1,1),
+            pos = (0,self.screen.size[1]*self.standard_parameters['sp_path_elevation']-self.screen.size[1]/2))
         self.stim2 = visual.GratingStim(self.screen, 
             tex = np.tile(np.tile([[1,-1],[-1,1]],n_squares_y).T,n_squares_x),
-            size = [self.standard_parameters['sp_path_amplitude']*self.pixels_per_degree,self.ywidth/2],
-            color = (1,1,1))
+            size = [self.standard_parameters['sp_path_amplitude']*self.pixels_per_degree,self.ywidth*0.9],
+            color = (1,1,1),
+            pos = (0,self.screen.size[1]*self.standard_parameters['sp_path_elevation']-self.screen.size[1]/2))
 
         self.start_time = 0.0
         # self.cumulative_phase_durations = np.cumsum(np.r_[0,self.phase_durations[self.trial_order,1:].ravel()][:-1]).reshape((self.phase_durations.shape[0], -1))
         self.cumulative_phase_durations = np.cumsum(np.r_[0,self.phase_durations[:,1:].ravel()][:-1]).reshape((self.phase_durations.shape[0], -1))
 
         self.all_trials = []
-        for i in range(len(trial_durations)):#self.trial_order:
+        for i in range(len(ITIs)):#self.trial_order:
 
             this_trial_parameters={
                                     # trial varying params
-                                    'trial_duration':trial_durations[i],
                                     'stim_y':checker_y_loc[i],
 
                                     # these params don't vary over trials:
@@ -148,7 +230,7 @@ class HRFMapperSession(EyelinkSession):
                                     'sp_path_elevation':self.standard_parameters['sp_path_elevation'],
                                     'sp_path_temporal_frequency':self.standard_parameters['sp_path_temporal_frequency'],
                                     'warming_up_n_TRs':self.standard_parameters['warming_up_n_TRs'],
-                                    'nframes':self.standard_parameters['nframes']
+                                    'nframes':self.standard_parameters['nframes'],
                                     'square_width_deg':self.standard_parameters['square_width_deg']
                                      }
 

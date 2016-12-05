@@ -37,7 +37,6 @@ class HRFMapperTrial(Trial):
 
         # self.session.fixation_outer_rim.draw()
         # self.session.fixation_rim.draw()
-        self.session.fixation.draw()
 
         # draw additional stimuli:
         if (self.phase == 0 ) * (self.ID == 0):
@@ -48,6 +47,7 @@ class HRFMapperTrial(Trial):
                 self.session.stim1.draw()
             else:
                 self.session.stim2.draw()
+        self.session.fixation.draw()
 
         super(HRFMapperTrial, self).draw() # flip
 
@@ -108,8 +108,11 @@ class HRFMapperTrial(Trial):
             if self.phase == 1:
                 self.phase_1_time = self.session.clock.getTime()
                 if ( self.phase_1_time  - self.trial_onset_time ) > self.phase_durations[1]:
+                   self.phase_forward()
+            if self.phase == 2:
+                self.phase_2_time = self.session.clock.getTime()
+                if ( self.phase_2_time  - self.phase_1_time ) > self.phase_durations[2]:
                    self.stopped = True
-
             # events and draw
             self.event()
             self.draw()

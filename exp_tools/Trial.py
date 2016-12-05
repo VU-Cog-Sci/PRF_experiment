@@ -62,7 +62,7 @@ class Trial(object):
             # pipe parameters to the eyelink data file in a for loop so as to limit the risk of flooding the buffer
             for k in self.parameters.keys():
                 self.tracker.log('trial ' + str(self.ID) + ' parameter\t' + k + ' : ' + str(self.parameters[k]) )
-                time_module.sleep(0.0005)
+                time_module.sleep(0.00005)
             self.tracker.log('trial ' + str(self.ID) + ' stopped at ' + str(self.stop_time) )
         self.session.outputDict['eventArray'].append(self.events)
         self.session.outputDict['parameterArray'].append(self.parameters)
@@ -91,6 +91,6 @@ class Trial(object):
         self.events.append('trial ' + str(self.ID) + ' phase ' + str(self.phase) + ' started at ' + phase_time)
         if self.tracker:
             self.tracker.log('trial ' + str(self.ID) + ' phase ' + str(self.phase) + ' started at ' + phase_time )
-            time_module.sleep(0.0005)
+             #time_module.sleep(0.0005)
         
         

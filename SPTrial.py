@@ -15,7 +15,7 @@ class SPTrial(Trial):
     def __init__(self, parameters = {}, phase_durations = [], session = None, screen = None, tracker = None):
         super(SPTrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
                 
-        this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nColor\t\t-\tBY\t\t\t/\tRG'# self.parameters['task_instruction']
+        this_instruction_string = 'Determine whether the second flash is more left or right of the first.'
         self.instruction = visual.TextStim(self.screen, 
 		    text = this_instruction_string, 
 		    font = 'Helvetica Neue',

@@ -175,7 +175,6 @@ class SPSession(EyelinkSession):
         y_test_positions_tiled_shuffled = y_test_positions_tiled[self.trial_order]
         eye_dir_shuffled = eye_dir[self.trial_order]
 
-        shell()
         ITIs = np.zeros(len(self.trial_order))#*self.standard_parameters['minimal_iti']
         # and here's the distribution of ITIs:
         unique_ITIs = {
@@ -225,7 +224,7 @@ class SPSession(EyelinkSession):
             self.standard_parameters['TR'], # smooth pursuit after stim 1
             self.standard_parameters['TR'] # smooth pursuit after stim 2
             ] for ITI in ITIs] )    
-        
+
         # fixation point
         # self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
         # self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=22.5, pos = np.array((0.0,0.0)), color = (0.0,0.0,0.0), maskParams = {'fringeWidth':0.4})

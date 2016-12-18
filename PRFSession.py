@@ -100,8 +100,11 @@ class PRFSession(EyelinkSession):
             self.direction_indices = np.array([6,4,2,0,6,2,4,2,0,6,4])
         else:
             # nostim-top-left-bottom-right-nostim-top-left-bottom-right-nostim
-            self.stim_bool = [0,1,1,1,1,0,1,1,1,1,0]
-            self.direction_indices = np.array([0,4,2,0,6,0,4,2,0,6,0])
+            # self.stim_bool = [0,1,1,1,1,0,1,1,1,1,0]
+            # self.direction_indices = np.array([0,4,2,0,6,0,4,2,0,6,0])
+            # nostim-bottom-left-nostim-right-top-nostim
+            self.stim_bool = [0,1,1,0,1,1,0]
+            self.direction_indices = np.array([0,0,2,0,6,4,0])
 
         self.trial_array = np.array([[self.direction_indices[i], self.stim_bool[i]] for i in range(len(self.stim_bool))])
 

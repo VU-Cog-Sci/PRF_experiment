@@ -6,6 +6,7 @@ standard_parameters = {
 	
 	'practice':					 1,
 	## spatial dimensions:
+    'eyelink_calib_size': 		 0.5,       # portion of screen heigth
     'mask_type':                 1,         # 0: circle, 1: square
 	'vertical_stim_size': 		 1,		    # portion of horizontal screen space covered
 	'horizontal_stim_size': 	 1,         # when wanting a circular mask, set this to screen_size[1]/screen_size[0]
@@ -50,7 +51,7 @@ response_button_signs = {
 # screen_res = (1920,1080)
 # background_color = (0.5,0.5,0.5)#-0.75,-0.75,-0.75)
 
-full_screen = True
+full_screen = False
 FGC = (0,0,0)
 BGC = (255*0.5,255*0.5,255*0.5) # this is converted to -1<->1 in SPSession
 

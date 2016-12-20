@@ -48,12 +48,6 @@ class MapperSession(EyelinkSession):
             self.standard_parameters['BY_color'] = 1
             self.standard_parameters['RG_color'] = 1/RG_BY_ratio
 
-
-        # text_file_name = "data/%s_speed_ratios.txt"%self.subject_initials
-        # assert os.path.isfile(text_file_name), 'NO SPEED RATIO TEXT FILE PRESENT!!!!!!!!'
-        # text_file = open(text_file_name, "r")
-        # self.fast_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
-        # self.slow_ratio = 1-self.fast_ratio
         self.fast_ratio = self.slow_ratio = 0.5
 
         self.create_output_file_name()
@@ -103,11 +97,6 @@ class MapperSession(EyelinkSession):
     def prepare_trials(self):
         """docstring for prepare_trials(self):"""
         
-        # create random m-sequence for the 5 trial types of length (5^3)-1 = 124. I then add the first trial type to the end of the array, so that all trial types have even occurences
-        # from psychopy.contrib import mseq
-        # self.tasks = np.array(['fix_no_stim','no_color_no_speed','yes_color_no_speed','no_color_yes_speed','yes_color_yes_speed'])
-        # self.trial_array = np.hstack([[0],mseq.mseq(5,3,1,np.random.randint(200))]) # base (number of trial types), power (sequence length is base^power-1), shift (to shift last values of sequence to first), random sequence out of the 200 possibilities
-
         # and here's the distribution of ITIs:
         unique_ITIs = {
         2: 33,

@@ -18,7 +18,6 @@ class ColorMatcherTrial(Trial):
 		self.color_diff = 0.0
 
 		self.stim = ColorMatcherStim(self.screen, self, self.session, 
-						size_pix = self.parameters['stim_size'] * session.screen_pix_size[1], 
 						num_elements = self.parameters['num_elements'] * (1/self.parameters['bar_width_ratio']), 
 						RG_offset = self.parameters['RG_offset'])
 		

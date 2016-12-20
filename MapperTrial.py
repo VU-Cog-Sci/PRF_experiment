@@ -16,7 +16,7 @@ class MapperTrial(Trial):
 	def __init__(self, parameters = {}, phase_durations = [], session = None, screen = None, tracker = None):
 		super(MapperTrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
 		
-		self.stim = MapperStim(self.screen, self, self.session, self.parameters['task'])
+		self.stim = MapperStim(self.screen, self, self.session)#, self.parameters['task'])
 		
 		this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nFix\t\t\t-\tBlack\t\t/\tWhite'# self.parameters['task_instruction']
 		self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 30, alignHoriz = 'center')

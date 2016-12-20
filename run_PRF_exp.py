@@ -23,7 +23,7 @@ def main():
 
 	ts = PRFSession( initials, run_nr, scanner, tracker_on,task_type )
 	ts.run()
-
+ 
 	plot_staircases(initials, run_nr)
 	
 if __name__ == '__main__':

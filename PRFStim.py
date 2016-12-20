@@ -19,9 +19,7 @@ class PRFStim(object):
 		self.screen = screen
 		self.orientation = orientation	# convert to radians immediately, and use to calculate rotation matrix
 		self.rotation_matrix = np.matrix([[cos(self.orientation), -sin(self.orientation)],[sin(self.orientation), cos(self.orientation)]])
-		# self.period = session.standard_parameters['PRF_period_in_TR'] * session.standard_parameters['TR']
 		self.refresh_frequency = session.standard_parameters['redraws_per_TR'] / session.standard_parameters['TR']
-		self.task_rate = session.standard_parameters['task_rate']
 
 		self.RG_color=session.standard_parameters['RG_color']
 		self.BY_color=session.standard_parameters['BY_color']
@@ -36,28 +34,16 @@ class PRFStim(object):
 		# change n_elements, sizes and bar width ratio for horizontal / vertical passes
 		if self.trial.parameters['orientation'] in [0,np.pi]: # these are the vertical passes (e.g. top-bottom)
 			self.size_pix = [self.screen.size[1]*session.standard_parameters['vertical_stim_size'],self.screen.size[0]*session.standard_parameters['horizontal_stim_size']]
-			# self.size_pix = [self.screen.size[1],self.screen.size[0]]
-			# self.bar_width = self.screen.size[1] * session.standard_parameters['bar_width_ratio']
 			self.period = session.standard_parameters['vertical_pass_dur'] * session.standard_parameters['TR']
-		else:
+		else: # horizontal bar passes:
 			self.size_pix = [self.screen.size[0]*session.standard_parameters['horizontal_stim_size'],self.screen.size[1]*session.standard_parameters['vertical_stim_size']]
-			# self.size_pix = [self.screen.size[0],self.screen.size[1]]
-			# self.bar_width = self.screen.size[1] * session.standard_parameters['bar_width_ratio'] / (self.size_pix[0]/self.size_pix[1])
-			# self.bar_length = self.screen.size[0]
-			# self.num_elements = np.int(np.floor(session.standard_parameters['num_elements'] * (self.size_pix[0]/self.size_pix[1])))
-			# if self.num_elements%2 == 1:
-				# self.num_elements+=1
 			self.period = np.int(np.round(session.standard_parameters['vertical_pass_dur'] * (self.size_pix[0]/self.size_pix[1]))) * session.standard_parameters['TR']
-			
+
 		self.full_width = self.size_pix[0] + self.bar_width + self.session.standard_parameters['element_size']
 		self.midpoint = 0
 
 		# this is for determining ecc, which we make dependent on largest screen dimension
 		self.max_ecc_pix = np.max(self.size_pix)/2 - (self.bar_width+self.session.standard_parameters['element_size'])/2
-		# determine how many redraws it takes before the stim is fully on screen:
-		# step_size_pixs = self.full_width/(self.period/(session.standard_parameters['TR']/session.standard_parameters['TR']))
-
-		# self.redraws_before_full_bar = np.ceil((self.bar_width+self.session.standard_parameters['element_size'])*1.5/step_size_pixs)
 
 		self.phase = 0
 		# bookkeeping variables
@@ -96,10 +82,10 @@ class PRFStim(object):
 		self.fix_gray_value = self.session.background_color
 
 		# and change them if a pulse is wanted
-		if pulse * (self.eccentricity_bin <= (self.session.nr_staircases_ecc-1)):
+		if pulse:# * (self.eccentricity_bin <= (self.session.nr_staircases_ecc-1)):
 
 			# update the color
-			color_quest_sample = self.session.staircases[self.session.task + '_%i'%self.eccentricity_bin].quantile()
+			color_quest_sample = self.session.staircases['bar_%i'%self.eccentricity_bin].quantile()
 			color_1_ratio = self.convert_quest_sample(color_quest_sample)
 			color_2_ratio = 1-color_1_ratio
 
@@ -119,7 +105,7 @@ class PRFStim(object):
 				self.trial.events.append( log_msg )
 				print log_msg
 				
-			fix_quest_sample = self.session.staircases[self.session.task + '_%i'%self.eccentricity_bin].quantile()
+			fix_quest_sample = self.session.staircases['fix_%i'%self.eccentricity_bin].quantile()
 			fix_value = (self.convert_quest_sample(fix_quest_sample) - 0.5) * 2.0
 		
 			log_msg = 'signal in feature: fix ecc bin: %i phase: %1.3f value: %f at %f ' % (self.eccentricity_bin, self.phase, fix_quest_sample, self.session.clock.getTime())
@@ -129,7 +115,7 @@ class PRFStim(object):
 				self.trial.events.append( log_msg )
 				print log_msg
 
-			# define the last sampled staircase so the right stair case is updated
+			# define the last sampled staircase so the right staircase is updated
 			self.last_sampled_staircase = self.session.task + '_%i'%self.eccentricity_bin	
 
 			# Now set the actual stimulus parameters
@@ -172,9 +158,15 @@ class PRFStim(object):
 
 			# define midpoint
 			if np.mod(self.redraws,self.session.standard_parameters['redraws_per_TR']) == 0:
-				self.midpoint = phase * self.full_width - 0.5 * self.full_width
+				self.midpoint = phase * self.full_width - 0.5 * self.full_width #+ self.session.standard_parameters['x_offset']
 
-			if (np.mod(self.redraws,self.session.standard_parameters['redraws_per_TR']) == 1):
+			if np.abs(self.midpoint) < (self.full_width/2 - self.bar_width - self.session.standard_parameters['element_size']):
+				within_ecc = True
+			else:
+				within_ecc = False
+
+
+			if (np.mod(self.redraws,self.session.standard_parameters['redraws_per_TR']) == 1) * within_ecc:
 				self.populate_stimulus(pulse=True)
 			else:
 				self.populate_stimulus(pulse=False)
@@ -184,7 +176,13 @@ class PRFStim(object):
 			self.session.element_array.setSizes(self.element_sizes)
 			self.session.element_array.setColors(self.colors)
 			self.session.element_array.setOris(self.element_orientations)
-			self.session.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -self.midpoint])) * self.rotation_matrix)) 
+			if self.trial.parameters['orientation'] == np.pi/2:
+				draw_midpoint = self.midpoint - self.session.standard_parameters['x_offset']
+			elif self.trial.parameters['orientation'] == 3*(np.pi/2):
+				draw_midpoint = self.midpoint + self.session.standard_parameters['x_offset']
+			else:
+				draw_midpoint = self.midpoint 
+			self.session.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -draw_midpoint])) * self.rotation_matrix)) 
 			log_msg = 'stimulus draw for phase %f, at %f'%(phase, self.session.clock.getTime())
 			self.trial.events.append( log_msg )
 			if self.session.tracker:
@@ -198,10 +196,10 @@ class PRFStim(object):
 
 		if self.trial.parameters['stim_bool'] == 1:
 			self.session.element_array.draw()
+			self.session.fixation.setColor(self.fix_gray_value)
 		
 		self.session.fixation_outer_rim.draw()
 		self.session.fixation_rim.draw()
-		self.session.fixation.setColor(self.fix_gray_value)
 		self.session.fixation.draw()
 
 		self.session.mask_stim.draw()

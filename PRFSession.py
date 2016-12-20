@@ -17,6 +17,9 @@ sys.path.append( 'exp_tools' )
 from Session import *
 from PRFTrial import *
 from constants import *
+# set screen to square when asking for circle mask
+if standard_parameters['mask_type'] == 0:
+    standard_parameters['horizontal_stim_size'] = DISPSIZE[1]/DISPSIZE[0]
 from Staircase import YesNoStaircase
 
 import appnope
@@ -54,8 +57,9 @@ class PRFSession(EyelinkSession):
     def prepare_staircases(self,nr_staircases_ecc):
 
 
-        # Color,Fix
-        self.initial_values = [2.5,2.5]
+        # fix, color
+        # self.initial_values = [2.5,2.5]
+        self.initial_values = [1,2.5]
 
         self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_control_quest.pickle')
         if os.path.exists( self.staircase_file_name ):
@@ -96,8 +100,8 @@ class PRFSession(EyelinkSession):
         # 2: W      5: NE
 
         if self.standard_parameters['practice']:
-            self.stim_bool = [1,1,1,1,1,1,1,1,1,1,1]
-            self.direction_indices = np.array([6,4,2,0,6,2,4,2,0,6,4])
+            self.stim_bool = [1,1,1,1]
+            self.direction_indices = np.array([0,2,6,4])
         else:
             # nostim-top-left-bottom-right-nostim-top-left-bottom-right-nostim
             # self.stim_bool = [0,1,1,1,1,0,1,1,1,1,0]
@@ -129,24 +133,28 @@ class PRFSession(EyelinkSession):
             self.standard_parameters['PRF_ITI_in_TR'] * self.standard_parameters['TR'] ])# for stim_dur in self.stim_durations])    # ITI
 
         # fixation point
-        self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=40, pos = np.array((0.0,0.0)), color = self.background_color, maskParams = {'fringeWidth':0.4})
-        self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=22, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
-        self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=17, pos = np.array((0.0,0.0)), color = self.background_color, opacity = 1.0, maskParams = {'fringeWidth':0.4})
+        self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=40, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.background_color, maskParams = {'fringeWidth':0.4})
+        self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=22, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
+        self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=17, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.background_color, opacity = 1.0, maskParams = {'fringeWidth':0.4})
         
         # mask
-        draw_screen_space = [self.screen_pix_size[0]*self.standard_parameters['horizontal_stim_size'],self.screen_pix_size[1]*self.standard_parameters['vertical_stim_size']]
-        mask = np.ones((self.screen_pix_size[1],self.screen_pix_size[0]))*-1
-        x_edge = int(np.round((self.screen_pix_size[0]-draw_screen_space[0])/2))
-        y_edge = int(np.round((self.screen_pix_size[1]-draw_screen_space[1])/2))
-        if x_edge > 0:
-            mask[:,:x_edge] = 1
-            mask[:,-x_edge:] = 1
-        if y_edge > 0:
-            mask[-y_edge:,:] = 1
-            mask[:y_edge,:] = 1
-        import scipy
-        mask = scipy.ndimage.filters.gaussian_filter(mask,5)
-        self.mask_stim = visual.PatchStim(self.screen, mask=mask,tex=None, size=[self.screen_pix_size[0],self.screen_pix_size[1]], pos = np.array((0.0,0.0)), color = self.screen.background_color) # 
+        if self.standard_parameters['mask_type'] ==1:
+            draw_screen_space = [self.screen_pix_size[0]*self.standard_parameters['horizontal_stim_size'],self.screen_pix_size[1]*self.standard_parameters['vertical_stim_size']]
+            mask = np.ones((self.screen_pix_size[1],self.screen_pix_size[0]))*-1
+            x_edge = int(np.round((self.screen_pix_size[0]-draw_screen_space[0])/2))
+            y_edge = int(np.round((self.screen_pix_size[1]-draw_screen_space[1])/2))
+            if x_edge > 0:
+                mask[:,:x_edge] = 1
+                mask[:,-x_edge:] = 1
+            if y_edge > 0:
+                mask[-y_edge:,:] = 1
+                mask[:y_edge,:] = 1
+            import scipy
+            mask = scipy.ndimage.filters.gaussian_filter(mask,5)
+            self.mask_stim = visual.PatchStim(self.screen, mask=mask,tex=None, size=[self.screen_pix_size[0],self.screen_pix_size[1]], pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.screen.background_color) # 
+        elif self.standard_parameters['mask_type'] == 0:
+            mask = filters.makeMask(matrixSize = self.screen_pix_size[0], shape='raisedCosine', radius=self.standard_parameters['vertical_stim_size']*self.screen_pix_size[1]/self.screen_pix_size[0]/2, center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
+            self.mask_stim = visual.PatchStim(self.screen, mask=mask,tex=None, size=[self.screen_pix_size[0]*2,self.screen_pix_size[0]*2], pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.screen.background_color) # 
     
     def close(self):
         super(PRFSession, self).close()

@@ -47,17 +47,15 @@ class PRFSession(EyelinkSession):
         self.scanner = scanner
         # trials can be set up independently of the staircases that support their parameters
         self.prepare_trials()
-        self.nr_staircases_ecc = 4
-        self.prepare_staircases(self.nr_staircases_ecc )
+        self.nr_staircases_ecc = standard_parameters['nr_staircases_ecc']
+        self.prepare_staircases(self.nr_staircases_ecc)
         # self.prepare_sounds()
 
     def prepare_staircases(self,nr_staircases_ecc):
-
-
         # Color,Fix
         self.initial_values = [2.5,2.5]
 
-        self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_control_quest.pickle')
+        self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_staircase.pickle')
         if os.path.exists( self.staircase_file_name ):
             with open(self.staircase_file_name) as f:
                 self.staircases = pickle.load(f)
@@ -80,6 +78,7 @@ class PRFSession(EyelinkSession):
                                     })
         # now simply pick one of the staircases needed for this condition
         # self.staircase = self.staircases[self.task]
+        print self.staircases.keys()
     
     def prepare_trials(self):
         """docstring for prepare_trials(self):"""

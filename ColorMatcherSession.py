@@ -16,7 +16,7 @@ sys.path.append( 'exp_tools' )
 
 from Session import *
 from ColorMatcherTrial import *
-from standard_parameters import *
+from constants import *
 from Staircase import YesNoStaircase
 
 import appnope
@@ -26,6 +26,10 @@ class ColorMatcherSession(EyelinkSession):
     def __init__(self, subject_initials, index_number, scanner, tracker_on):
         super(ColorMatcherSession, self).__init__( subject_initials, index_number)
         
+        self.background_color = (np.array(BGC)/255*2)-1
+
+        screen = self.create_screen( size = DISPSIZE, full_screen =full_screen, physical_screen_distance = SCREENDIST, 
+            background_color = self.background_color, physical_screen_size = SCREENSIZE, wait_blanking = True, screen_nr = 1 )
         screen=self.create_screen( size = screen_res, full_screen = 1, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
         event.Mouse(visible=False, win=screen)
 
@@ -62,8 +66,24 @@ class ColorMatcherSession(EyelinkSession):
 
         screen_width, screen_height = self.screen_pix_size
         
-        ecc_mask = filters.makeMask(matrixSize = 2048, shape='raisedCosine', radius=self.standard_parameters['stim_size'] * self.screen_pix_size[1] / self.screen_pix_size[0], center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
-        self.mask_stim = visual.PatchStim(self.screen, mask=ecc_mask,tex=None, size=(self.screen_pix_size[0], self.screen_pix_size[0]), pos = np.array((0.0,0.0)), color = self.screen.background_color) # 
+        # mask
+        if self.standard_parameters['mask_type'] ==1:
+            draw_screen_space = [self.screen_pix_size[0]*self.standard_parameters['horizontal_stim_size'],self.screen_pix_size[1]*self.standard_parameters['vertical_stim_size']]
+            mask = np.ones((self.screen_pix_size[1],self.screen_pix_size[0]))*-1
+            x_edge = int(np.round((self.screen_pix_size[0]-draw_screen_space[0])/2))
+            y_edge = int(np.round((self.screen_pix_size[1]-draw_screen_space[1])/2))
+            if x_edge > 0:
+                mask[:,:x_edge] = 1
+                mask[:,-x_edge:] = 1
+            if y_edge > 0:
+                mask[-y_edge:,:] = 1
+                mask[:y_edge,:] = 1
+            import scipy
+            mask = scipy.ndimage.filters.gaussian_filter(mask,5)
+            self.mask_stim = visual.PatchStim(self.screen, mask=mask,tex=None, size=[self.screen_pix_size[0],self.screen_pix_size[1]], pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.screen.background_color) # 
+        elif self.standard_parameters['mask_type'] == 0:
+            mask = filters.makeMask(matrixSize = self.screen_pix_size[0], shape='raisedCosine', radius=self.standard_parameters['vertical_stim_size']*self.screen_pix_size[1]/self.screen_pix_size[0]/2, center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
+            self.mask_stim = visual.PatchStim(self.screen, mask=mask,tex=None, size=[self.screen_pix_size[0]*2,self.screen_pix_size[0]*2], pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.screen.background_color) # 
     
     def close(self):
         super(ColorMatcherSession, self).close()

@@ -27,7 +27,7 @@ import pygame
 from pygame.locals import *
 from scipy.io import wavfile
 
-import pyaudio, wave
+# import pyaudio, wave
 
 from pylink import *
 
@@ -44,7 +44,7 @@ class Session(object):
 		self.subject_initials = subject_initials
 		self.index_number = index_number
 		
-		self.setup_sound_system()
+        # self.setup_sound_system()
 		# pygame.mixer.init()
 		# os.chdir('sounds')
 		# self.sound_files = ['%d.wav' % i for i in range(3)] # subprocess.Popen('ls *.*', shell=True, stdout=subprocess.PIPE).communicate()[0].split('\n')[0:-1]
@@ -94,7 +94,8 @@ class Session(object):
 		"""
 
 		# the actual screen-getting
-		self.display = libscreen.Display(disptype='psychopy', dispsize=size, fgc=(255,0,0), bgc=list((255*bgl for bgl in background_color)), screennr=screen_nr,mousevisible=False,fullscr=full_screen)
+        self.display = libscreen.Display(disptype='psychopy', dispsize=size, fgc=(255,0,0), bgc=list((255*bgl for bgl in background_color)), screennr=screen_nr, mousevisible=False,fullscr=full_screen)
+        
 		# self.pygaze_scr = libscreen.Screen(disptype='psychopy')
 
 		# print dir(self.display)
@@ -212,14 +213,17 @@ class EyelinkSession(Session):
 	def __init__(self, subject_initials, index_number):
 		super(EyelinkSession, self).__init__(subject_initials, index_number)
 	
-	def create_tracker(self, tracker_on = True, sensitivity_class = 0, split_screen = False, screen_half = 'L', auto_trigger_calibration = 1, calibration_type = 'HV9', sample_rate = 1000):
+    def create_tracker(self, tracker_on = True, sensitivity_class = 0, split_screen = False, screen_half = 'L', auto_trigger_calibration = 1, calibration_type = 'HV9', sample_rate = 500):
 		"""
 		tracker sets up the connection and inputs the parameters.
 		only start tracker after the screen is taken, its parameters are set,
 		 and output file names are created.
 		"""
 
-		self.eyelink_temp_file = self.subject_initials[:2] + '_' + str(self.index_number) + '_' + str(np.random.randint(99)) + '.edf'
+        import string
+        randstr = ''.join(np.random.choice(np.array([s for s in string.ascii_lowercase+string.digits]),3))
+        #self.eyelink_temp_file = self.subject_initials[:2] + '_' + str(self.index_number) + '_' + str(np.random.randint(99)) + '.edf'
+        self.eyelink_temp_file = self.subject_initials[:2] + str(self.index_number) + '_' + randstr + '.edf'
 		# self.tracker.openDataFile(self.eyelink_temp_file)
 
 
@@ -227,7 +231,8 @@ class EyelinkSession(Session):
 			# create actual tracker
 			try:
 				# self.tracker = EyeLink()
-				self.tracker = eyetracker.EyeTracker(self.display, trackertype='eyelink', resolution=self.display.dispsize, data_file=self.eyelink_temp_file, bgc=self.display.bgc)
+                self.tracker = eyetracker.EyeTracker(self.display, trackertype='eyelink', resolution=self.display.dispsize, 
+                    data_file=self.eyelink_temp_file, bgc=self.display.bgc,eventdetection='native')
 				self.tracker_on = True
 			except:
 				print '\ncould not connect to tracker'
@@ -243,8 +248,30 @@ class EyelinkSession(Session):
 			return
 
 		self.apply_settings(sensitivity_class = sensitivity_class, split_screen = split_screen, screen_half = screen_half, auto_trigger_calibration = auto_trigger_calibration, calibration_type = calibration_type, sample_rate = sample_rate)
+        
+    def custom_calibration(self,calibration_targets,validation_targets,point_indices,n_points,
+        randomize_order=0,repeat_first_target=1):
 		
-	def apply_settings(self, sensitivity_class = 0, split_screen = False, screen_half = 'L', auto_trigger_calibration = True, sample_rate = 1000, calibration_type = 'HV9', margin = 60):
+        # send the messages:
+        self.tracker.send_command('calibration_type = HV%d'%n_points  )
+        self.tracker.send_command('generate_default_targets = NO')
+        self.tracker.send_command('randomize_calibration_order %d'%randomize_order)
+        self.tracker.send_command('randomize_validation_order %d'%randomize_order)
+        self.tracker.send_command('cal_repeat_first_target  %d'%repeat_first_target)
+        self.tracker.send_command('val_repeat_first_target  %d'%repeat_first_target)
+
+        if repeat_first_target:
+            n_points+=1
+         
+        self.tracker.send_command('calibration_samples=%d'%n_points)
+        self.tracker.send_command('calibration_sequence=%s'%point_indices)
+        self.tracker.send_command('calibration_targets = %s'%calibration_targets)
+         
+        self.tracker.send_command('validation_samples=%d'%n_points)
+        self.tracker.send_command('validation_sequence=%s'%point_indices)
+        self.tracker.send_command('validation_targets = %s'%validation_targets)
+         
+    def apply_settings(self, sensitivity_class = 0, split_screen = False, screen_half = 'L', auto_trigger_calibration = True, sample_rate = 500, calibration_type = 'HV9', margin = 60,pupil_tracking_mode = 'ellipse'):
 		
 		# set EDF file contents 
 		self.tracker.send_command("file_event_filter = LEFT,RIGHT,FIXATION,SACCADE,BLINK,MESSAGE,BUTTON")
@@ -264,10 +291,18 @@ class EyelinkSession(Session):
 		self.tracker.send_command("saccade_velocity_threshold = %d" %[30, 22][sensitivity_class])
 		self.tracker.send_command("saccade_acceleration_threshold = %d" %[9500, 5000][sensitivity_class])
 		self.tracker.send_command("saccade_motion_threshold = %d" %[0.15, 0][sensitivity_class])
+        
+        # self.tracker.send_command("file_sample_control = 1,0,0")
+        #self.tracker.send_command("screen_phys_coords = %d %d %d %d" %(-self.physical_screen_size[0] / 2.0, self.physical_screen_size[1] / 2.0, self.physical_screen_size[0] / 2.0, -self.physical_screen_size[1] / 2.0))
+        self.tracker.send_command("screen_phys_coords = %d %d %d %d" %(-self.physical_screen_size[0] / 2.0*10, self.physical_screen_size[1] / 2.0*10, self.physical_screen_size[0] / 2.0*10, -self.physical_screen_size[1] / 2.0*10))
+        # self.tracker.send_command("simulation_screen_distance = " + str(self.physical_screen_distance))
+        self.tracker.send_command("screen_distance = %d %d"%(self.physical_screen_distance*10,self.physical_screen_distance*10))
+
 		
-#		self.tracker.send_command("file_sample_control = 1,0,0")
-		self.tracker.send_command("screen_phys_coords = %d %d %d %d" %(-self.physical_screen_size[0] / 2.0, self.physical_screen_size[1] / 2.0, self.physical_screen_size[0] / 2.0, -self.physical_screen_size[1] / 2.0))
-		self.tracker.send_command("simulation_screen_distance = " + str(self.physical_screen_distance))
+        if pupil_tracking_mode == 'ellipse':        
+            self.tracker.send_command('use_ellipse_fitter =  YES')
+        elif pupil_tracking_mode == 'centroid':
+            self.tracker.send_command('use_ellipse_fitter =  NO')
 		
 		if auto_trigger_calibration:
 			self.tracker.send_command("enable_automatic_calibration = YES")
@@ -278,18 +313,18 @@ class EyelinkSession(Session):
 			# standard would be:
 			# self.tracker.).send_command("calibration_targets = 320,240 320,40 320,440 40,240 600,240 40,40 600,40, 40,440 600,440")
 			# ordering of points:
-		#	;; FOR 9-SAMPLE ALGORITHM:
-		#	;; POINTS MUST BE ORDERED ON SCREEN:
-		#	;; 5 1 6
-		#	;; 3 0 4
-		#	;; 7 2 8
+        #    ;; FOR 9-SAMPLE ALGORITHM:
+        #    ;; POINTS MUST BE ORDERED ON SCREEN:
+        #    ;; 5 1 6
+        #    ;; 3 0 4
+        #    ;; 7 2 8
 
-		#	;; ordering for points in bicubic ("HV13", 13 pt) cal
-		#	;; Point order: 6 2 7
-		#	;;	 10 11
-		#	;;	 4 1 5
-		#	;;	 12 13
-		#	;;	 8 3 9
+        #    ;; ordering for points in bicubic ("HV13", 13 pt) cal
+        #    ;; Point order: 6 2 7
+        #    ;;     10 11
+        #    ;;     4 1 5
+        #    ;;     12 13
+        #    ;;     8 3 9
 		if split_screen:
 			self.tracker.send_command("calibration_type = HV9")
 			self.tracker.send_command("generate_default_targets = NO")
@@ -307,26 +342,28 @@ class EyelinkSession(Session):
 		else:
 			self.tracker.send_command("calibration_type = " + calibration_type)
 			
-	def tracker_setup(self, sensitivity_class = 0, split_screen = False, screen_half = 'L', auto_trigger_calibration = True, calibration_type = 'HV9', sample_rate = 1000):
+    def tracker_setup(self, sensitivity_class = 0, split_screen = False, screen_half = 'L', auto_trigger_calibration = True, calibration_type = 'HV9', sample_rate = 500):
 		if self.tracker.connected():
 						
 			self.tracker.calibrate()
 
 			# re-set all the settings to be sure of sample rate and filter and such that may have been changed during the calibration procedure and the subject pressing all sorts of buttons
-			self.apply_settings(sensitivity_class = sensitivity_class, split_screen = split_screen, screen_half = screen_half, auto_trigger_calibration = auto_trigger_calibration, calibration_type = calibration_type, sample_rate = sample_rate )
+            self.apply_settings(sensitivity_class = sensitivity_class, split_screen = split_screen, 
+                screen_half = screen_half, auto_trigger_calibration = auto_trigger_calibration, 
+                calibration_type = calibration_type, sample_rate = sample_rate )
 			
 			# we'll record the whole session continuously and parse the data afterward using the messages sent to the eyelink.
 			self.tracker.start_recording()
 			# for that, we'll need the pixel size and the like. 
 			self.tracker.log('degrees per pixel ' + str(self.pixels_per_degree) )
 			# now, we want to know how fast we're sampling, really
-#			self.eye_measured, self.sample_rate, self.CR_mode, self.file_sample_filter, self.link_sample_filter = self.tracker.getModeData()
+#            self.eye_measured, self.sample_rate, self.CR_mode, self.file_sample_filter, self.link_sample_filter = self.tracker.getModeData()
 			self.sample_rate = sample_rate
 	
 	def drift_correct(self, position = None):
 		"""docstring for drift_correct"""
 		if self.tracker.connected():
-			if position == None:	# standard is of course centered on the screen.
+            if position == None:    # standard is of course centered on the screen.
 				position = [self.screen.size[0]/2,self.screen.size[1]/2]
 			while 1:
 				# Does drift correction and handles the re-do camera setup situations
@@ -340,13 +377,13 @@ class EyelinkSession(Session):
 		if self.tracker:
 			return self.tracker.sample() # check for new sample update
 			# if(dt != None):
-			# 	# Gets the gaze position of the latest sample,
-			# 	if dt.isRightSample():
-			# 		gaze_position = dt.getRightEye().getGaze()
-			# 		return gaze_position[0],gaze_position[1] # self.screen.size[1]-
-			# 	elif dt.isLeftSample():
-			# 		gaze_position = dt.getLeftEye().getGaze()
-			# 		return gaze_position[0],gaze_position[1] # self.screen.size[1]-
+            #     # Gets the gaze position of the latest sample,
+            #     if dt.isRightSample():
+            #         gaze_position = dt.getRightEye().getGaze()
+            #         return gaze_position[0],gaze_position[1] # self.screen.size[1]-
+            #     elif dt.isLeftSample():
+            #         gaze_position = dt.getLeftEye().getGaze()
+            #         return gaze_position[0],gaze_position[1] # self.screen.size[1]-
 			# return 0,self.screen.size[1]-0
 		else:
 			pygame.event.pump()
@@ -397,11 +434,11 @@ class EyelinkSession(Session):
 			while no_saccade:
 				saccade_polling_time = core.getTime()
 				ep = np.array(self.eye_pos())
-		#		print ep, fixation_position, threshold, np.linalg.norm(ep - fixation_position) / self.pixels_per_degree
+        #        print ep, fixation_position, threshold, np.linalg.norm(ep - fixation_position) / self.pixels_per_degree
 				if (np.linalg.norm(ep - fixation_position) / self.pixels_per_degree) > threshold:
 					# eye position is outside the safe zone surrounding fixation - swap the buffers to change saccade target position
 					no_saccade = False
-		#			print '\n'
+        #            print '\n'
 				if ( saccade_polling_time - start_time ) > max_time:
 					no_saccade = False
 			
@@ -411,9 +448,9 @@ class EyelinkSession(Session):
 				saccade_polling_time = core.getTime()
 				# ev = 
 				# if ev == 5: # start of a saccade
-				# 	no_saccade = False
+                #     no_saccade = False
 				# if ( saccade_polling_time - start_time ) > max_time:
-				# 	no_saccade = False
+                #     no_saccade = False
 			
 		return saccade_polling_time
 			

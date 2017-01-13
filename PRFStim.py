@@ -41,7 +41,7 @@ class PRFStim(object):
         if self.trial.parameters['orientation'] in [0,np.pi]: # these are the vertical passes (e.g. top-bottom)
             self.size_pix = [self.screen.size[1]*session.standard_parameters['vertical_stim_size'],self.screen.size[0]*session.standard_parameters['horizontal_stim_size']]
             self.period = session.standard_parameters['vertical_pass_dur'] * session.standard_parameters['TR']
-		else: # horizontal bar passes:
+        else: # horizontal bar passes:
             self.size_pix = [self.screen.size[0]*session.standard_parameters['horizontal_stim_size'],self.screen.size[1]*session.standard_parameters['vertical_stim_size']]
             self.period = np.int(np.round(session.standard_parameters['horizontal_pass_dur'] * session.standard_parameters['TR']))
             
@@ -119,7 +119,7 @@ class PRFStim(object):
                 self.trial.events.append( log_msg )
                 print log_msg
 
-			# define the last sampled staircase so the right staircase is updated
+            # define the last sampled staircase so the right staircase is updated
             self.last_sampled_staircase = self.session.task + '_%i'%self.eccentricity_bin    
 
             # Now set the actual stimulus parameters
@@ -155,7 +155,7 @@ class PRFStim(object):
 
             # define midpoint
             if np.mod(self.redraws,self.session.standard_parameters['redraws_per_TR']) == 0:
-				self.midpoint = phase * self.full_width - 0.5 * self.full_width #+ self.session.standard_parameters['x_offset']
+                self.midpoint = phase * self.full_width - 0.5 * self.full_width #+ self.session.standard_parameters['x_offset']
             if (np.mod(self.redraws,self.session.standard_parameters['redraws_per_TR']) == 1):
                 self.populate_stimulus(pulse=True)
             else:
@@ -165,13 +165,13 @@ class PRFStim(object):
             self.session.element_array.setSizes(self.element_sizes)
             self.session.element_array.setColors(self.colors)
             self.session.element_array.setOris(self.element_orientations)
-			if self.trial.parameters['orientation'] == np.pi/2:
-				draw_midpoint = self.midpoint - self.session.standard_parameters['x_offset']
-			elif self.trial.parameters['orientation'] == 3*(np.pi/2):
-				draw_midpoint = self.midpoint + self.session.standard_parameters['x_offset']
-			else:
-				draw_midpoint = self.midpoint 
-			self.session.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -draw_midpoint])) * self.rotation_matrix)) 
+            if self.trial.parameters['orientation'] == np.pi/2:
+                draw_midpoint = self.midpoint - self.session.standard_parameters['x_offset']
+            elif self.trial.parameters['orientation'] == 3*(np.pi/2):
+                draw_midpoint = self.midpoint + self.session.standard_parameters['x_offset']
+            else:
+                draw_midpoint = self.midpoint 
+            self.session.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -draw_midpoint])) * self.rotation_matrix)) 
             log_msg = 'stimulus draw for phase %f, at %f'%(phase, self.session.clock.getTime())
             self.trial.events.append( log_msg )
             if self.session.tracker:
@@ -185,7 +185,7 @@ class PRFStim(object):
 
         if self.trial.parameters['stim_bool'] == 1:
             self.session.element_array.draw()
-			self.session.fixation.setColor(self.fix_gray_value)
+            self.session.fixation.setColor(self.fix_gray_value)
         
         self.session.fixation_outer_rim.draw()
         self.session.fixation_rim.draw()

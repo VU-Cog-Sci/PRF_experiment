@@ -3,13 +3,13 @@ from __future__ import division
 
 # standard parameters
 standard_parameters = {
-	
-	'practice':					 1,
-	## spatial dimensions:
-    'eyelink_calib_size': 		 0.5,       # portion of screen heigth
+    
+    'practice':                     1,
+    ## spatial dimensions:
+    'eyelink_calib_size':          0.5,       # portion of screen heigth
     'mask_type':                 1,         # 0: circle, 1: square
-	'vertical_stim_size': 		 1,		    # portion of horizontal screen space covered
-	'horizontal_stim_size': 	 1,         # when wanting a circular mask, set this to screen_size[1]/screen_size[0]
+    'vertical_stim_size':          1,            # portion of horizontal screen space covered
+    'horizontal_stim_size':      1,         # when wanting a circular mask, set this to screen_size[1]/screen_size[0]
     'x_offset':                 0,          # when wanting a circular mask, x-offset
     'bar_width_ratio':          0.1,        # portion of screen height
     
@@ -21,9 +21,9 @@ standard_parameters = {
     'vertical_pass_dur':            49,        # that is 24*1.5=36 sec, which is 15/24 = 0.625 degree per step
     'horizontal_pass_dur':            49,
     'nr_staircases_ecc':            5,
-	'PRF_ITI_in_TR':             0.5,		# fill in 0.5 less than wanted to accomodate for t waiting
-	'TR':               	     0.945,		# VERY IMPORTANT TO FILL IN AFTER PLANNING IN!			
-	'redraws_per_TR' :     		 3.0,		# TR/redraws_per_TR is the length of the transients, in this case 500 ms: #used e
+    'PRF_ITI_in_TR':             0.5,        # fill in 0.5 less than wanted to accomodate for t waiting
+    'TR':                        0.945,        # VERY IMPORTANT TO FILL IN AFTER PLANNING IN!            
+    'redraws_per_TR' :              3.0,        # TR/redraws_per_TR is the length of the transients, in this case 500 ms: #used e
     'fast_speed':                   7.0,        # speed of the fast elements for TK/DE/JW: 6, for JS/SN/NA: 7
     'slow_speed':                   3.0,        # speed of the slow elements for TK/DE/JW: 4, for JS/SN/NA: 3
     'element_size':                35.0,        # size of the elements # used: 35
@@ -31,17 +31,17 @@ standard_parameters = {
 
     ## stim feature params
     'num_elements':             2000,       # amount of elements in bar, this will be num_elements * (1/bar_width_ratio) = 8000 for Mapper
-	'fast_speed':      			 7.0,		# speed of the fast elements for TK/DE/JW: 6, for JS/SN/NA: 7
+    'fast_speed':                   7.0,        # speed of the fast elements for TK/DE/JW: 6, for JS/SN/NA: 7
     'num_fns_trials':              4,        # speaks for itself
 
     ## mapper variables:
-	'mapper_stim_in_TR': 	          1.0,		# duration of mapper stimulus in TRs
+    'mapper_stim_in_TR':               1.0,        # duration of mapper stimulus in TRs
     'minimum_pulse_gap':            2.0,
     'warming_up_n_TRs':               18,
 
     ## Color matcher variables:
-	'num_trials': 				    10,		# amount of matcher trials
-	'BY_comparison_color': 		   0.5,		# color to compare to; 0.5 is best.
+    'num_trials':                     10,        # amount of matcher trials
+    'BY_comparison_color':            0.5,        # color to compare to; 0.5 is best.
 }
 
 # response_button_signs = {

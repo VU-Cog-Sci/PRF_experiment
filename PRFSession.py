@@ -139,6 +139,7 @@ class PRFSession(EyelinkSession):
     def prepare_staircases(self):
         # fix, color
         self.initial_values = [2,2]
+        stepsizes = np.r_[np.array([0.5,0.5,0.25,0.25]), 0.25*np.ones((1e4))]
 
         self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_staircase.pickle')
         if os.path.exists( self.staircase_file_name ):
@@ -148,7 +149,6 @@ class PRFSession(EyelinkSession):
             # create staircases
             self.staircases = {}
             for i, t in enumerate(['fix','bar']):
-                stepsizes = np.r_[np.array([0.5,0.5,0.25,0.25]), 0.25*np.ones((1e4))]
                 for j in range(self.nr_staircases_ecc):
                     self.staircases.update({t + '_%i'%j:
                                 data.StairHandler(startVal = self.initial_values[i],

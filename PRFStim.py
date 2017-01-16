@@ -67,9 +67,8 @@ class PRFStim(object):
         # set this to its default no-answer necessary value of None - this is tested for in PRFTrial when incorporating responses
         self.last_sampled_staircase = None
 
-    def convert_quest_sample(self,quest_sample):
-
-        return 1 - (1/(np.e**quest_sample+1))
+    def convert_sample(self,in_sample):
+        return 1 - (1/(np.e**in_sample+1))
     
     def populate_stimulus(self,pulse=False):
 
@@ -89,8 +88,8 @@ class PRFStim(object):
         if pulse: 
 
             # update the color
-            color_quest_sample = self.session.staircases['bar_%i'%self.eccentricity_bin].quantile()
-            color_1_ratio = self.convert_quest_sample(color_quest_sample)
+            color_sample = self.session.staircases['bar_%i'%self.eccentricity_bin].next()
+            color_1_ratio = self.convert_sample(color_sample)
             color_2_ratio = 1-color_1_ratio
 
             self.present_color_task_sign = np.random.choice([-1,1])
@@ -102,22 +101,24 @@ class PRFStim(object):
                 BY_ratio = color_1_ratio
             
             # send a log msg
-            log_msg = 'signal in feature: bar ecc bin: %i phase: %1.3f value: %f at %f ' %(self.eccentricity_bin, self.phase, color_quest_sample, self.session.clock.getTime())
+            log_msg = 'signal in feature: bar ecc bin: %i phase: %1.3f value: %f (RG_ratio) %f at %f ' %(self.eccentricity_bin, self.phase, color_sample, RG_ratio, self.session.clock.getTime())
             if 'log_msg' in locals():
                 if self.session.tracker:
                     self.session.tracker.log( log_msg )
                 self.trial.events.append( log_msg )
-                print log_msg
-                
-            fix_quest_sample = self.session.staircases['fix_%i'%self.eccentricity_bin].quantile()
-            fix_value = (self.convert_quest_sample(fix_quest_sample) - 0.5) * 2.0
+                if self.session.task == 'bar':
+                    print log_msg     
+
+            fix_sample = self.session.staircases['fix_%i'%self.eccentricity_bin].next()
+            fix_value = (self.convert_sample(fix_sample) - 0.5) * 2.0
         
-            log_msg = 'signal in feature: fix ecc bin: %i phase: %1.3f value: %f at %f ' % (self.eccentricity_bin, self.phase, fix_quest_sample, self.session.clock.getTime())
+            log_msg = 'signal in feature: fix ecc bin: %i phase: %1.3f value: %f/%f at %f ' % (self.eccentricity_bin, self.phase, fix_sample, fix_value, self.session.clock.getTime())
             if 'log_msg' in locals():
                 if self.session.tracker:
                     self.session.tracker.log( log_msg )
                 self.trial.events.append( log_msg )
-                print log_msg
+                if self.session.task == 'fix':
+                    print log_msg
 
             # define the last sampled staircase so the right staircase is updated
             self.last_sampled_staircase = self.session.task + '_%i'%self.eccentricity_bin    

@@ -1,5 +1,5 @@
 from __future__ import division
-from psychopy import visual, core, misc, event
+from psychopy import visual, core, misc, event, data
 import numpy as np
 # from IPython import embed as shell
 from math import *
@@ -133,16 +133,12 @@ class PRFSession(EyelinkSession):
         self.scanner = scanner
         # trials can be set up independently of the staircases that support their parameters
         self.prepare_trials()
-        self.nr_staircases_ecc = 4
-        self.prepare_staircases(self.nr_staircases_ecc )
-        # self.prepare_sounds()
+        self.nr_staircases_ecc = standard_parameters['nr_staircases_ecc']
+        self.prepare_staircases()
 
-    def prepare_staircases(self,nr_staircases_ecc):
-
-
+    def prepare_staircases(self):
         # fix, color
-        # self.initial_values = [2.5,2.5]
-        self.initial_values = [1,2.5]
+        self.initial_values = [2,2]
 
         self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_staircase.pickle')
         if os.path.exists( self.staircase_file_name ):
@@ -152,21 +148,13 @@ class PRFSession(EyelinkSession):
             # create staircases
             self.staircases = {}
             for i, t in enumerate(['fix','bar']):
-                for j in range(nr_staircases_ecc):
+                stepsizes = np.r_[np.array([0.5,0.5,0.25,0.25]), 0.25*np.ones((1e4))]
+                for j in range(self.nr_staircases_ecc):
                     self.staircases.update({t + '_%i'%j:
-                                Quest.QuestObject(
-                                        tGuess = self.initial_values[i],  
-                                        tGuessSd = self.initial_values[i]*0.5, 
-                                        pThreshold = 0.83, 
-                                        beta = 3.5, 
-                                        delta = 0.05, 
-                                        gamma = 0.0, 
-                                        grain = 0.01, 
-                                        range = None 
-                                        ) 
+                                data.StairHandler(startVal = self.initial_values[i],
+                                    stepType = 'log', stepSizes=stepsizes, minVal = 0.0,
+                                    nUp=1, nDown=3)  
                                     })
-        # now simply pick one of the staircases needed for this condition
-        # self.staircase = self.staircases[self.task]
     
     def prepare_trials(self):
         """docstring for prepare_trials(self):"""
@@ -243,8 +231,9 @@ class PRFSession(EyelinkSession):
         super(PRFSession, self).close()
         with open(self.staircase_file_name, 'w') as f:
             pickle.dump(self.staircases, f)
-        for s in self.staircases.keys():
-            print 'Staircase {}, mean {}, standard deviation {}'.format(s, self.staircases[s].mean(), self.staircases[s].sd())
+        # for s in self.staircases.keys():
+            # print 'Staircase {}'.format(s)
+            # self.staircases[s].printAsText()
         
     
     def run(self):

@@ -74,24 +74,23 @@ class PRFTrial(Trial):
                     if (self.phase == 0) + (self.phase==1):
                         self.phase_forward()
                 elif ev in self.session.response_button_signs.keys():
-                    if self.phase == 2 :
+                    if self.phase == 2:
                         # then check whether one of the correct buttons was pressed:
                         if self.session.response_button_signs[ev] in [-1,1]:
                             # do we even need an answer?
                             if self.stim.last_sampled_staircase != None:
                                 # what value were we presenting at?
-                                test_value = self.session.staircases[self.stim.last_sampled_staircase].quantile()
                                 if self.session.task == 'bar':
                                     response = self.session.response_button_signs[ev]*self.stim.present_color_task_sign
                                 elif self.session.task == 'fix':
                                     response = self.session.response_button_signs[ev]*self.stim.present_fix_task_sign
 
                                 # update the staircase
-                                self.session.staircases[self.stim.last_sampled_staircase].update(test_value,(response+1)/2)
+                                self.session.staircases[self.stim.last_sampled_staircase].addResponse((response+1)/2)
                                 # now block the possibility of further updates
                                 self.stim.last_sampled_staircase = None
 
-                                log_msg = 'staircase %s bin %d updated from %f after response %s at %f'%( self.session.task, self.stim.eccentricity_bin,test_value, str((response+1)/2), self.session.clock.getTime() )
+                                log_msg = 'staircase %s bin %d updated after response %s at %f'%( self.session.task, self.stim.eccentricity_bin, str((response+1)/2), self.session.clock.getTime() )
 
                                 self.events.append( log_msg )
                                 print log_msg

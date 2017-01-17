@@ -20,7 +20,6 @@ from constants import *
 # set screen to square when asking for circle mask
 if standard_parameters['mask_type'] == 0:
     standard_parameters['horizontal_stim_size'] = DISPSIZE[1]/DISPSIZE[0]
-from Staircase import YesNoStaircase
 
 import appnope
 appnope.nope()
@@ -139,7 +138,7 @@ class PRFSession(EyelinkSession):
     def prepare_staircases(self):
         # fix, color
         self.initial_values = [2,2]
-        stepsizes = np.r_[np.array([0.5,0.5,0.25,0.25]), 0.25*np.ones((1e4))]
+        stepsizes = np.r_[np.array([1.0,1.0,0.5,0.5,0.25,0.25]), 0.25*np.ones((1e4))]
 
         self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_staircase.pickle')
         if os.path.exists( self.staircase_file_name ):

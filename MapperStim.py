@@ -22,7 +22,7 @@ class MapperStim(object):
         # self.size_pix = session.standard_parameters['stim_size'] * session.screen_pix_size[1]
         self.period = session.standard_parameters['mapper_stim_in_TR'] * session.standard_parameters['TR']
         self.refresh_frequency = session.standard_parameters['redraws_per_TR'] / session.standard_parameters['TR']
-        self.task_rate = session.standard_parameters['task_rate']
+        self.task_rate = session.standard_parameters['mapper_task_rate']
         # self.task = task
 
         self.phase = 0

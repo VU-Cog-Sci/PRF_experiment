@@ -29,9 +29,9 @@ class MapperTrial(Trial):
         # set this to its default no-answer necessary value of None - this is tested for in PRFTrial when incorporating responses
         self.last_sampled_staircase = None
 
-    def convert_quest_sample(self,quest_sample):
+    def convert_sample(self,sample):
 
-        return 1 - (1/(np.e**quest_sample+1))
+        return 1 - (1/(np.e**sample+1))
 
     def draw(self):
         """docstring for draw"""
@@ -45,8 +45,9 @@ class MapperTrial(Trial):
 
                 self.session.ready_for_next_pulse = False
                 
-                fix_quest_sample = self.session.staircases['fix'].quantile()
-                fix_value = (self.convert_quest_sample(fix_quest_sample) - 0.5) * 2.0
+                fix_sample = self.session.staircases['fix'].next()
+                # fix_value = (self.convert_sample(fix_sample) - 0.5) * 2.0
+                fix_value = 0.5
                 self.present_fix_task_sign = np.random.choice([-1,1])
                 self.fix_gray_value = np.ones(3) * fix_value * self.present_fix_task_sign
 
@@ -59,7 +60,7 @@ class MapperTrial(Trial):
                 self.events.append( log_msg )
                 print log_msg
 
-                self.session.play_sound()
+                # self.session.play_sound()
                 self.last_sampled_staircase = 'fix'
 
             elif ((np.round(time_elapsed_since_start * (1/self.session.time_steps))/(1/self.session.time_steps)) not in self.session.transient_occurrences) :
@@ -113,15 +114,15 @@ class MapperTrial(Trial):
 
                     if self.last_sampled_staircase is not None: #hasattr(self,'last_sampled_staircase'):
                         # what value were we presenting at?
-                        test_value = self.session.staircases[self.last_sampled_staircase].quantile()
+                        # test_value = self.session.staircases[self.last_sampled_staircase].quantile()
                         response = self.session.response_button_signs[ev]*self.present_fix_task_sign
 
                         # update the staircase
-                        self.session.staircases[self.last_sampled_staircase].update(test_value,(response+1)/2)
+                        self.session.staircases[self.last_sampled_staircase].addResponse((response+1)/2)
                         # now block the possibility of further updates
                         self.last_sampled_staircase = None
 
-                        log_msg = 'staircase updated from %f after response %s at %f'%( test_value, str((response+1)/2), self.session.clock.getTime() )
+                        log_msg = 'staircase updated after response %s at %f'%( str((response+1)/2), self.session.clock.getTime() )
                         self.events.append( log_msg )
                         print log_msg
                         if self.session.tracker:

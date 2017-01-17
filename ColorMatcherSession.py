@@ -9,8 +9,6 @@ import pygame
 from pygame.locals import *
 # from pygame import mixer, time
 
-import Quest
-
 sys.path.append( 'exp_tools' )
 # sys.path.append( os.environ['EXPERIMENT_HOME'] )
 
@@ -30,7 +28,7 @@ class ColorMatcherSession(EyelinkSession):
 
         screen = self.create_screen( size = DISPSIZE, full_screen =full_screen, physical_screen_distance = SCREENDIST, 
             background_color = self.background_color, physical_screen_size = SCREENSIZE, wait_blanking = True, screen_nr = 1 )
-        screen=self.create_screen( size = screen_res, full_screen = 1, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
+        # screen=self.create_screen( size = screen_res, full_screen = 1, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
         event.Mouse(visible=False, win=screen)
 
         self.standard_parameters = standard_parameters

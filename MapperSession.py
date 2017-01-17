@@ -1,5 +1,5 @@
 from __future__ import division
-from psychopy import visual, core, misc, event
+from psychopy import visual, core, misc, event, data
 import numpy as np
 from IPython import embed as shell
 from math import *
@@ -9,7 +9,7 @@ import pygame
 from pygame.locals import *
 # from pygame import mixer, time
 
-import Quest
+# import Quest
 
 sys.path.append( 'exp_tools' )
 # sys.path.append( os.environ['EXPERIMENT_HOME'] )
@@ -144,6 +144,7 @@ class MapperSession(EyelinkSession):
         self.scanner = scanner
         # trials can be set up independently of the staircases that support their parameters
         self.prepare_trials()
+        self.nr_staircases_ecc = standard_parameters['nr_staircases_ecc']
         self.prepare_staircases()
 
         self.ready_for_next_pulse = True
@@ -151,32 +152,49 @@ class MapperSession(EyelinkSession):
 
         # setup fix transient and redraws in session to let it continuously run. This happens in multitudes of 'time_steps', which is equal to the redraw steps in the PRF experiment.
         self.time_steps = self.standard_parameters['TR']/self.standard_parameters['redraws_per_TR']
-        self.transient_occurrences = np.round(np.cumsum(np.random.exponential(self.standard_parameters['task_rate'], size = 20000) + self.standard_parameters['minimum_pulse_gap']) * (1/self.time_steps)) / (1/self.time_steps)
+        self.transient_occurrences = np.round(np.cumsum(np.random.exponential(self.standard_parameters['mapper_task_rate'], size = 20000) + self.standard_parameters['minimum_pulse_gap']) * (1/self.time_steps)) / (1/self.time_steps)
+
+    # def prepare_staircases(self):
+    #     # staircases
+    #     self.initial_value = 2 # for self.unique_tasks, 
+    #     self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_mapper_staircases.pickle')
+    #     if os.path.exists( self.staircase_file_name ):
+    #         with open(self.staircase_file_name) as f:
+    #             self.staircases = pickle.load(f)
+    #     else:
+    #         # create staircases
+    #         self.staircases={}
+    #         self.staircases.update({'fix':
+    #                     Quest.QuestObject(
+    #                             tGuess = self.initial_value, 
+    #                             tGuessSd = self.initial_value * 0.35, 
+    #                             pThreshold = 0.83, 
+    #                             beta = 3.5, 
+    #                             delta = 0.01, 
+    #                             gamma = 0.0, 
+    #                             grain = 0.01, 
+    #                             range = None 
+    #                             ) 
+    #                         })
 
     def prepare_staircases(self):
-        # staircases
-        self.initial_value = 2 # for self.unique_tasks, 
-        self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_mapper_quest.pickle')
+        # fix, color
+        self.initial_value = 2
+        stepsizes = np.r_[np.array([1.0,1.0,0.5,0.5,0.25,0.25]), 0.25*np.ones((1e4))]
+
+        self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_mapper_staircases.pickle')
         if os.path.exists( self.staircase_file_name ):
             with open(self.staircase_file_name) as f:
                 self.staircases = pickle.load(f)
         else:
             # create staircases
-            self.staircases={}
+            self.staircases = {}
             self.staircases.update({'fix':
-                        Quest.QuestObject(
-                                tGuess = self.initial_value, 
-                                tGuessSd = self.initial_value * 0.35, 
-                                pThreshold = 0.83, 
-                                beta = 3.5, 
-                                delta = 0.01, 
-                                gamma = 0.0, 
-                                grain = 0.01, 
-                                range = None 
-                                ) 
-                            })
+                        data.StairHandler(startVal = self.initial_value,
+                            stepType = 'log', stepSizes=stepsizes, minVal = 0.0,
+                            nUp=1, nDown=3)  
+                            })    
 
-    
     def prepare_trials(self):
         """docstring for prepare_trials(self):"""
         
@@ -240,7 +258,7 @@ class MapperSession(EyelinkSession):
         super(MapperSession, self).close()
         with open(self.staircase_file_name, 'w') as f:
             pickle.dump(self.staircases, f)
-        print 'Fix staircase mean {}, standard deviation {}'.format(self.staircases['fix'].mean(), self.staircases['fix'].sd())
+        # print 'Fix staircase mean {}, standard deviation {}'.format(self.staircases['fix'].mean(), self.staircases['fix'].sd())
         
     
     def run(self):

@@ -3,7 +3,7 @@ import sys
 sys.path.append( 'exp_tools' )
 
 from MapperSession import *
-from plot_mapper_staircase import *
+# from plot_mapper_staircase import *
 import appnope
 
 def main():
@@ -20,7 +20,7 @@ def main():
     ts = MapperSession( initials, run_nr, scanner, tracker_on )
     ts.run()
 
-    plot_mapper_staircase(initials, run_nr)
+    # plot_mapper_staircase(initials, run_nr)
 
 if __name__ == '__main__':
     main()

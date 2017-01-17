@@ -36,6 +36,7 @@ standard_parameters = {
     'mapper_stim_in_TR':                1.0,        # duration of mapper stimulus in TRs
     'minimum_pulse_gap':                2.0,
     'warming_up_n_TRs':                 18,
+    'mapper_task_rate':                 4,
 
     ## Color matcher variables:
     'num_trials':                       10,        # amount of matcher trials

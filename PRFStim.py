@@ -186,7 +186,7 @@ class PRFStim(object):
 
         if self.trial.parameters['stim_bool'] == 1:
             self.session.element_array.draw()
-            self.session.fixation.setColor(self.fix_gray_value)
+            #self.session.fixation.setColor(self.fix_gray_value)
         
         self.session.fixation_outer_rim.draw()
         self.session.fixation_rim.draw()

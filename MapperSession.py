@@ -190,9 +190,9 @@ class MapperSession(EyelinkSession):
             # create staircases
             self.staircases = {}
             self.staircases.update({'fix':
-                        data.StairHandler(startVal = self.initial_value,
-                            stepType = 'log', stepSizes=stepsizes, minVal = 0.0,
-                            nUp=1, nDown=3)  
+                        ThreeUpOneDownStaircase(initial_value = standard_parameters['quest_initial_stim_values'], 
+                                                             initial_stepsize=standard_parameters['quest_stepsize'],
+                                                             max_nr_trials = 5000) 
                             })    
 
     def prepare_trials(self):

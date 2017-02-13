@@ -6,9 +6,12 @@ import glob
 import time
 # import seaborn as sn
 
+from constants import *
+
 from IPython import embed as shell
 
-n_eccen_bins = 4
+n_eccen_bins = standard_parameters['nr_staircases_ecc']
+
 def plot_staircases(initials,run_nr):
 
     n_bar_runs=0
@@ -75,7 +78,7 @@ def plot_staircases(initials,run_nr):
     pl.title('Moving accuracy Color')
     if n_bar_runs >0:
         for ecc_bin in np.arange(n_eccen_bins):
-        pl.plot(color_moving_accuracy[ecc_bin],color=colors[ecc_bin],label='bin %d'%ecc_bin)
+            pl.plot(color_moving_accuracy[ecc_bin],color=colors[ecc_bin],label='bin %d'%ecc_bin)
         pl.legend(loc='best')
     pl.ylim(0.5,1)
     pl.axhline(0.83,linestyle='--',color='k')

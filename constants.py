@@ -41,6 +41,11 @@ standard_parameters = {
     ## Color matcher variables:
     'num_trials':                       10,        # amount of matcher trials
     'BY_comparison_color':              0.5,        # color to compare to; 0.5 is best.
+
+    # staircase variables:
+    'quest_initial_stim_values':        1,
+    'quest_stepsize':                   0.75,
+    'quest_stepsize_multiplication_on_reversal': 0.95
 }
 
 # response_button_signs = {
@@ -67,7 +72,7 @@ BGC = (255*0.5,255*0.5,255*0.5) # this is converted to -1<->1 in SPSession
 #SCREENDIST = 60.0
 #7T scan room (all in cm):
 #DISPSIZE = (1024,768)
-DISPSIZE = (1680,1050)#(2560,1440)#(1280,720)#,1080)#(1024,768)#(1920,1080)#(2560,1440)
+DISPSIZE = (2560,1440)#(2560,1440)#(1280,720)#,1080)#(1024,768)#(1920,1080)#(2560,1440)
 SCREENSIZE = (69.84,39.29) #physical screen size in centimeters
 SCREENDIST = 225#60.0#65.0#57.0 # centimeters; distance between screen and participant's eyes
 #office screen

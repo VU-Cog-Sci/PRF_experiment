@@ -86,7 +86,7 @@ class PRFTrial(Trial):
                                     response = self.session.response_button_signs[ev]*self.stim.present_fix_task_sign
 
                                 # update the staircase
-                                self.session.staircases[self.stim.last_sampled_staircase].addResponse((response+1)/2)
+                                self.session.staircases[self.stim.last_sampled_staircase].answer((response+1)/2)
                                 # now block the possibility of further updates
                                 self.stim.last_sampled_staircase = None
 

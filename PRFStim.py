@@ -88,7 +88,7 @@ class PRFStim(object):
         if pulse: 
 
             # update the color
-            color_sample = self.session.staircases['bar_%i'%self.eccentricity_bin].next()
+            color_sample = self.session.staircases['bar_%i'%self.eccentricity_bin].get_intensity()
             color_1_ratio = self.convert_sample(color_sample)
             color_2_ratio = 1-color_1_ratio
 
@@ -109,7 +109,7 @@ class PRFStim(object):
                 if self.session.task == 'bar':
                     print log_msg     
 
-            fix_sample = self.session.staircases['fix_%i'%self.eccentricity_bin].next()
+            fix_sample = self.session.staircases['fix_%i'%self.eccentricity_bin].get_intensity()
             fix_value = (self.convert_sample(fix_sample) - 0.5) * 2.0
         
             log_msg = 'signal in feature: fix ecc bin: %i phase: %1.3f value: %f/%f at %f ' % (self.eccentricity_bin, self.phase, fix_sample, fix_value, self.session.clock.getTime())
@@ -124,10 +124,10 @@ class PRFStim(object):
             self.last_sampled_staircase = self.session.task + '_%i'%self.eccentricity_bin    
 
             # Now set the actual stimulus parameters
-            self.colors = np.concatenate((np.ones((np.round(self.num_elements*RG_ratio/2.0),3)) * np.array([1,-1,0]) * self.RG_color,  # red/green - red
-                                        np.ones((np.round(self.num_elements*RG_ratio/2.0),3)) * np.array([-1,1,0]) * self.RG_color,  # red/green - green
-                                        np.ones((np.round(self.num_elements*BY_ratio/2.0),3)) * np.array([-1,-1,1]) * self.BY_color,  # blue/yellow - blue
-                                        np.ones((np.round(self.num_elements*BY_ratio/2.0),3)) * np.array([1,1,-1]) * self.BY_color))  # blue/yellow - yellow
+            self.colors = np.concatenate((np.ones((int(np.round(self.num_elements*RG_ratio/2.0)),3)) * np.array([1,-1,0]) * self.RG_color,  # red/green - red
+                                        np.ones((int(np.round(self.num_elements*RG_ratio/2.0)),3)) * np.array([-1,1,0]) * self.RG_color,  # red/green - green
+                                        np.ones((int(np.round(self.num_elements*BY_ratio/2.0)),3)) * np.array([-1,-1,1]) * self.BY_color,  # blue/yellow - blue
+                                        np.ones((int(np.round(self.num_elements*BY_ratio/2.0)),3)) * np.array([1,1,-1]) * self.BY_color))  # blue/yellow - yellow
 
             # and fix point parameters
             self.present_fix_task_sign = np.random.choice([-1,1])
@@ -136,8 +136,8 @@ class PRFStim(object):
         np.random.shuffle(self.colors)
 
         # but do update all other stim parameters (regardless of pulse)
-        self.element_speeds = np.concatenate((np.ones(np.round(self.num_elements*fast_ratio)) * self.session.standard_parameters['fast_speed'],
-                                            np.ones(np.round(self.num_elements*slow_ratio)) * self.session.standard_parameters['slow_speed']))
+        self.element_speeds = np.concatenate((np.ones(int(np.round(self.num_elements*fast_ratio))) * self.session.standard_parameters['fast_speed'],
+                                            np.ones(int(np.round(self.num_elements*slow_ratio))) * self.session.standard_parameters['slow_speed']))
         np.random.shuffle(self.element_speeds)
 
         self.element_positions = np.random.rand(self.num_elements, 2) * np.array([self.bar_length, self.bar_width]) - np.array([self.bar_length/2.0, self.bar_width/2.0])

@@ -9,12 +9,13 @@ import pygame
 from pygame.locals import *
 # from pygame import mixer, time
 
-import Quest
+# import Quest
 
 sys.path.append( 'exp_tools' )
 # sys.path.append( os.environ['EXPERIMENT_HOME'] )
 
 from Session import *
+from Staircase import ThreeUpOneDownStaircase
 from PRFTrial import *
 from constants import *
 # set screen to square when asking for circle mask
@@ -137,8 +138,8 @@ class PRFSession(EyelinkSession):
 
     def prepare_staircases(self):
         # fix, color
-        self.initial_values = [2,2]
-        stepsizes = np.r_[np.array([1.0,1.0,0.5,0.5,0.25,0.25]), 0.25*np.ones((1e4))]
+        self.initial_values = [1,2]
+        stepsizes = np.r_[np.array([1.0,1.0,0.5,0.5,0.25,0.25]), 0.25*np.ones((int(1e4)))]
 
         self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_staircase.pickle')
         if os.path.exists( self.staircase_file_name ):
@@ -150,9 +151,10 @@ class PRFSession(EyelinkSession):
             for i, t in enumerate(['fix','bar']):
                 for j in range(self.nr_staircases_ecc):
                     self.staircases.update({t + '_%i'%j:
-                                data.StairHandler(startVal = self.initial_values[i],
-                                    stepType = 'log', stepSizes=stepsizes, minVal = 0.0,
-                                    nUp=1, nDown=3)  
+                                ThreeUpOneDownStaircase(initial_value = standard_parameters['quest_initial_stim_values'], 
+                                                             initial_stepsize=standard_parameters['quest_stepsize'],
+                                                             max_nr_trials = 5000,
+                                                             stepsize_multiplication_on_reversal = standard_parameters['quest_stepsize_multiplication_on_reversal'])  
                                     })
     
     def prepare_trials(self):

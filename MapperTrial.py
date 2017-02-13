@@ -45,7 +45,7 @@ class MapperTrial(Trial):
 
                 self.session.ready_for_next_pulse = False
                 
-                fix_sample = self.session.staircases['fix'].next()
+                fix_sample = self.session.staircases['fix'].get_intensity()
                 # fix_value = (self.convert_sample(fix_sample) - 0.5) * 2.0
                 fix_value = 0.5
                 self.present_fix_task_sign = np.random.choice([-1,1])
@@ -118,7 +118,7 @@ class MapperTrial(Trial):
                         response = self.session.response_button_signs[ev]*self.present_fix_task_sign
 
                         # update the staircase
-                        self.session.staircases[self.last_sampled_staircase].addResponse((response+1)/2)
+                        self.session.staircases[self.last_sampled_staircase].answer((response+1)/2)
                         # now block the possibility of further updates
                         self.last_sampled_staircase = None
 

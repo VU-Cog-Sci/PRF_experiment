@@ -2,7 +2,6 @@
 # encoding: utf-8
 """
 Staircase.py
-
 Created by Tomas HJ Knapen on 2009-11-26.
 Copyright (c) 2009 TK. All rights reserved.
 """
@@ -21,25 +20,29 @@ class OneUpOneDownStaircase(object):
     """
     OneUpOneDownStaircase object, for one-up-one-down staircase in its standard form.
     """
-    def __init__(self, initial_value, initial_stepsize, nr_reversals = 10, increment_value = None, stepsize_multiplication_on_reversal = 0.75, max_nr_trials = 40 ):
+    def __init__(self, initial_value, initial_stepsize, nr_reversals = 10, increment_value = None, stepsize_multiplication_on_reversal = 0.95, max_nr_trials = 40 ):
         self.initial_value = initial_value
         self.initial_stepsize = initial_stepsize
         self.nr_reversals = nr_reversals
-        self.increment_value = increment_value
+        self.increment_value = initial_stepsize#increment_value
         self.stepsize_multiplication_on_reversal = stepsize_multiplication_on_reversal
         self.max_nr_trials = max_nr_trials
         
         self.test_value = self.initial_value
-        self.present_increment_value = increment_value
+        self.present_increment_value = initial_stepsize#increment_value
         
         # set up filler variables
         self.past_answers = []
         self.nr_trials = 0
+        self.nr_correct = 0
         self.present_nr_reversals = 0
     
-    def test_value(self):
-        return self.test_value
+    # def test_value(self):
+    #   return self.test_value
     
+    def get_intensity(self):
+        return self.test_value
+
     def answer( self, correct ):
         continue_after_this_trial = True
         self.nr_trials = self.nr_trials + 1
@@ -51,7 +54,7 @@ class OneUpOneDownStaircase(object):
         self.past_answers.append(correct)
             
         if self.nr_trials > 1:
-            if self.past_answers[-1] != self.past_answers[-2]:    # we have a reversal here
+            if self.past_answers[-1] != self.past_answers[-2]:  # we have a reversal here
                 self.present_nr_reversals = self.present_nr_reversals + 1
                 if self.present_nr_reversals % 2 == 0:
                     self.present_increment_value = self.present_increment_value * self.stepsize_multiplication_on_reversal
@@ -73,16 +76,18 @@ class TwoUpOneDownStaircase(OneUpOneDownStaircase):
         continue_after_this_trial = True
         self.nr_trials = self.nr_trials + 1
         self.past_answers.append(correct)
+
+        if correct:
         
-        nr_corrects_in_last_2_trials = np.array(self.past_answers, dtype = float)[-2:].sum()
+            nr_corrects_in_last_2_trials = np.array(self.past_answers, dtype = float)[-2:].sum()
         
-        if nr_corrects_in_last_2_trials == 2:    # this subject is too good for this stimulus value
-            self.test_value = self.test_value - self.present_increment_value
+            if nr_corrects_in_last_2_trials == 2:   # this subject is too good for this stimulus value
+                self.test_value = self.test_value - self.present_increment_value
         else:
             self.test_value = self.test_value + self.present_increment_value
         
         if self.nr_trials > 1:
-            if self.past_answers[-1] != self.past_answers[-2]:    # we have a reversal here
+            if self.past_answers[-1] != self.past_answers[-2]:  # we have a reversal here
                 self.present_nr_reversals = self.present_nr_reversals + 1
                 if self.present_nr_reversals % 2 == 0:
                     self.present_increment_value = self.present_increment_value * self.stepsize_multiplication_on_reversal
@@ -101,15 +106,21 @@ class ThreeUpOneDownStaircase(TwoUpOneDownStaircase):
         self.nr_trials = self.nr_trials + 1
         self.past_answers.append(correct)
         
-        nr_corrects_in_last_3_trials = np.array(self.past_answers, dtype = float)[-3:].sum()
-        
-        if nr_corrects_in_last_3_trials == 3:    # this subject is too good for this stimulus value
-            self.test_value = self.test_value - self.present_increment_value
+        if correct:
+
+            #nr_corrects_in_last_3_trials = np.array(self.past_answers, dtype = float)[-3:].sum()
+            self.nr_correct += 1
+
+            if self.nr_correct == 3:    # this subject is too good for this stimulus value
+                self.test_value = self.test_value - self.present_increment_value
+                self.nr_correct = 0
+
         else:
             self.test_value = self.test_value + self.present_increment_value
+            self.nr_correct = 0
         
         if self.nr_trials > 1:
-            if self.past_answers[-1] != self.past_answers[-2]:    # we have a reversal here
+            if self.past_answers[-1] != self.past_answers[-2]:  # we have a reversal here
                 self.present_nr_reversals = self.present_nr_reversals + 1
                 if self.present_nr_reversals % 2 == 0:
                     self.present_increment_value = self.present_increment_value * self.stepsize_multiplication_on_reversal
@@ -117,8 +128,6 @@ class ThreeUpOneDownStaircase(TwoUpOneDownStaircase):
                     continue_after_this_trial = False
             else: 
                 pass
-            if self.nr_trials >= self.max_nr_trials:
-                continue_after_this_trial = False
         
         return continue_after_this_trial
     
@@ -152,7 +161,7 @@ class YesNoStaircase(object):
         self.past_answers.append(correct)
             
         if self.nr_trials > 1:
-            if self.past_answers[-1] != self.past_answers[-2]:    # we have a reversal here
+            if self.past_answers[-1] != self.past_answers[-2]:  # we have a reversal here
                 self.present_nr_reversals = self.present_nr_reversals + 1
                 if self.present_nr_reversals % 2 == 0:
                     self.present_increment_value = self.present_increment_value * self.stepsize_multiplication_on_reversal
@@ -164,5 +173,4 @@ class YesNoStaircase(object):
                 continue_after_this_trial = False
         
         return continue_after_this_trial
-    
     

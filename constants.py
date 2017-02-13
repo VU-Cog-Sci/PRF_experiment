@@ -4,7 +4,7 @@ from __future__ import division
 # standard parameters
 standard_parameters = {
     
-    'practice':                         1,
+    'practice':                         0,
     ## spatial dimensions:
     'eyelink_calib_size':               0.5,       # portion of screen heigth
     'mask_type':                        1,         # 0: circle, 1: square
@@ -14,7 +14,7 @@ standard_parameters = {
     'bar_width_ratio':                  0.1,        # portion of screen height
     
     ## temporal dimensions:
-    ## common parameters:
+    ## common parameters:    # 351 dyns
     'num_elements':                     2000,        # amount of elements in bar, this will be num_elements * (1/bar_width_ratio) = 8000 for Mapper
     'vertical_pass_dur':                49,        # that is 24*1.5=36 sec, which is 15/24 = 0.625 degree per step
     'horizontal_pass_dur':              49,

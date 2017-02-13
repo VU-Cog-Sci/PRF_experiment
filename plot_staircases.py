@@ -49,7 +49,7 @@ def plot_staircases(initials,run_nr):
             color_ma_this_bin = np.zeros(len(np.hstack(color_responses[ecc_bin])))
             for ri, response in enumerate(np.hstack(color_responses[ecc_bin])):
                 color_ma_this_bin[ri] = np.mean(np.hstack(color_responses[ecc_bin])[:(ri+1)])
-        color_moving_accuracy.append(color_ma_this_bin)
+            color_moving_accuracy.append(color_ma_this_bin)
 
         if n_fix_runs >0:
             fix_ma_this_bin = np.zeros(len(np.hstack(fix_responses[ecc_bin])))
@@ -63,7 +63,7 @@ def plot_staircases(initials,run_nr):
     pl.title('Staircase Color')
     if n_bar_runs >0:
         for ecc_bin in np.arange(n_eccen_bins):
-            pl.plot(np.abs(np.hstack(color_staircase[ecc_bin])),color=colors[ecc_bin],label='bin %d'%ecc_bin)
+            pl.plot(np.abs(0.5-np.hstack(color_staircase[ecc_bin])),color=colors[ecc_bin],label='bin %d'%ecc_bin)
         pl.legend(loc='best')
         pl.ylim(ymin=0)
     s = f.add_subplot(223)

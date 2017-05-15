@@ -9,84 +9,40 @@ import random, sys
 sys.path.append( 'exp_tools' )
 # sys.path.append( os.environ['EXPERIMENT_HOME'] )
 
-from MapperStim import *
 from Trial import *
 
 class MapperTrial(Trial):
     def __init__(self, parameters = {}, phase_durations = [], session = None, screen = None, tracker = None):
         super(MapperTrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
-        
-        self.stim = MapperStim(self.screen, self, self.session)#, self.parameters['task'])
-        
-        this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nFix\t\t\t-\tBlack\t\t/\tWhite'# self.parameters['task_instruction']
-        self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 30, alignHoriz = 'center')
-        self.instruction.setSize((1200,50))
+                
+        this_instruction_string = 'CW: R - CCW: L'
+        self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 50, alignHoriz = 'center')
+        self.instruction.setSize((200,50))
 
         self.run_time = 0.0
         self.instruct_time = self.trial_start_time =self.stimulus_time = self.post_stimulus_time = 0.0
-        # self.instruct_sound_played = False
 
         # set this to its default no-answer necessary value of None - this is tested for in PRFTrial when incorporating responses
-        self.last_sampled_staircase = None
-
-    def convert_sample(self,sample):
-
-        return 1 - (1/(np.e**sample+1))
 
     def draw(self):
         """docstring for draw"""
 
-        # wait with presenting the fixation task after the first trial
-        if (self.ID != 0):
-
-            time_elapsed_since_start = self.session.clock.getTime() - self.session.exp_start_time
-            # see whether the elapsed time divided in 0.5 second steps is in transient occurences, and whether this pulse has not yet bee presented
-            if ((np.round(time_elapsed_since_start * (1/self.session.time_steps))/(1/self.session.time_steps)) in self.session.transient_occurrences) * self.session.ready_for_next_pulse:  
-
-                self.session.ready_for_next_pulse = False
-                
-                fix_sample = self.session.staircases['fix'].get_intensity()
-                # fix_value = (self.convert_sample(fix_sample) - 0.5) * 2.0
-                fix_value = 0.5
-                self.present_fix_task_sign = np.random.choice([-1,1])
-                self.fix_gray_value = np.ones(3) * fix_value * self.present_fix_task_sign
-
-                log_msg = 'fix signal value: %f at %f ' % (fix_value, self.session.clock.getTime())
-
-                self.session.fixation.setColor(self.fix_gray_value)
-
-                if self.session.tracker:
-                    self.session.tracker.log( log_msg )
-                self.events.append( log_msg )
-                print log_msg
-
-                # self.session.play_sound()
-                self.last_sampled_staircase = 'fix'
-
-            elif ((np.round(time_elapsed_since_start * (1/self.session.time_steps))/(1/self.session.time_steps)) not in self.session.transient_occurrences) :
-                self.session.ready_for_next_pulse = True
-                self.session.fixation.setColor((0,0,0))
-
         if (self.phase == 0) * (self.ID == 0):
             self.instruction.draw()
-            
-        elif self.phase == 1:
-
-            self.session.fixation_outer_rim.draw()
-            self.session.fixation_rim.draw()
-            self.session.fixation.draw()
 
         elif self.phase == 2:
-            self.stim.draw(phase = (self.stimulus_time - self.trial_start_time) / self.phase_durations[2])
-            self.session.fixation_outer_rim.draw()
-            self.session.fixation_rim.draw()
-            self.session.fixation.draw()
+            grating_phase = 0.5 * np.round(self.stimulus_time * \
+                                self.parameters['stim_flicker_freq'])
+            self.session.CW_stim.setPhase(grating_phase)
+            self.session.CCW_stim.setPhase(grating_phase)
 
-        elif self.phase == 3:
-            self.session.fixation_outer_rim.draw()
-            self.session.fixation_rim.draw()
-            self.session.fixation.draw()
-            
+            self.session.CW_stim.draw()
+            self.session.CCW_stim.draw()
+
+        self.session.fixation_outer_rim.draw()
+        self.session.fixation_rim.draw()
+        self.session.fixation.draw()
+        
         super(MapperTrial, self).draw( )
 
     def event(self):
@@ -100,45 +56,50 @@ class MapperTrial(Trial):
                 # it handles both numeric and lettering modes 
                 elif ev == ' ':
                     self.events.append([0,self.session.clock.getTime()-self.start_time])
-                    if self.phase == 0:
+                    if (self.phase == 0) and self.ID == 0:
                         self.phase_forward()
-                    else:
-                        self.events.append([-99,self.session.clock.getTime()-self.start_time])
-                        self.stopped = True
-                        print 'trial canceled by user'
                 elif ev == 't': # TR pulse
                     self.events.append([99,self.session.clock.getTime()-self.start_time])
-                    if (self.phase == 0) + (self.phase == 1):
+                    if (self.phase == 0) and self.ID == 0:
                         self.phase_forward()
                 elif ev in self.session.response_button_signs.keys():
-
-                    if self.last_sampled_staircase is not None: #hasattr(self,'last_sampled_staircase'):
-                        # what value were we presenting at?
-                        # test_value = self.session.staircases[self.last_sampled_staircase].quantile()
-                        response = self.session.response_button_signs[ev]*self.present_fix_task_sign
-
-                        # update the staircase
-                        self.session.staircases[self.last_sampled_staircase].answer((response+1)/2)
-                        # now block the possibility of further updates
-                        self.last_sampled_staircase = None
-
-                        log_msg = 'staircase updated after response %s at %f'%( str((response+1)/2), self.session.clock.getTime() )
-                        self.events.append( log_msg )
-                        print log_msg
-                        if self.session.tracker:
-                            self.session.tracker.log( log_msg )
+                   # do we even need an answer?
+                    self.parameters['rt'] = self.session.clock.getTime() - self.stimulus_time
+                    self.parameters['answer'] = self.session.response_button_signs[ev]
+                    self.parameters['correct'] = self.parameters['HR_location'] * self.parameters['answer']
+                    if self.parameters['correct'] == 1:
+                        if self.parameters['feedback_if_HR_chosen'] == 1:
+                            self.session.fixation.setColor((0,1,0))
+                            self.parameters['reward'] = 1
+                        else:
+                            self.session.fixation.setColor((1,0,0))
+                            self.parameters['reward'] = -1
+                    elif self.parameters['correct'] == -1:
+                        if self.parameters['feedback_if_HR_chosen'] == 1:
+                            self.session.fixation.setColor((1,0,0))
+                            self.parameters['reward'] = -1
+                        else:
+                            self.session.fixation.setColor((0,1,0))
+                            self.parameters['reward'] = 1
 
                     # add answers based on stimulus changes, and interact with the staircases at hand
                     # elif ev == 'b' or ev == 'right': # answer pulse
                     event_msg = 'trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime())
                     self.events.append(event_msg)
+                    print event_msg
+                    print self.parameters['correct'], self.parameters['answer'], self.parameters['feedback_if_HR_chosen']
             
             super(MapperTrial, self).key_event( ev )
 
     def run(self, ID = 0):
         self.ID = ID
         super(MapperTrial, self).run()
-        
+
+        # set locations of oriented gratings here.
+        self.session.CW_stim.setPos([self.parameters['position_CW'], 0])
+        self.session.CCW_stim.setPos([self.parameters['position_CCW'], 0])
+        self.session.fixation.setColor((0,0,0))
+
         while not self.stopped:
             self.run_time = self.session.clock.getTime() - self.start_time
             # Only in trial 1, phase 0 represents the instruction period.
@@ -149,12 +110,9 @@ class MapperTrial(Trial):
                     self.phase_forward()
             # in phase 1, waiting for t if in the scanner
             elif self.phase == 1:
-                if self.session.exp_start_time == 0.0:
-                    self.session.exp_start_time = self.session.clock.getTime()
-    
                 self.trial_start_time = self.session.clock.getTime()
-                if self.session.scanner == 'n':
-                    self.phase_forward()        
+                if ( self.trial_start_time - self.instruct_time ) > self.phase_durations[1]:
+                    self.phase_forward()
             # phase 2 is stimulus presentation phase
             elif self.phase == 2:
                 self.stimulus_time = self.session.clock.getTime()
@@ -165,6 +123,8 @@ class MapperTrial(Trial):
                 self.post_stimulus_time = self.session.clock.getTime()
                 if ( self.post_stimulus_time  - self.stimulus_time ) > self.phase_durations[3]:
                     self.stopped = True
+                if ( self.post_stimulus_time  - self.stimulus_time ) > self.session.standard_parameters['fb_dur']:
+                    self.session.fixation.setColor((0,0,0))
         
             # events and draw
             self.event()

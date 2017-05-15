@@ -3,6 +3,7 @@ from psychopy import visual, core, misc, event, data
 import numpy as np
 from IPython import embed as shell
 from math import *
+import copy
 
 import os, sys, time, pickle
 import pygame
@@ -17,13 +18,13 @@ sys.path.append( 'exp_tools' )
 from Session import *
 from MapperTrial import *
 from constants import *
-from Staircase import YesNoStaircase
+# from Staircase import YesNoStaircase
 
 import appnope
 appnope.nope()
 
 class MapperSession(EyelinkSession):
-    def __init__(self, subject_initials, index_number, scanner, tracker_on):
+    def __init__(self, subject_initials, index_number, tracker_on):
         super(MapperSession, self).__init__( subject_initials, index_number)
         
         self.background_color = (np.array(BGC)/255*2)-1
@@ -35,20 +36,6 @@ class MapperSession(EyelinkSession):
 
         self.standard_parameters = standard_parameters
         self.response_button_signs = response_button_signs
-
-        text_file_name = "data/%s_color_ratios.txt"%self.subject_initials
-        assert os.path.isfile(text_file_name), 'NO COLOR RATIO TEXT FILE PRESENT!!!!!!!!'
-        text_file = open(text_file_name, "r")
-        RG_BY_ratio = float(text_file.readline().split('ratio: ')[-1][:-1])
-        text_file.close()
-        if RG_BY_ratio > 1:
-            self.standard_parameters['RG_color'] = 1
-            self.standard_parameters['BY_color'] = 1/RG_BY_ratio
-        else:
-            self.standard_parameters['BY_color'] = 1
-            self.standard_parameters['RG_color'] = 1/RG_BY_ratio
-
-        self.fast_ratio = self.slow_ratio = 0.5
 
         self.create_output_file_name()
         if tracker_on:
@@ -141,139 +128,129 @@ class MapperSession(EyelinkSession):
         else:
             self.create_tracker(tracker_on = False)
         
-        self.scanner = scanner
         # trials can be set up independently of the staircases that support their parameters
+        self.prepare_stims()
         self.prepare_trials()
-        self.nr_staircases_ecc = standard_parameters['nr_staircases_ecc']
-        self.prepare_staircases()
 
-        self.ready_for_next_pulse = True
         self.exp_start_time = 0.0
 
-        # setup fix transient and redraws in session to let it continuously run. This happens in multitudes of 'time_steps', which is equal to the redraw steps in the PRF experiment.
-        self.time_steps = self.standard_parameters['TR']/self.standard_parameters['redraws_per_TR']
-        self.transient_occurrences = np.round(np.cumsum(np.random.exponential(self.standard_parameters['mapper_task_rate'], size = 20000) + self.standard_parameters['minimum_pulse_gap']) * (1/self.time_steps)) / (1/self.time_steps)
+    def prepare_stims(self):
 
-    # def prepare_staircases(self):
-    #     # staircases
-    #     self.initial_value = 2 # for self.unique_tasks, 
-    #     self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_mapper_staircases.pickle')
-    #     if os.path.exists( self.staircase_file_name ):
-    #         with open(self.staircase_file_name) as f:
-    #             self.staircases = pickle.load(f)
-    #     else:
-    #         # create staircases
-    #         self.staircases={}
-    #         self.staircases.update({'fix':
-    #                     Quest.QuestObject(
-    #                             tGuess = self.initial_value, 
-    #                             tGuessSd = self.initial_value * 0.35, 
-    #                             pThreshold = 0.83, 
-    #                             beta = 3.5, 
-    #                             delta = 0.01, 
-    #                             gamma = 0.0, 
-    #                             grain = 0.01, 
-    #                             range = None 
-    #                             ) 
-    #                         })
+        """docstring for prepare_stims(self):"""
+        self.CW_stim = visual.GratingStim(self.screen, 
+                tex='sin', mask='raisedCos', pos=(0.0, 0.0), 
+                size=self.standard_parameters['stim_size'], 
+                sf=self.standard_parameters['stim_spatial_frequency'], 
+                ori=45.0, texRes=128, color=(1.0, 1.0, 1.0),
+                colorSpace='rgb', contrast=0.5, opacity=1.0,
+                maskParams={'fringeWidth':0.2})
+        self.CCW_stim = visual.GratingStim(self.screen, 
+                tex='sin', mask='raisedCos', pos=(0.0, 0.0), 
+                size=self.standard_parameters['stim_size'], 
+                sf=self.standard_parameters['stim_spatial_frequency'], 
+                ori=-45.0, texRes=128, color=(1.0, 1.0, 1.0),
+                colorSpace='rgb', contrast=0.5, opacity=1.0,
+                maskParams={'fringeWidth':0.2})
 
-    def prepare_staircases(self):
-        # fix, color
-        self.initial_value = 2
-        stepsizes = np.r_[np.array([1.0,1.0,0.5,0.5,0.25,0.25]), 0.25*np.ones((1e4))]
+        # fixation point
+        self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, 
+            size=40, pos = np.array((0.0,0.0)), 
+            color = self.background_color, maskParams = {'fringeWidth':0.4})
+        self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, 
+            size=22, pos = np.array((0.0,0.0)), 
+            color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
+        self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, 
+            size=17, pos = np.array((0.0,0.0)), 
+            color = self.background_color, opacity = 1.0, maskParams = {'fringeWidth':0.4})
 
-        self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_mapper_staircases.pickle')
-        if os.path.exists( self.staircase_file_name ):
-            with open(self.staircase_file_name) as f:
-                self.staircases = pickle.load(f)
-        else:
-            # create staircases
-            self.staircases = {}
-            self.staircases.update({'fix':
-                        ThreeUpOneDownStaircase(initial_value = standard_parameters['quest_initial_stim_values'], 
-                                                             initial_stepsize=standard_parameters['quest_stepsize'],
-                                                             max_nr_trials = 5000) 
-                            })    
 
     def prepare_trials(self):
         """docstring for prepare_trials(self):"""
         
-        # and here's the distribution of ITIs:
-        unique_ITIs = {
-        2: 33,
-        3: 22,
-        4: 10,
-        5: 4,
-        6: 2,
-        }
+        # create trials
+        self.trials = []
+        self.trial_counter = 0
 
-        n_trials = sum(unique_ITIs.values())
-        ITIs = np.zeros(n_trials)
+        self.phase_durations = [
+            -0.001,                                         # instruct time
+            self.standard_parameters['ITI_minimum']/2.0,    # ITI
+            self.standard_parameters['stim_dur'],           # stimulus time
+            self.standard_parameters['ITI_minimum']/2.0,        # ITI 
+            ]
 
-        # randomly distribute ITI's
-        ITI_order = np.arange(len(ITIs))
-        np.random.shuffle(ITI_order)        
-        k = 0
-        for this_ITI in unique_ITIs.keys():
-            ITIs[ITI_order[k:k+unique_ITIs[this_ITI]]] = this_ITI
-            k += unique_ITIs[this_ITI]
+        this_reward_contingency = np.random.choice([0,1], 1)
+        block_durations = np.random.randint(self.standard_parameters['block_duration_minimum'], \
+            self.standard_parameters['block_duration_minimum'] + self.standard_parameters['block_duration_range'], 15)
+                            
+        block_transitions = np.cumsum(block_durations)
 
-        self.ITIs = np.hstack([self.standard_parameters['warming_up_n_TRs'],ITIs,self.standard_parameters['warming_up_n_TRs']])
-        self.draw_stim = np.hstack([0,np.ones_like(ITIs),0])
+        tol_range = np.array([1.0 - self.standard_parameters['total_ITI_tolerance'], \
+                                1.0 + self.standard_parameters['total_ITI_tolerance']])
+        iti_sum_range = tol_range * self.standard_parameters['total_nr_trials'] * self.standard_parameters['ITI_mean']
 
-        self.phase_durations = np.array([[
-            -0.001, # instruct time
-            -0.001, # wait for t at beginnning of every trial
-            self.standard_parameters['TR'] * self.standard_parameters['mapper_stim_in_TR'],   #stimulation time
-            self.standard_parameters['TR'] * ITI] for ITI in self.ITIs]) # ITI time
+        ITIs = np.random.exponential(self.standard_parameters['ITI_mean'], self.standard_parameters['total_nr_trials'])
+        while ITIs.sum() < iti_sum_range[0] or ITIs.sum() > iti_sum_range[1]:
+            ITIs = np.random.exponential(self.standard_parameters['ITI_mean'], self.standard_parameters['total_nr_trials'])
 
-        # fixation point
-        self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=40, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.background_color, maskParams = {'fringeWidth':0.4})
-        self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=22, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
-        self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=17, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.background_color, opacity = 1.0, maskParams = {'fringeWidth':0.4})
-        
-        # mask
-        if self.standard_parameters['mask_type'] ==1:
-            draw_screen_space = [self.screen_pix_size[0]*self.standard_parameters['horizontal_stim_size'],self.screen_pix_size[1]*self.standard_parameters['vertical_stim_size']]
-            mask = np.ones((self.screen_pix_size[1],self.screen_pix_size[0]))*-1
-            x_edge = int(np.round((self.screen_pix_size[0]-draw_screen_space[0])/2))
-            y_edge = int(np.round((self.screen_pix_size[1]-draw_screen_space[1])/2))
-            if x_edge > 0:
-                mask[:,:x_edge] = 1
-                mask[:,-x_edge:] = 1
-            if y_edge > 0:
-                mask[-y_edge:,:] = 1
-                mask[:y_edge,:] = 1
-            import scipy
-            mask = scipy.ndimage.filters.gaussian_filter(mask,5)
-            self.mask_stim = visual.PatchStim(self.screen, mask=mask,tex=None, size=[self.screen_pix_size[0],self.screen_pix_size[1]], pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.screen.background_color) # 
-        elif self.standard_parameters['mask_type'] == 0:
-            mask = filters.makeMask(matrixSize = self.screen_pix_size[0], shape='raisedCosine', radius=self.standard_parameters['vertical_stim_size']*self.screen_pix_size[1]/self.screen_pix_size[0]/2, center=(0.0, 0.0), range=[1, -1], fringeWidth=0.1 )
-            self.mask_stim = visual.PatchStim(self.screen, mask=mask,tex=None, size=[self.screen_pix_size[0]*2,self.screen_pix_size[0]*2], pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.screen.background_color) # 
-    
-        # this will be roughly 4 * 124 = 496, which is 8:15 minutes
-        # self.exp_duration = np.sum(self.phase_durations) * len(self.trial_array)
+        for x in range(self.standard_parameters['total_nr_trials']):
+            # switch reward contingency on block transition
+            if x in block_transitions:
+                this_reward_contingency = 1 - this_reward_contingency
+
+            params = self.standard_parameters
+
+
+            if this_reward_contingency == 0:
+                rpCW = self.standard_parameters['high_reward_probability']
+                rpCCW = 1-self.standard_parameters['high_reward_probability']
+                HR_orientation = 1
+            elif this_reward_contingency == 1:
+                rpCW = 1-self.standard_parameters['high_reward_probability']
+                rpCCW = self.standard_parameters['high_reward_probability'] 
+                HR_orientation = -1
+
+            feedback_if_HR_chosen = np.random.binomial(1, self.standard_parameters['high_reward_probability'])
+            position_CW = np.random.choice([-1,1], 1)
+
+            this_ITI = ITIs[x]
+
+            params.update(
+                {   
+                'reward_probability_CW': rpCW, 
+                'reward_probability_CCW': rpCCW,
+                'position_CW': position_CW * self.standard_parameters['stim_x_offset'],
+                'position_CCW': -position_CW * self.standard_parameters['stim_x_offset'],
+                'HR_orientation': HR_orientation,
+                'HR_location': HR_orientation * position_CW,
+                'feedback_if_HR_chosen': feedback_if_HR_chosen,
+                'eye_movement_error': 0,
+                'answer': 0,
+                'correct': 0,
+                'rt': 0,
+                'reward': 0,
+                'ITI': this_ITI
+                }
+            )
+
+            these_phase_durations = copy.copy(self.phase_durations)
+            these_phase_durations[1] = this_ITI + self.standard_parameters['ITI_minimum']/2.0
+            this_trial = MapperTrial(params, phase_durations = these_phase_durations, session = self, screen = self.screen, tracker = self.tracker)
+            
+            self.trials.append(this_trial)
+            self.trial_counter += 1
+        self.trials[0].phase_durations[1] = 12.0
+        self.trials[-1].phase_durations[-1] = 12.0
+        print 'total experiment duration: %3.3f' % np.array([np.array(tr.phase_durations).sum() for tr in self.trials]).sum()
 
     def close(self):
-        super(MapperSession, self).close()
-        with open(self.staircase_file_name, 'w') as f:
-            pickle.dump(self.staircases, f)
-        # print 'Fix staircase mean {}, standard deviation {}'.format(self.staircases['fix'].mean(), self.staircases['fix'].sd())
-        
+        super(MapperSession, self).close()        
     
     def run(self):
         """docstring for fname"""
         # cycle through trials
-        for i in range(len(self.ITIs)):
-            # prepare the parameters of the following trial based on the shuffled trial array
-            this_trial_parameters = self.standard_parameters.copy()
-            this_trial_parameters['draw_stim'] = self.draw_stim[i]
-
-            these_phase_durations = self.phase_durations[i]
-            this_trial = MapperTrial(this_trial_parameters, phase_durations = these_phase_durations, session = self, screen = self.screen, tracker = self.tracker)
-            
+        for i in range(len(self.trials)):
             # run the prepared trial
-            this_trial.run(ID = i)
+            self.trials[i].run(ID = i)
             if self.stopped == True:
                 break
         self.close()

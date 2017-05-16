@@ -2,7 +2,7 @@ import sys
 
 sys.path.append( 'exp_tools' )
 
-from MapperSession import *
+from RevLSession import *
 import appnope
 
 def main():
@@ -15,7 +15,7 @@ def main():
         tracker_on = False
     appnope.nope()
 
-    ts = MapperSession( initials, run_nr, tracker_on )
+    ts = RevLSession( initials, run_nr, tracker_on )
     ts.run()
 
 if __name__ == '__main__':

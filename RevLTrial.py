@@ -11,9 +11,9 @@ sys.path.append( 'exp_tools' )
 
 from Trial import *
 
-class MapperTrial(Trial):
+class RevLTrial(Trial):
     def __init__(self, parameters = {}, phase_durations = [], session = None, screen = None, tracker = None):
-        super(MapperTrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
+        super(RevLTrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
                 
         this_instruction_string = 'CW: R - CCW: L'
         self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 50, alignHoriz = 'center')
@@ -43,7 +43,7 @@ class MapperTrial(Trial):
         self.session.fixation_rim.draw()
         self.session.fixation.draw()
         
-        super(MapperTrial, self).draw( )
+        super(RevLTrial, self).draw( )
 
     def event(self):
         for ev in event.getKeys():
@@ -64,23 +64,24 @@ class MapperTrial(Trial):
                         self.phase_forward()
                 elif ev in self.session.response_button_signs.keys():
                    # do we even need an answer?
-                    self.parameters['rt'] = self.session.clock.getTime() - self.stimulus_time
-                    self.parameters['answer'] = self.session.response_button_signs[ev]
-                    self.parameters['correct'] = self.parameters['HR_location'] * self.parameters['answer']
-                    if self.parameters['correct'] == 1:
-                        if self.parameters['feedback_if_HR_chosen'] == 1:
-                            self.session.fixation.setColor((0,1,0))
-                            self.parameters['reward'] = 1
-                        else:
-                            self.session.fixation.setColor((1,0,0))
-                            self.parameters['reward'] = -1
-                    elif self.parameters['correct'] == -1:
-                        if self.parameters['feedback_if_HR_chosen'] == 1:
-                            self.session.fixation.setColor((1,0,0))
-                            self.parameters['reward'] = -1
-                        else:
-                            self.session.fixation.setColor((0,1,0))
-                            self.parameters['reward'] = 1
+                    if self.phase in [2,3]:
+                        self.parameters['rt'] = self.session.clock.getTime() - self.stimulus_time
+                        self.parameters['answer'] = self.session.response_button_signs[ev]
+                        self.parameters['correct'] = self.parameters['HR_location'] * self.parameters['answer']
+                        if self.parameters['correct'] == 1:
+                            if self.parameters['feedback_if_HR_chosen'] == 1:
+                                self.session.fixation.setColor((0,1,0))
+                                self.parameters['reward'] = 1
+                            else:
+                                self.session.fixation.setColor((1,0,0))
+                                self.parameters['reward'] = -1
+                        elif self.parameters['correct'] == -1:
+                            if self.parameters['feedback_if_HR_chosen'] == 1:
+                                self.session.fixation.setColor((1,0,0))
+                                self.parameters['reward'] = -1
+                            else:
+                                self.session.fixation.setColor((0,1,0))
+                                self.parameters['reward'] = 1
 
                     # add answers based on stimulus changes, and interact with the staircases at hand
                     # elif ev == 'b' or ev == 'right': # answer pulse
@@ -89,11 +90,11 @@ class MapperTrial(Trial):
                     print event_msg
                     print self.parameters['correct'], self.parameters['answer'], self.parameters['feedback_if_HR_chosen']
             
-            super(MapperTrial, self).key_event( ev )
+            super(RevLTrial, self).key_event( ev )
 
     def run(self, ID = 0):
         self.ID = ID
-        super(MapperTrial, self).run()
+        super(RevLTrial, self).run()
 
         # set locations of oriented gratings here.
         self.session.CW_stim.setPos([self.parameters['position_CW'], 0])

@@ -16,16 +16,16 @@ sys.path.append( 'exp_tools' )
 # sys.path.append( os.environ['EXPERIMENT_HOME'] )
 
 from Session import *
-from MapperTrial import *
+from RevLTrial import *
 from constants import *
 # from Staircase import YesNoStaircase
 
 import appnope
 appnope.nope()
 
-class MapperSession(EyelinkSession):
+class RevLSession(EyelinkSession):
     def __init__(self, subject_initials, index_number, tracker_on):
-        super(MapperSession, self).__init__( subject_initials, index_number)
+        super(RevLSession, self).__init__( subject_initials, index_number)
         
         self.background_color = (np.array(BGC)/255*2)-1
 
@@ -234,7 +234,7 @@ class MapperSession(EyelinkSession):
 
             these_phase_durations = copy.copy(self.phase_durations)
             these_phase_durations[1] = this_ITI + self.standard_parameters['ITI_minimum']/2.0
-            this_trial = MapperTrial(params, phase_durations = these_phase_durations, session = self, screen = self.screen, tracker = self.tracker)
+            this_trial = RevLTrial(params, phase_durations = these_phase_durations, session = self, screen = self.screen, tracker = self.tracker)
             
             self.trials.append(this_trial)
             self.trial_counter += 1
@@ -243,7 +243,7 @@ class MapperSession(EyelinkSession):
         print 'total experiment duration: %3.3f' % np.array([np.array(tr.phase_durations).sum() for tr in self.trials]).sum()
 
     def close(self):
-        super(MapperSession, self).close()        
+        super(RevLSession, self).close()        
     
     def run(self):
         """docstring for fname"""

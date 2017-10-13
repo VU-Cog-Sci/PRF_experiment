@@ -16,7 +16,7 @@ sys.path.append( 'exp_tools' )
 
 from Session import *
 from PRFTrial import *
-from standard_parameters import *
+from constants import *
 from Staircase import YesNoStaircase
 
 import appnope
@@ -26,7 +26,7 @@ class PRFSession(EyelinkSession):
 	def __init__(self, subject_initials, index_number,scanner, tracker_on):
 		super(PRFSession, self).__init__( subject_initials, index_number)
 
-		screen = self.create_screen( size = screen_res, full_screen =1, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
+		screen = self.create_screen( size = screen_res, full_screen =0, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
 		event.Mouse(visible=False, win=screen)
 
 		self.create_output_file_name()
@@ -104,8 +104,8 @@ class PRFSession(EyelinkSession):
 		# self.tasks = np.array(['Color', 'Speed', 'Fix', 'Fix_no_stim'])
 		# self.task_instructions = ['Color', 'Speed', 'Fix', 'Fix']	
 
-		self.tasks = np.array(['Color', 'Fix_no_stim'])
-		self.task_instructions = ['Color', 'Fix']
+		self.tasks = np.array(['Fix', 'Fix_no_stim'])
+		self.task_instructions = ['Fix', 'Fix']
 
 		self.num_elements = np.ones(len(self.tasks)) * self.standard_parameters['num_elements']
 		

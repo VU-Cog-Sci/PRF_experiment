@@ -24,33 +24,47 @@ class PRFTrial(Trial):
 
 		self.run_time = 0.0
 		self.instruct_time = self.t_time=self.fix_time = self.stimulus_time = self.post_stimulus_time = 0.0
-		self.instruct_sound_played = False
 		
 	
 	def draw(self):
 		"""docstring for draw"""
+
+
+		if not ((self.ID == 0) * (self.phase == 0)):
+			
+			# wait with presenting the fixation task after the first trial
+			time_elapsed_since_start = self.session.clock.getTime() - self.session.exp_start_time
+			# see whether the elapsed time divided in 0.5 second steps is in transient occurences, and whether this pulse has not yet bee presented
+			if ((np.round(time_elapsed_since_start * (1/self.session.time_steps))/(1/self.session.time_steps)) in self.session.transient_occurrences) * self.session.ready_for_next_pulse:  
+
+				self.session.ready_for_next_pulse = False
+				
+				self.session.stim_value = np.random.choice([-1,1])
+				self.fix_gray_value = np.ones(3) * self.session.stim_value
+
+				log_msg = 'fix signal value: %d at %f ' % (self.session.stim_value, self.session.clock.getTime())
+
+				self.session.fixation.setColor(self.fix_gray_value)
+
+				if self.session.tracker:
+					self.session.tracker.log( log_msg )
+				self.events.append( log_msg )
+				print log_msg
+
+			elif ((np.round(time_elapsed_since_start * (1/self.session.time_steps))/(1/self.session.time_steps)) not in self.session.transient_occurrences) :
+				self.session.ready_for_next_pulse = True
+				self.session.fixation.setColor((0,0,0))
+
+			self.session.fixation_outer_rim.draw()
+			self.session.fixation_rim.draw()
+			self.session.fixation.draw()
+
 		if self.phase == 0:
 			if self.ID == 0:
 				self.instruction.draw()
-			else:
-				self.session.fixation_outer_rim.draw()
-				self.session.fixation_rim.draw()
-				self.session.fixation.draw()
-		if self.phase == 1:
-			self.session.fixation_outer_rim.draw()
-			self.session.fixation_rim.draw()
-			self.session.fixation.draw()
-		elif self.phase == 2:
-			self.session.fixation_outer_rim.draw()
-			self.session.fixation_rim.draw()
-			self.session.fixation.draw()
-		elif self.phase == 3:
+
+		if self.phase == 3:
 			self.stim.draw(phase = np.max([(self.stimulus_time - self.t_time) / self.phase_durations[3],0]))
-		elif self.phase == 4:
-			self.session.fixation_outer_rim.draw()
-			self.session.fixation_rim.draw()
-			self.session.fixation.setColor((0,0,0))
-			self.session.fixation.draw()
 		super(PRFTrial, self).draw( )
 
 	def event(self):
@@ -72,46 +86,27 @@ class PRFTrial(Trial):
 						print 'trial canceled by user'
 				elif ev == 't': # TR pulse
 					self.events.append([99,self.session.clock.getTime()-self.start_time])
-					if (self.phase == 0) + (self.phase==2):
+					if (self.ID==0) * (self.phase == 0):
+						self.session.exp_start_time = self.session.clock.getTime()
+						self.phase_forward()
+					elif scanner * (self.phase==2):
 						self.phase_forward()
 				elif ev in self.session.response_button_signs.keys():
 					# if self.phase == 0:
 						# self.phase_forward()
-					if self.phase == 3 :
+					if self.session.stim_value != 0:
 						# then check whether one of the correct buttons was pressed:
-						if self.session.response_button_signs[ev] in [-1,1]:
-							# do we even need an answer?
-							if self.stim.last_sampled_staircase != None:
-								# what value were we presenting at?
-								test_value = self.session.staircases[self.stim.last_sampled_staircase].quantile()
-								if self.session.tasks[self.parameters['task_index']] == 'Color':
-									response = self.session.response_button_signs[ev]*self.stim.present_color_task_sign
-								elif self.session.tasks[self.parameters['task_index']] == 'Speed':
-									response = self.session.response_button_signs[ev]*self.stim.present_speed_task_sign
-								elif self.session.tasks[self.parameters['task_index']] == 'Fix':
-									response = self.session.response_button_signs[ev]*self.stim.present_fix_task_sign
-								elif self.session.tasks[self.parameters['task_index']] == 'Fix_no_stim':
-									response = self.session.response_button_signs[ev]*self.stim.present_fns_task_sign
+						response = self.session.response_button_signs[ev]
+						if response in [-1,1]:
 
-								# update the staircase
-								self.session.staircases[self.stim.last_sampled_staircase].update(test_value,(response+1)/2)
-								# now block the possibility of further updates
-								self.stim.last_sampled_staircase = None
+							answer = self.session.response_button_signs[ev]
+							log_msg = 'fix value: %d, response: %d, accuracy: %d'%(self.session.stim_value,response,self.session.stim_value*response)
 
-								if self.session.tasks[self.parameters['task_index']] != 'Fix_no_stim':
-									log_msg = 'staircase %s bin %d updated from %f after response %s at %f'%( self.session.tasks[self.parameters['task_index']], self.stim.eccentricity_bin,test_value, str((response+1)/2), self.session.clock.getTime() )
-								else:
-									log_msg = 'staircase %s updated from %f after response %s at %f'%( self.session.tasks[self.parameters['task_index']], test_value, str((response+1)/2), self.session.clock.getTime() )
+							self.events.append( log_msg )
+							print log_msg
+							if self.session.tracker:
+								self.session.tracker.log( log_msg )
 
-								self.events.append( log_msg )
-								print log_msg
-								if self.session.tracker:
-									self.session.tracker.log( log_msg )
-
-
-
-				# add answers based on stimulus changes, and interact with the staircases at hand
-				# elif ev == 'b' or ev == 'right': # answer pulse
 				event_msg = 'trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime())
 				self.events.append(event_msg)
 		
@@ -132,9 +127,8 @@ class PRFTrial(Trial):
 			# In phase 1, we present the task instruction auditorily
 			if self.phase == 1:
 				self.fix_time = self.session.clock.getTime()
-				if not self.instruct_sound_played:
-					# self.session.play_sound(self.session.task_instructions[self.parameters['task_index']].lower())
-					self.instruct_sound_played = True
+				if self.ID == 0:#self.session.exp_start_time == 0.0:
+					self.session.exp_start_time = self.session.clock.getTime()
 				# this trial phase is timed
 				if ( self.fix_time  - self.instruct_time ) > self.phase_durations[1]:
 					self.phase_forward()

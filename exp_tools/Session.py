@@ -93,7 +93,8 @@ class Session(object):
 		"""
 
 		# the actual screen-getting
-		self.display = libscreen.Display(disptype='psychopy', dispsize=size, fgc=(255,0,0), bgc=list((255*bgl for bgl in background_color)), screennr=screen_nr,mousevisible=False,fullscr=full_screen)
+		# self.display = libscreen.Display(disptype='psychopy', dispsize=size, fgc=(255,255,255), bgc=list((255*bgl for bgl in background_color)), screennr=screen_nr,mousevisible=False,fullscr=full_screen)
+		self.display = libscreen.Display(disptype='psychopy', dispsize=size, fgc=(255,255,255), bgc=background_color, screennr=screen_nr,mousevisible=False,fullscr=full_screen)
 		# self.pygaze_scr = libscreen.Screen(disptype='psychopy')
 
 		# print dir(self.display)
@@ -122,7 +123,7 @@ class Session(object):
 		# self.screen.mousevis = False
 		self.screen.flip()
 	
-	def create_output_file_name(self, data_directory = 'data'):
+	def create_output_file_name(self, data_directory = 'data',task=''):
 		"""create output file"""
 		now = datetime.datetime.now()
 		opfn = now.strftime("%Y-%m-%d_%H.%M.%S")
@@ -130,7 +131,7 @@ class Session(object):
 		if not os.path.isdir(data_directory):
 			os.mkdir(data_directory)
 			
-		self.output_file = os.path.join(data_directory, self.subject_initials + '_' + str(self.index_number) + '_' + opfn )
+		self.output_file = os.path.join(data_directory, self.subject_initials + '_' + task + '_' + str(self.index_number) + '_' + opfn )
 	
 	def open_input_file(self):
 		"""

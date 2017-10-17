@@ -17,11 +17,12 @@ class MapperStim(object):
 		self.trial = trial
 		self.session = session
 		self.screen = screen
-		self.size_pix = session.standard_parameters['stim_size'] * session.screen_pix_size[1]
+		self.size_pix = session.standard_parameters['max_ecc'] * self.session.pixels_per_degree * 2
 		self.period = session.standard_parameters['mapper_stim_in_TR'] * session.standard_parameters['TR']
 		# self.refresh_frequency = refresh_frequency
 		self.task_rate = session.standard_parameters['task_rate']
 		self.task = task
+		self.refresh_frequency = session.standard_parameters['redraws_per_TR'] / session.standard_parameters['TR']
 
 		self.phase = 0
 		# bookkeeping variables
@@ -45,31 +46,28 @@ class MapperStim(object):
 
 	def populate_stimulus(self):
 
-		# what eccentricity bin are we in? phase runs from 0 to 1, so we take the ecc on a linear scale for now
-		# self.eccentricity_bin = floor(np.abs(self.phase-0.5) * 2.0 * self.session.nr_staircases_ecc)
+		# if self.task == np.where(self.session.tasks=='no_color_no_speed')[0][0]:
 
-		if self.task == np.where(self.session.tasks=='no_color_no_speed')[0][0]:
+		# 	average_color_value = np.mean([self.session.standard_parameters['RG_color'],self.session.standard_parameters['BY_color']])
+		# 	red = np.array([-average_color_value,-average_color_value,-average_color_value])
+		# 	green = np.array([average_color_value,average_color_value,average_color_value])
+		# 	yellow = np.array([-average_color_value,-average_color_value,-average_color_value])
+		# 	blue = np.array([average_color_value,average_color_value,average_color_value]) 
 
-			average_color_value = np.mean([self.session.standard_parameters['RG_color'],self.session.standard_parameters['BY_color']])
-			red = np.array([-average_color_value,-average_color_value,-average_color_value])
-			green = np.array([average_color_value,average_color_value,average_color_value])
-			yellow = np.array([-average_color_value,-average_color_value,-average_color_value])
-			blue = np.array([average_color_value,average_color_value,average_color_value]) 
+		# 	self.slow_speed = 0.0
+		# 	self.fast_speed = 0.0
 
-			self.slow_speed = 0.0
-			self.fast_speed = 0.0
+		# elif self.task == np.where(self.session.tasks=='yes_color_no_speed')[0][0]:
 
-		elif self.task == np.where(self.session.tasks=='yes_color_no_speed')[0][0]:
+		# 	red = np.array([ self.session.standard_parameters['RG_color'],- self.session.standard_parameters['RG_color'],0])
+		# 	green = np.array([- self.session.standard_parameters['RG_color'], self.session.standard_parameters['RG_color'],0])
+		# 	yellow = np.array([ self.session.standard_parameters['BY_color'], self.session.standard_parameters['BY_color'],- self.session.standard_parameters['BY_color']])
+		# 	blue = np.array([- self.session.standard_parameters['BY_color'],- self.session.standard_parameters['BY_color'], self.session.standard_parameters['BY_color']]) 
 
-			red = np.array([ self.session.standard_parameters['RG_color'],- self.session.standard_parameters['RG_color'],0])
-			green = np.array([- self.session.standard_parameters['RG_color'], self.session.standard_parameters['RG_color'],0])
-			yellow = np.array([ self.session.standard_parameters['BY_color'], self.session.standard_parameters['BY_color'],- self.session.standard_parameters['BY_color']])
-			blue = np.array([- self.session.standard_parameters['BY_color'],- self.session.standard_parameters['BY_color'], self.session.standard_parameters['BY_color']]) 
+		# 	self.slow_speed = 0.0
+		# 	self.fast_speed = 0.0
 
-			self.slow_speed = 0.0
-			self.fast_speed = 0.0
-
-		elif self.task == np.where(self.session.tasks=='no_color_yes_speed')[0][0]:
+		if self.task == np.where(self.session.tasks=='no_color_yes_speed')[0][0]:
 
 			average_color_value = np.mean([self.session.standard_parameters['RG_color'],self.session.standard_parameters['BY_color']])
 			red = np.array([-average_color_value,-average_color_value,-average_color_value])
@@ -104,13 +102,16 @@ class MapperStim(object):
 									np.ones((self.num_elements/4.0,3)) * yellow))  # blue/yellow - yellow
 		np.random.shuffle(self.colors)
 		self.element_positions = np.random.rand(self.num_elements, 2) * np.array([self.size_pix, self.size_pix]) - np.array([self.size_pix/2.0, (self.size_pix)/2.0])
-		
+		np.random.shuffle(self.element_positions)
+
 		self.element_speeds = np.concatenate((np.ones(np.round(self.num_elements*self.session.fast_ratio)) * self.fast_speed,
 											np.ones(np.round(self.num_elements*self.session.slow_ratio)) * self.slow_speed))
 		np.random.shuffle(self.element_speeds)
 
-		self.element_sfs = np.ones((self.num_elements)) * self.session.standard_parameters['element_spatial_frequency']
-		self.element_sizes = np.ones((self.num_elements)) * self.session.standard_parameters['element_size']
+		sf_mean = self.session.standard_parameters['element_sf_mean'] #* self.session.pixels_per_degree
+		sf_min = self.session.standard_parameters['element_sf_min'] #* self.session.pixels_per_degree
+		self.element_sfs = np.random.rand(self.num_elements)*sf_mean+sf_min
+		self.element_sizes = np.ones((self.num_elements)) * self.session.standard_parameters['element_size'] * self.session.pixels_per_degree
 		self.element_phases = np.zeros(self.num_elements)
 		self.element_orientations = np.random.rand(self.num_elements) * 720.0 - 360.0
 		
@@ -119,9 +120,9 @@ class MapperStim(object):
 		self.phase = phase
 		self.frames += 1
 
-		
-		if self.frames == 1:#self.redraws < (self.phase * self.period * self.refresh_frequency):
-			# self.redraws = self.redraws + 1
+		if self.frames == 1:
+		# if self.redraws < (self.phase * self.period * self.refresh_frequency):
+			self.redraws = self.redraws + 1
 			# self.populate_stimulus()
 			self.session.element_array.setSfs(self.element_sfs)
 			self.session.element_array.setSizes(self.element_sizes)

@@ -32,7 +32,7 @@ class PRFSession(EyelinkSession):
         self.background_color = (np.array(BGC)/255*2)-1
         self.task = task_type
 
-        screen = self.create_screen( size = DISPSIZE, full_screen =full_screen, physical_screen_distance = SCREENDIST, 
+        screen = self.create_screen( size = DISPSIZE, full_screen =FULLSCREEN, physical_screen_distance = SCREENDIST, 
             background_color = self.background_color, physical_screen_size = SCREENSIZE, wait_blanking = True, screen_nr = 1 )
         # screen = self.create_screen( size = screen_res, full_screen =0, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
         event.Mouse(visible=False, win=screen)
@@ -139,7 +139,7 @@ class PRFSession(EyelinkSession):
     def prepare_staircases(self):
         # fix, color
         self.initial_values = [1,2]
-        stepsizes = np.r_[np.array([1.0,1.0,0.5,0.5,0.25,0.25]), 0.25*np.ones((int(1e4)))]
+        # stepsizes = np.r_[np.array([1.0,1.0,0.5,0.5,0.25,0.25]), 0.25*np.ones((int(1e4)))]
 
         self.staircase_file_name = os.path.join(os.path.split(self.output_file)[0], self.subject_initials + '_prf_staircase.pickle')
         if os.path.exists( self.staircase_file_name ):
@@ -151,11 +151,12 @@ class PRFSession(EyelinkSession):
             for i, t in enumerate(['fix','bar']):
                 for j in range(self.nr_staircases_ecc):
                     self.staircases.update({t + '_%i'%j:
-                                ThreeUpOneDownStaircase(initial_value = standard_parameters['quest_initial_stim_values'], 
-                                                             initial_stepsize=standard_parameters['quest_stepsize'],
+                                ThreeUpOneDownStaircase(initial_value = standard_parameters['initial_stim_values'], 
+                                                             initial_stepsize=standard_parameters['stepsize'],
                                                              max_nr_trials = 5000,
-                                                             stepsize_multiplication_on_reversal = standard_parameters['quest_stepsize_multiplication_on_reversal'])  
+                                                             stepsize_multiplication_on_reversal = standard_parameters['stepsize_multiplication_on_reversal'])  
                                     })
+
     
     def prepare_trials(self):
         """docstring for prepare_trials(self):"""
@@ -163,22 +164,17 @@ class PRFSession(EyelinkSession):
         self.directions = np.linspace(0, 2.0 * pi, 8, endpoint = False)
         self.standard_parameters = standard_parameters
 
-
-        # self.tasks = np.array(['bar', 'fix'])
-
         # orientations, bar moves towards:
         # 0: S      3: NW   6: E
         # 1: SW     4: N    7: SE
         # 2: W      5: NE
 
-        if self.standard_parameters['practice']:
+        if self.standard_parameters['practice']==1:
+            # S-W-E-N
             self.stim_bool = [1,1,1,1]
             self.direction_indices = np.array([0,2,6,4])
         else:
-            # nostim-top-left-bottom-right-nostim-top-left-bottom-right-nostim
-            # self.stim_bool = [0,1,1,1,1,0,1,1,1,1,0]
-            # self.direction_indices = np.array([0,4,2,0,6,0,4,2,0,6,0])
-            # nostim-bottom-left-nostim-right-top-nostim
+            # X-S-W-X-E-N-X
             self.stim_bool = [0,1,1,0,1,1,0]
             self.direction_indices = np.array([0,0,2,0,6,4,0])
 
@@ -205,9 +201,12 @@ class PRFSession(EyelinkSession):
             self.standard_parameters['PRF_ITI_in_TR'] * self.standard_parameters['TR'] ])# for stim_dur in self.stim_durations])    # ITI
 
         # fixation point
-        self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=40, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.background_color, maskParams = {'fringeWidth':0.4})
-        self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=22, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
-        self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=17, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.background_color, opacity = 1.0, maskParams = {'fringeWidth':0.4})
+        fix_size = self.standard_parameters['fix_size'] * self.pixels_per_degree
+        fix_rim_size = self.standard_parameters['fix_size'] * self.pixels_per_degree * 1.33
+        fix_outer_rim_size = self.standard_parameters['fix_size'] * self.pixels_per_degree * 2
+        self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=fix_outer_rim_size, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.background_color, maskParams = {'fringeWidth':0.4})
+        self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=fix_rim_size, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
+        self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=fix_size, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.background_color, opacity = 1.0, maskParams = {'fringeWidth':0.4})
         
         # mask
         if self.standard_parameters['mask_type'] ==1:

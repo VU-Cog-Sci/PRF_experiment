@@ -27,28 +27,23 @@ class PRFStim(object):
         self.fast_speed = session.standard_parameters['fast_speed']
         self.slow_speed = session.standard_parameters['slow_speed']
         
-        # print(self.orientation)
+        self.bar_width = session.screen_pix_size[1] * session.standard_parameters['vertical_stim_size'] * session.standard_parameters['bar_width_ratio']
+        self.bar_length = session.screen_pix_size[0]
 
-        if self.orientation in self.session.directions[[0,4]]:
-            self.bar_width = self.screen.size[1] * session.standard_parameters['vertical_stim_size'] * session.standard_parameters['bar_width_ratio']
-            self.bar_length = self.screen.size[0]
-        elif self.orientation in self.session.directions[[2,6]]:
-            self.bar_width = self.screen.size[0] * session.standard_parameters['horizontal_stim_size'] * session.standard_parameters['bar_width_ratio']
-            self.bar_length = self.screen.size[1]
         self.num_elements = session.standard_parameters['num_elements']
 
         # change n_elements, sizes and bar width ratio for horizontal / vertical passes
         if self.trial.parameters['orientation'] in [0,np.pi]: # these are the vertical passes (e.g. top-bottom)
-            self.size_pix = [self.screen.size[1]*session.standard_parameters['vertical_stim_size'],self.screen.size[0]*session.standard_parameters['horizontal_stim_size']]
+            screen_distance_to_travel = session.screen_pix_size[1]*session.standard_parameters['vertical_stim_size']
             self.period = session.standard_parameters['vertical_pass_dur'] * session.standard_parameters['TR']
         else: # horizontal bar passes:
-            self.size_pix = [self.screen.size[0]*session.standard_parameters['horizontal_stim_size'],self.screen.size[1]*session.standard_parameters['vertical_stim_size']]
-            self.period = np.int(np.round(session.standard_parameters['horizontal_pass_dur'] * session.standard_parameters['TR']))
+            screen_distance_to_travel = session.screen_pix_size[0]*session.standard_parameters['horizontal_stim_size']
+            self.period = session.standard_parameters['horizontal_pass_dur'] * session.standard_parameters['TR']
             
-        self.full_width = self.size_pix[0] + self.bar_width + self.session.standard_parameters['element_size']
+        self.full_width = screen_distance_to_travel + self.bar_width + self.session.standard_parameters['element_size']
         self.midpoint = 0
 
-        # this is for determining ecc, which we make dependent on largest screen dimension
+        self.max_ecc_pix = (session.screen_pix_size[0]*session.standard_parameters['horizontal_stim_size'])/2
 
         self.phase = 0
         # bookkeeping variables
@@ -70,10 +65,12 @@ class PRFStim(object):
     def convert_sample(self,in_sample):
         return 1 - (1/(np.e**in_sample+1))
     
-    def populate_stimulus(self,pulse=False):
+    def populate_stimulus(self,pulse=False,midpoint=0):
 
         # what eccentricity bin are we in? 
-        self.eccentricity_bin = np.min([floor(2.0 * abs(self.phase - 0.5) * (self.session.nr_staircases_ecc)), self.session.nr_staircases_ecc-1])
+        current_ecc = np.abs(midpoint)/self.max_ecc_pix
+        self.eccentricity_bin  = np.min([np.floor(current_ecc * self.session.nr_staircases_ecc), self.session.nr_staircases_ecc-1])
+        # self.eccentricity_bin = np.min([floor(2.0 * abs(current_ecc - 0.5) * (self.session.nr_staircases_ecc)), self.session.nr_staircases_ecc-1])
 
         RG_ratio = 0.5
         BY_ratio = 0.5
@@ -142,7 +139,7 @@ class PRFStim(object):
 
         self.element_positions = np.random.rand(self.num_elements, 2) * np.array([self.bar_length, self.bar_width]) - np.array([self.bar_length/2.0, self.bar_width/2.0])
         # self.element_sfs = np.ones((self.num_elements)) * self.session.standard_parameters['element_spatial_frequency']
-        self.element_sfs = np.random.rand(self.num_elements)*5+0.5
+        self.element_sfs = np.random.rand(self.num_elements)*self.session.standard_parameters['element_sf_mean']+self.session.standard_parameters['element_sf_min']
         self.element_sizes = np.ones((self.num_elements)) * self.session.standard_parameters['element_size']
         self.element_phases = np.zeros(self.num_elements)
         self.element_orientations = np.random.rand(self.num_elements) * 720.0 - 360.0
@@ -157,21 +154,26 @@ class PRFStim(object):
             # define midpoint
             if np.mod(self.redraws,self.session.standard_parameters['redraws_per_TR']) == 0:
                 self.midpoint = phase * self.full_width - 0.5 * self.full_width #+ self.session.standard_parameters['x_offset']
-            if (np.mod(self.redraws,self.session.standard_parameters['redraws_per_TR']) == 1):
-                self.populate_stimulus(pulse=True)
-            else:
-                self.populate_stimulus(pulse=False)
-
-            self.session.element_array.setSfs(self.element_sfs)
-            self.session.element_array.setSizes(self.element_sizes)
-            self.session.element_array.setColors(self.colors)
-            self.session.element_array.setOris(self.element_orientations)
+            
             if self.trial.parameters['orientation'] == np.pi/2:
                 draw_midpoint = self.midpoint - self.session.standard_parameters['x_offset']
             elif self.trial.parameters['orientation'] == 3*(np.pi/2):
                 draw_midpoint = self.midpoint + self.session.standard_parameters['x_offset']
             else:
                 draw_midpoint = self.midpoint 
+
+            print draw_midpoint
+
+            if (np.mod(self.redraws,self.session.standard_parameters['redraws_per_TR']) == 1):
+                self.populate_stimulus(pulse=True,midpoint=draw_midpoint)
+            else:
+                self.populate_stimulus(pulse=False,midpoint=draw_midpoint)
+
+            self.session.element_array.setSfs(self.element_sfs)
+            self.session.element_array.setSizes(self.element_sizes)
+            self.session.element_array.setColors(self.colors)
+            self.session.element_array.setOris(self.element_orientations)
+
             self.session.element_array.setXYs(np.array(np.matrix(self.element_positions + np.array([0, -draw_midpoint])) * self.rotation_matrix)) 
             log_msg = 'stimulus draw for phase %f, at %f'%(phase, self.session.clock.getTime())
             self.trial.events.append( log_msg )

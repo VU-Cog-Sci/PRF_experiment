@@ -18,7 +18,7 @@ class ColorMatcherTrial(Trial):
         self.color_diff = 0.0
 
         self.stim = ColorMatcherStim(self.screen, self, self.session, 
-                        num_elements = self.parameters['num_elements'] * (1/self.parameters['bar_width_ratio']), 
+                        num_elements = self.parameters['matcher_num_elements'], 
                         RG_offset = self.parameters['RG_offset'])
         
         this_instruction_string = '\tLeft\t\t/\tRight\n\nLess RG\t\t/\tMore RG'# self.parameters['task_instruction']

@@ -26,10 +26,11 @@ class ColorMatcherSession(EyelinkSession):
         
         self.background_color = (np.array(BGC)/255*2)-1
 
-        screen = self.create_screen( size = DISPSIZE, full_screen =full_screen, physical_screen_distance = SCREENDIST, 
+        screen = self.create_screen( size = DISPSIZE, full_screen =FULLSCREEN, physical_screen_distance = SCREENDIST, 
             background_color = self.background_color, physical_screen_size = SCREENSIZE, wait_blanking = True, screen_nr = 1 )
         # screen=self.create_screen( size = screen_res, full_screen = 1, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
         event.Mouse(visible=False, win=screen)
+        # shell()
 
         self.standard_parameters = standard_parameters
         self.response_button_signs = response_button_signs
@@ -65,7 +66,7 @@ class ColorMatcherSession(EyelinkSession):
         screen_width, screen_height = self.screen_pix_size
         
         # mask
-        if self.standard_parameters['mask_type'] ==1:
+        if self.standard_parameters['mask_type'] == 1:
             draw_screen_space = [self.screen_pix_size[0]*self.standard_parameters['horizontal_stim_size'],self.screen_pix_size[1]*self.standard_parameters['vertical_stim_size']]
             mask = np.ones((self.screen_pix_size[1],self.screen_pix_size[0]))*-1
             x_edge = int(np.round((self.screen_pix_size[0]-draw_screen_space[0])/2))

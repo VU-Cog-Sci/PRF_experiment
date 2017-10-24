@@ -49,7 +49,7 @@ class ColorMatcherStim(object):
 
         np.random.shuffle(self.colors)
         self.element_positions = np.random.rand(self.num_elements, 2) * np.array([self.size_pix_hor, self.size_pix_ver]) - np.array([self.size_pix_hor/2.0, self.size_pix_ver/2.0])
-        self.element_sfs = np.random.rand(self.num_elements)*5+0.5
+        self.element_sfs = np.random.rand(self.num_elements) * self.trial.parameters['element_sf_mean'] + self.trial.parameters['element_sf_min']
         self.element_sizes = np.ones((self.num_elements)) * self.trial.parameters['element_size']
         self.element_orientations = np.random.rand(self.num_elements) * 720.0 - 360.0
         

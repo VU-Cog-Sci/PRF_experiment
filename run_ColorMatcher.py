@@ -8,9 +8,9 @@ import appnope
 
 def main():
     initials = raw_input('Your initials: ')
-    run_nr = int(raw_input('Run number: '))
-    scanner = raw_input('Are you in the scanner (y/n)?: ')
-    track_eyes = raw_input('Are you recording gaze (y/n)?: ')
+    run_nr = 1#int(raw_input('Run number: '))
+    scanner = 'n'#raw_input('Are you in the scanner (y/n)?: ')
+    track_eyes = 'n'#raw_input('Are you recording gaze (y/n)?: ')
     if track_eyes == 'y':
         tracker_on = True
     elif track_eyes == 'n':

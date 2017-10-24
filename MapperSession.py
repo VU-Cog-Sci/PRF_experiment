@@ -17,7 +17,8 @@ sys.path.append( 'exp_tools' )
 from Session import *
 from MapperTrial import *
 from constants import *
-from Staircase import YesNoStaircase
+from Staircase import ThreeUpOneDownStaircase
+
 
 import appnope
 appnope.nope()
@@ -28,7 +29,7 @@ class MapperSession(EyelinkSession):
         
         self.background_color = (np.array(BGC)/255*2)-1
 
-        screen = self.create_screen( size = DISPSIZE, full_screen =full_screen, physical_screen_distance = SCREENDIST, 
+        screen = self.create_screen( size = DISPSIZE, full_screen =FULLSCREEN, physical_screen_distance = SCREENDIST, 
             background_color = self.background_color, physical_screen_size = SCREENSIZE, wait_blanking = True, screen_nr = 1 )
         # screen = self.create_screen( size = screen_res, full_screen =0, physical_screen_distance = 159.0, background_color = background_color, physical_screen_size = (70, 40) )
         event.Mouse(visible=False, win=screen)

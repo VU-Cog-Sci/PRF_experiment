@@ -18,7 +18,7 @@ class PRFTrial(Trial):
 		
 		self.stim = PRFStim(self.screen, self, self.session, orientation = self.parameters['orientation'])
 		
-		this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nColor\t\t-\tBY\t\t\t/\tRG'# self.parameters['task_instruction']
+		this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nFix\t\t\t-\tBlack\t\t/\tWhite'
 		self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 30, alignHoriz = 'center')
 		self.instruction.setSize((1200,50))
 
@@ -89,7 +89,7 @@ class PRFTrial(Trial):
 					if (self.ID==0) * (self.phase == 0):
 						self.session.exp_start_time = self.session.clock.getTime()
 						self.phase_forward()
-					elif scanner * (self.phase==2):
+					elif (self.session.scanner=='y') * (self.phase==2):
 						self.phase_forward()
 				elif ev in self.session.response_button_signs.keys():
 					# if self.phase == 0:

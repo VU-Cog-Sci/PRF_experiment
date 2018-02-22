@@ -99,7 +99,7 @@ class MapperTrial(Trial):
 					if (self.ID==0) * (self.phase == 0):
 						self.session.exp_start_time = self.session.clock.getTime()
 						self.phase_forward()
-					elif scanner * (self.phase==2):
+					elif self.session.scanner * (self.phase==2):
 						self.phase_forward()
 				elif ev in self.session.response_button_signs.keys():
 					# then check whether one of the correct buttons was pressed:

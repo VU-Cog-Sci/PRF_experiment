@@ -5,7 +5,7 @@ from scipy.signal import convolve2d
 from IPython import embed as shell
 from math import *
 import random, sys
-
+import colorsys
 sys.path.append( 'exp_tools' )
 # sys.path.append( os.environ['EXPERIMENT_HOME'] )
 
@@ -67,26 +67,75 @@ class MapperStim(object):
 		# 	self.slow_speed = 0.0
 		# 	self.fast_speed = 0.0
 
+		red_c = np.array([ self.session.standard_parameters['RG_color'],- self.session.standard_parameters['RG_color'],0])
+		green_c = np.array([- self.session.standard_parameters['RG_color'], self.session.standard_parameters['RG_color'],0])
+		yellow_c = np.array([ self.session.standard_parameters['BY_color'], self.session.standard_parameters['BY_color'],- self.session.standard_parameters['BY_color']])
+		blue_c = np.array([- self.session.standard_parameters['BY_color'],- self.session.standard_parameters['BY_color'], self.session.standard_parameters['BY_color']]) 
+
+		red_c2 = (red_c+1)/2
+		green_c2 = (green_c+1)/2
+		yellow_c2 = (yellow_c+1)/2
+		blue_c2 = (blue_c+1)/2
+
 		if self.task == np.where(self.session.tasks=='no_color_yes_speed')[0][0]:
 
-			average_color_value = np.mean([self.session.standard_parameters['RG_color'],self.session.standard_parameters['BY_color']])
-			red = np.array([-average_color_value,-average_color_value,-average_color_value])
-			green = np.array([average_color_value,average_color_value,average_color_value])
-			yellow = np.array([-average_color_value,-average_color_value,-average_color_value])
-			blue = np.array([average_color_value,average_color_value,average_color_value]) 
 
-			self.fast_speed = self.session.standard_parameters['fast_speed']
-			self.slow_speed = self.session.standard_parameters['slow_speed']
+			bw_method = 'retina2'
+			if bw_method == 'desaturate':
+				red_hsv = colorsys.rgb_to_hsv(red_c2[0],red_c2[1],red_c2[2])
+				green_hsv = colorsys.rgb_to_hsv(green_c2[0],green_c2[1],green_c2[2])
+				yellow_hsv = colorsys.rgb_to_hsv(yellow_c2[0],yellow_c2[1],yellow_c2[2])
+				blue_hsv = colorsys.rgb_to_hsv(blue_c2[0],blue_c2[1],blue_c2[2])
+
+				red = (np.array(colorsys.hsv_to_rgb(red_hsv[0],0,red_hsv[-1]))*2)-1
+				green = ((np.array(colorsys.hsv_to_rgb(green_hsv[0],0,green_hsv[-1])))*2)-1
+				yellow = ((np.array(colorsys.hsv_to_rgb(yellow_hsv[0],0,yellow_hsv[-1])))*2)-1
+				blue = ((np.array(colorsys.hsv_to_rgb(blue_hsv[0],0,blue_hsv[-1])))*2)-1
+
+			elif bw_method == 'old_average':
+
+				average_color_value = np.mean([self.session.standard_parameters['RG_color'],self.session.standard_parameters['BY_color']])
+				red = np.array([-average_color_value,-average_color_value,-average_color_value])
+				green = np.array([average_color_value,average_color_value,average_color_value])
+				yellow = np.array([-average_color_value,-average_color_value,-average_color_value])
+				blue = np.array([average_color_value,average_color_value,average_color_value]) 
+
+
+			elif bw_method == 'average':
+
+				red = np.array([np.average(red_c),np.average(red_c),np.average(red_c)])
+				green = np.array([np.average(green_c),np.average(green_c),np.average(green_c)])
+				yellow = np.array([np.average(yellow_c),np.average(yellow_c),np.average(yellow_c)])
+				blue = np.array([np.average(blue_c),np.average(blue_c),np.average(blue_c)])
+
+			elif bw_method == 'retina':
+
+				c= [0.3,0.59,0.11]
+				red = np.array([np.average(red_c,weights=c),np.average(red_c,weights=c),np.average(red_c,weights=c)])
+				green = np.array([np.average(green_c,weights=c),np.average(green_c,weights=c),np.average(green_c,weights=c)])
+				yellow = np.array([np.average(yellow_c,weights=c),np.average(yellow_c,weights=c),np.average(yellow_c,weights=c)])
+				blue = np.array([np.average(blue_c,weights=c),np.average(blue_c,weights=c),np.average(blue_c,weights=c)])
+
+			elif bw_method == 'retina2':
+
+				c = [0.3,0.59,0.11]
+				red = (np.array([c[0]*red_c2[0]**2 + c[1]*red_c2[1]**2 + c[2]*red_c2[2]**2]*3)*2)-1
+				green = (np.array([c[0]*green_c2[0]**2 + c[1]*green_c2[1]**2 + c[2]*green_c2[2]**2]*3)*2)-1
+				yellow = (np.array([c[0]*yellow_c2[0]**2 + c[1]*yellow_c2[1]**2 + c[2]*yellow_c2[2]**2]*3)*2)-1
+				blue = (np.array([c[0]*blue_c2[0]**2 + c[1]*blue_c2[1]**2 + c[2]*blue_c2[2]**2]*3)*2)-1
+			
+			self.fast_speed = 0#self.session.standard_parameters['fast_speed']
+			self.slow_speed = 0#self.session.standard_parameters['slow_speed']
 
 		elif self.task == np.where(self.session.tasks=='yes_color_yes_speed')[0][0]:
 
-			red = np.array([ self.session.standard_parameters['RG_color'],- self.session.standard_parameters['RG_color'],0]) 
-			green = np.array([- self.session.standard_parameters['RG_color'], self.session.standard_parameters['RG_color'],0]) 
-			yellow = np.array([ self.session.standard_parameters['BY_color'], self.session.standard_parameters['BY_color'],- self.session.standard_parameters['BY_color']])
-			blue = np.array([- self.session.standard_parameters['BY_color'],- self.session.standard_parameters['BY_color'], self.session.standard_parameters['BY_color']]) 
+			red = red_c#np.array([ self.session.standard_parameters['RG_color'],- self.session.standard_parameters['RG_color'],0]) 
+			green = green_c#np.array([- self.session.standard_parameters['RG_color'], self.session.standard_parameters['RG_color'],0]) 
+			yellow = yellow_c#np.array([ self.session.standard_parameters['BY_color'], self.session.standard_parameters['BY_color'],- self.session.standard_parameters['BY_color']])
+			blue = blue_c#np.array([- self.session.standard_parameters['BY_color'],- self.session.standard_parameters['BY_color'], self.session.standard_parameters['BY_color']]) 
 
-			self.fast_speed = self.session.standard_parameters['fast_speed']
-			self.slow_speed = self.session.standard_parameters['slow_speed']
+			self.fast_speed = 0#self.session.standard_parameters['fast_speed']
+			self.slow_speed = 0#self.session.standard_parameters['slow_speed']
 
 		elif self.task == np.where(self.session.tasks=='fix_no_stim')[0][0]:
 		

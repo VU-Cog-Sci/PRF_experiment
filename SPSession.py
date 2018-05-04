@@ -152,41 +152,74 @@ class SPSession(EyelinkSession):
 
         self.standard_parameters = standard_parameters
 
-        # combining all 5 positions gives 5x5=25 possible location combinations
-        x_test_positions = np.array(np.meshgrid(self.standard_parameters['test_stim_positions'], self.standard_parameters['test_stim_positions'])).T.reshape((-1,2))
-        x1, x2 = x_test_positions[:,0], x_test_positions[:,1]
+        # shell()
+        x_test_positions = np.linspace(-self.standard_parameters['target_max_ecc'], self.standard_parameters['target_max_ecc'], self.standard_parameters['n_targets'])
+        # pop the 0 position
+        # x_test_positions = np.delete(x_test_positions,self.standard_parameters['n_targets']/2)
 
-        # y position is above or below fp
+        # double x positions, to add above and below positions
+        x_test_positions_rep = np.tile(x_test_positions,2)
         y_test_positions = np.concatenate((-1 * np.ones(x_test_positions.shape[0]), np.ones(x_test_positions.shape[0])))
 
-        # tile them 4 times, so that we have 25*4=100 trials
-        x_test_positions_tiled = np.array([np.tile(x1, 4), np.tile(x2, 4)]).T
+        # double the whole thing so we can add eye dir 
+        x_test_positions_tiled = np.tile(x_test_positions_rep, 2)
         y_test_positions_tiled = np.tile(y_test_positions, 2)
 
-        # all combinations of parameters are now repeated twice, so we add the eye dir to first 50 and last 50
-        eye_dir = np.concatenate([np.ones(x_test_positions_tiled.shape[0]/2),np.zeros(x_test_positions_tiled.shape[0]/2)])
+        # now add eye dir
+        eye_dir = np.concatenate([np.ones(int(x_test_positions_tiled.shape[0]/2)),np.zeros(int(x_test_positions_tiled.shape[0]/2))])
 
-        # now let's create a random trial order 
+        # now duplicate the whole thing for multiple trials
+        x_test_positions_tiled = np.tile(x_test_positions_tiled,self.standard_parameters['n_target_reps'])
+        y_test_positions_tiled = np.tile(y_test_positions_tiled,self.standard_parameters['n_target_reps'])
+        eye_dir = np.tile(eye_dir,self.standard_parameters['n_target_reps'])
+
         self.trial_order = np.arange(eye_dir.shape[0])
-        np.random.shuffle(self.trial_order)
 
-        # and apply
-        x_test_positions_tiled_shuffled = x_test_positions_tiled[self.trial_order]
-        y_test_positions_tiled_shuffled = y_test_positions_tiled[self.trial_order]
-        eye_dir_shuffled = eye_dir[self.trial_order]
+        # shuffle the trial order untill the first eye dir is 0:
+        while True:
+            
+            # now let's create a random trial order 
+            np.random.shuffle(self.trial_order)
 
+            # and apply
+            x_test_positions_tiled_shuffled = x_test_positions_tiled[self.trial_order]
+            y_test_positions_tiled_shuffled = y_test_positions_tiled[self.trial_order]
+            eye_dir_shuffled = eye_dir[self.trial_order]
+
+            # now check if first eye dir is 0:
+            if eye_dir_shuffled[0] == 0:
+                break
+                
         ITIs = np.zeros(len(self.trial_order))#*self.standard_parameters['minimal_iti']
-        # and here's the distribution of ITIs:
-        unique_ITIs = {
-        1: 37,
-        2: 22,
-        3: 15,
-        4: 10,
-        5: 7,
-        6: 4,
-        7: 3,
-        8: 2
-        }
+
+        if self.standard_parameters['n_targets'] == 3:
+            # and here's the distribution of ITIs:
+            unique_ITIs = {
+            0: 6*self.standard_parameters['n_target_reps'],
+            1: 3*self.standard_parameters['n_target_reps'],
+            2: 2*self.standard_parameters['n_target_reps'],
+            3: 1*self.standard_parameters['n_target_reps'],
+            }
+
+        if self.standard_parameters['n_targets'] == 5:
+            # and here's the distribution of ITIs:
+            unique_ITIs = {
+            1: 9*self.standard_parameters['n_target_reps'],
+            2: 5*self.standard_parameters['n_target_reps'],
+            3: 3*self.standard_parameters['n_target_reps'],
+            4: 2*self.standard_parameters['n_target_reps'],
+            5: 1*self.standard_parameters['n_target_reps'],
+            }
+
+        if self.standard_parameters['n_targets'] == 8:
+            # and here's the distribution of ITIs:
+            unique_ITIs = {
+            0: 13*self.standard_parameters['n_target_reps'],
+            1: 9*self.standard_parameters['n_target_reps'],
+            2: 6*self.standard_parameters['n_target_reps'],
+            3: 3*self.standard_parameters['n_target_reps'],
+            4: 1*self.standard_parameters['n_target_reps'],
+            }
 
         # randomly distribute ITI's over the trial combinations:
         ITI_order = np.arange(len(ITIs))
@@ -199,31 +232,31 @@ class SPSession(EyelinkSession):
         # and add or subtract 1 when a switch in eye dir is required:
         n_switches = 0
         for ti, this_eye_dir in enumerate(eye_dir_shuffled):
-            ITI_cumsum = np.cumsum(ITIs)[ti]
+            ITI_cumsum = np.sum(ITIs[:ti])
             current_direction = ITI_cumsum%2
-            if current_direction != this_eye_dir:
-                ITIs[ti] += [-1,1][n_switches%2]
+            if current_direction != this_eye_dir: # this cannot happen on first trial as eye dir on first trial was set to 0 (and ITI cumsum is always 0 there)
+                ITIs[ti-1] += [-1,1][n_switches%2] # change ITI from previous trial, as this affects current flash direction
                 n_switches += 1
 
         ITIs += self.standard_parameters['minimal_iti']
-       
-        # the total number of TRs can now be either 661 or 662, depending on whether there even or even n_switches
+
+        # the total number of TRs can now be one less or more depending on whether there were uneven or even n_switches
         # thus add 1 TR when n_switches are uneven:
         padd_TR = n_switches%2
 
+        print 'run will last %d TRs'%(np.sum(ITIs)+padd_TR)
+
         # now add the first and last empty trials:
-        x_test_positions_tiled_shuffled = np.vstack([[-1e3,-1e3],x_test_positions_tiled_shuffled,[-1e3,-1e3]]) #-1e3 means off the screen)
+        x_test_positions_tiled_shuffled = np.hstack([-1e3,x_test_positions_tiled_shuffled,-1e3]) #-1e3 means off the screen)
         y_test_positions_tiled_shuffled = np.hstack([-1e3,y_test_positions_tiled_shuffled,-1e3]) #-1e3 means off the screen)
         ITIs = np.hstack([self.standard_parameters['warming_up_n_TRs'],ITIs,self.standard_parameters['warming_up_n_TRs']+padd_TR])
         eye_dir_shuffled = np.hstack([0,eye_dir_shuffled,0])
 
         # define all durations per trial
         self.phase_durations = np.array([[
-            -0.0001, # instruct time, skipped in all trials but the first (wait for t)
-            ITI * self.standard_parameters['TR'], # smooth pursuit before stim
-            self.standard_parameters['TR'], # smooth pursuit after stim 1
-            self.standard_parameters['TR'] # smooth pursuit after stim 2
-            ] for ITI in ITIs] )    
+            -0.0001, # wait for t on first trial if in scanner
+            ITIs[t] * self.standard_parameters['TR'], # ITI in TRs
+            ] for t in range(len(ITIs))] )    
 
         # fixation point
         # self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
@@ -234,6 +267,28 @@ class SPSession(EyelinkSession):
         # self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=45, pos = np.array((0.0,0.0)), color = (0.0,0.0,0.0), maskParams = {'fringeWidth':0.4})
         # self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=50, pos = np.array((0.0,0.0)), color = (1.0,1.0,1.0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
         
+        self.refstim_left = visual.Rect(self.screen, 
+                            width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,   # narrow line
+                            height = np.round(self.standard_parameters['test_stim_height']*self.pixels_per_degree/2), 
+                            lineColor = (-1,-1,-1),
+                            fillColor = self.stim_color,
+                            )
+
+        self.refstim_center = visual.Rect(self.screen, 
+                            width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,   # narrow line
+                            height = np.round(self.standard_parameters['test_stim_height']*self.pixels_per_degree/2), 
+                            lineColor = (-1,-1,-1),
+                            fillColor = self.stim_color,
+                            )
+
+
+        self.refstim_right = visual.Rect(self.screen, 
+                            width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,   # narrow line
+                            height = np.round(self.standard_parameters['test_stim_height']*self.pixels_per_degree/2), 
+                            lineColor = (-1,-1,-1),
+                            fillColor = self.stim_color,
+                            )
+
         self.fixation = visual.PatchStim(self.screen,
 			mask='raisedCos',
 			tex=None, 
@@ -248,14 +303,8 @@ class SPSession(EyelinkSession):
             self.standard_parameters['test_stim_height'] = self.ywidth/4/self.pixels_per_degree
         if self.standard_parameters['test_stim_y_offset'] == 0:
             self.standard_parameters['test_stim_y_offset'] = self.ywidth/4/self.pixels_per_degree
-        self.test_stim_1 = visual.Rect(self.screen, 
+        self.test_stim = visual.Rect(self.screen, 
                             width = self.standard_parameters['test_stim_width']*self.pixels_per_degree,  
-                            height = self.standard_parameters['test_stim_height']*self.pixels_per_degree, 
-                            lineColor = self.stim_color,
-                            fillColor = self.stim_color)
-
-        self.test_stim_2 = visual.Rect(self.screen, 
-                            width = self.standard_parameters['test_stim_width']*self.pixels_per_degree, 
                             height = self.standard_parameters['test_stim_height']*self.pixels_per_degree, 
                             lineColor = self.stim_color,
                             fillColor = self.stim_color)
@@ -269,11 +318,12 @@ class SPSession(EyelinkSession):
 
             this_trial_parameters={
                                     # trial varying params:
-                                    'x_pos_1': x_test_positions_tiled_shuffled[i,0],
-                                    'x_pos_2': x_test_positions_tiled_shuffled[i,1], 
+                                    'x_pos': x_test_positions_tiled_shuffled[i],
                                     'y_order': y_test_positions_tiled_shuffled[i],
                                     'eye_dir': eye_dir_shuffled[i],
                                     'ITI': ITIs[i], # this should not be _shuffled
+                                    'answer': self.standard_parameters['default_answer'],
+                                    'fp_dim_dur': self.standard_parameters['fp_dim_dur'],
 
                                     # these params don't vary over trials:
                                     'TR': self.standard_parameters['TR'],

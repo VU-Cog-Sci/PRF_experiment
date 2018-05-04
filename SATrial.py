@@ -11,11 +11,11 @@ sys.path.append( 'exp_tools' )
 
 from Trial import *
 
-class SPMapperTrial(Trial):
+class SATrial(Trial):
     def __init__(self, parameters = {}, phase_durations = [], session = None, screen = None, tracker = None):
-        super(SPMapperTrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
+        super(SATrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
                 
-        this_instruction_string = 'follow the dot'# self.parameters['task_instruction']
+        this_instruction_string = 'Determine where the flash is\n by pressing the corresponding button'
         self.instruction = visual.TextStim(self.screen, 
 		    text = this_instruction_string, 
 		    font = 'Helvetica Neue',
@@ -29,40 +29,59 @@ class SPMapperTrial(Trial):
         self.run_time = 0.0
         self.instruct_time = self.t_time=self.fix_time = self.stimulus_time = self.post_stimulus_time = 0.0
 
-        
-    def update_fix_pos(self,time,frequency=0.5):
+        self.stim1_drawn = False
 
-        # note: this loop takes in extreme cases 1 ms, but median is 0.0004 ms. 
+    def set_fix_color(self,time):
+
+        self.session.fixation_left.setColor(self.session.stim_color)       
+        self.session.fixation_right.setColor(self.session.stim_color)            
+        self.session.fixation_center.setColor(self.session.stim_color)
+
+        # dim center ref
+        if (time % self.parameters['TR']) < self.parameters['fp_dim_dur']:
+            self.session.fixation_center.setColor((self.session.stim_color[0]*0.2,-1,-1))  
+
+        # this is how i determined stim pos in smooth pursuit
         amplitude = self.parameters['sp_path_amplitude']*self.session.pixels_per_degree/2# * self.screen.size[0] /2
         f = self.parameters['sp_path_temporal_frequency']/self.parameters['TR']
-        # f = frequency/self.parameters['TR']
         x_pos = amplitude * np.sin(2*np.pi*f*time) # costs about 
-        y_pos = self.screen.size[1]*self.parameters['sp_path_elevation']-self.screen.size[1]/2
-        # self.session.fixation_outer_rim.setPos([x_pos,y_pos])
-        # self.session.fixation_rim.setPos([x_pos,y_pos])
-        self.session.fixation.setPos([x_pos,y_pos])
+        # so if x_pos is positive, it should be the right target that lights up
+
+        # you know if it's the right one if the 
+        if ((time+self.parameters['TR']/2) % (self.parameters['TR'])) < self.parameters['fp_dim_dur']:
+            if x_pos > 0:
+                self.session.fixation_right.setColor((self.session.stim_color[0]*0.2,-1,-1))
+            else:
+                self.session.fixation_left.setColor((self.session.stim_color[0]*0.2,-1,-1))
+
 
     def draw(self):
 
         """docstring for draw"""
 
-        # the position of the dot is determined based
-        # on the session time
         if (self.phase == 0) * (self.ID == 0):
             draw_time = 0         
         else:
             draw_time = self.session.clock.getTime() - self.session.start_time
 
-        self.update_fix_pos(draw_time)
-        # self.session.fixation_outer_rim.draw()
-        # self.session.fixation_rim.draw()
-        self.session.fixation.draw()
+        self.set_fix_color(draw_time)
+        self.session.fixation_center.draw()
+
+        self.session.fixation_left.draw()
+        self.session.fixation_right.draw()
 
         # draw additional stimuli:
         if (self.phase == 0 ) * (self.ID == 0):
                 self.instruction.draw()
+        # phase 2 starts with the presentation of the target stimulus
+        elif self.phase == 2:
+            if self.stim1_drawn == False:
+                # print 'trial %d draw time %.2f'%(self.ID,draw_time)
+                self.session.test_stim.draw()
+                self.stim1_drawn = True
 
-        super(SPMapperTrial, self).draw() # flip
+
+        super(SATrial, self).draw() # flip
 
     def event(self):
         for ev in event.getKeys():
@@ -86,6 +105,8 @@ class SPMapperTrial(Trial):
                 #     self.events.append( log_msg )
                 #     if self.session.tracker:
                 #         self.session.tracker.log( log_msg )
+                else:
+                    self.parameters['answer'] = ev
 
                 log_msg = 'trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime())
                 print log_msg
@@ -95,13 +116,30 @@ class SPMapperTrial(Trial):
                 # add to self.events for adding to behavioral pickle
                 self.events.append(log_msg)
         
-            super(SPMapperTrial, self).key_event( ev )
+            super(SATrial, self).key_event( ev )
 
     def run(self, ID = 0):
+
+        # shell()
         self.ID = ID
-        super(SPMapperTrial, self).run()
+        super(SATrial, self).run()
 
         fp_y = self.screen.size[1]*self.parameters['sp_path_elevation']-self.screen.size[1]/2
+       
+        target_y_offset = self.parameters['y_order']*self.parameters['test_stim_y_offset']*self.session.pixels_per_degree
+        x_pos = self.parameters['x_pos']*self.session.pixels_per_degree
+        y_pos = fp_y + target_y_offset
+        self.session.test_stim.setPos([x_pos,y_pos ])
+
+        # eye_dir 1 should be to the left, eye dir 0 to the rigth:
+        target_x_pos = int(np.round( (self.parameters['sp_path_amplitude']/2*self.session.pixels_per_degree)*([1,-1][int(self.parameters['eye_dir'])])))
+        self.session.saccade_target.setPos([target_x_pos,fp_y])
+
+        leftrefx = int(np.round( (self.parameters['sp_path_amplitude']/2*self.session.pixels_per_degree) * -1))
+        rightrefx = int(np.round( (self.parameters['sp_path_amplitude']/2*self.session.pixels_per_degree) ))
+        self.session.fixation_left.setPos((leftrefx,fp_y))
+        self.session.fixation_right.setPos((rightrefx,fp_y))
+        self.session.fixation_center.setPos((0,fp_y))
 
         # we are fascists on timing issues
         if self.ID != 0:
@@ -115,11 +153,17 @@ class SPMapperTrial(Trial):
             # After the first trial, this phase is skipped immediately
             if (self.phase == 0) * (self.ID != 0):
                 self.phase_forward()
+
+            # only 1 phase in this trial
             if self.phase == 1:
                 self.phase_1_time = self.session.clock.getTime()
                 if ( self.phase_1_time  - self.trial_onset_time ) > self.phase_durations[1]:
-                   self.stopped = True
-
+                    self.phase_forward()
+            # only 1 phase in this trial
+            if self.phase == 2:
+                self.phase_2_time = self.session.clock.getTime()
+                if ( self.phase_2_time  - self.phase_1_time ) > self.phase_durations[2]:
+                    self.stopped = True      
             # events and draw
             self.event()
             self.draw()

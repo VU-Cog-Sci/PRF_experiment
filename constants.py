@@ -3,48 +3,49 @@
 # standard parameters
 standard_parameters = {
 
+    ##############################
+    # Smooth pursuit experiment vars
+    ##############################
+
     # define screen size:
-    'eyetracking_amplitude':            15,# 12,       # 
-    'sp_path_amplitude':                15,# 12,       # ratio of screen widht (1.0 for full width, 0 for standstill at fixation)
-    'sp_path_elevation':                0.7,        # ratio of screen height (0.5 for middle)
+    'ref_stim_width':                                   0.05,      # in deg
+    'eyetracking_amplitude':                    15,         # custom calibration x-width
+    'sp_path_amplitude':                          15,         # width in degrees of sp amplitude
+    'sp_path_elevation':                           0.7,        # ratio of screen height (0.5 for middle)
     
     ## common parameters:
-    'TR':                               0.945,        # VERY IMPORTANT TO FILL IN AFTER PLANNING IN!            
-    'minimal_iti':                      2,  # int should be eve number 
-    'warming_up_n_TRs':                 0,#18,#18, # this + 2 is the period before and after experiment while scanner is running
+    'TR':                                                   0.945,     # VERY IMPORTANT TO FILL IN AFTER PLANNING IN!            
+    'minimal_iti':                                       2,            # should be an even integer
+    'warming_up_n_TRs':                        4,            # this is the period before and after experiment while scanner is running
     
     ## SP  variables:
-    'test_stim_y_offset':               1.5,# 2,    #if 0, takes mid between fp and y boundary
-    'test_stim_height':                 2,#3,        # if 0, takes 1/3 of available y space
-    'test_stim_width':                  0.4,        # 0.125 * 0.
-    'sp_target_size':                   0.5,        #
-    'sp_path_temporal_frequency':       0.5,#25,#1.0,        #
-    'test_stim_positions':              [-3,-1,0,1,3],        # 
+    'test_stim_y_offset':                           1.5,         # in degrees, if 0 takes mid between fp and y boundary
+    'test_stim_height':                              2,            # in degrees, if 0, takes 1/4 of available y space
+    'test_stim_width':                               0.4,          # in degrees 
+    'sp_target_size':                                 0.5,         # in degrees
+    'sp_path_temporal_frequency':          0.5,         # per TR
+    'target_max_ecc':                               3,            # in degrees
+    'n_targets':                                         5,             # number of target positions, right now ony 3/5/8 is possible (otherwise ITIs are messed with)
+    'n_target_reps':                                  3,             # n_target_reps * n_targets * 4 is amount of trials
+    'pupil_tracking_mode':                       0,             # 0: centroid, 1 = ellipse
 
-    'pupil_tracking_mode':              0,# 0: centroid, 1 = ellipse
+    'default_answer':                                0,            # for in trial object
 
-
-    ##############
-    # SP Mapper vars
-    ##############
-    'mapper_period_in_TR':                25, # 
-    'mapper_n_trials':                    12, # should be even number (otherwise more SP than fix trials)
-
-    ##############
-    # HRF Mapper vars
-    ##############
-    'stim_duration':                        2, # in TRs
-    'nframes':                             30, # nframes per grating switch 
-    'square_width_deg':                      1, # width and length of a [[-1,1],[1,-1]] block of squares
+    ##############################
+    # Additional saccade experiment vars
+    ##############################
+    'fp_dim_dur':                                       .150,        # in s duration of fixation dim
+    'fp_dim_delay':                                    .200,       # in s this is the saccade delay duration
 
 }
 
+# print 
     
 #############################################
 # screen settings 
 #############################################
 
-full_screen = True
+full_screen = False
 FGC = (255,0,0)
 BGC = (0,0,0) # this is converted to -1<->1 in SPSession
 

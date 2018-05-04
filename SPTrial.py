@@ -15,7 +15,7 @@ class SPTrial(Trial):
     def __init__(self, parameters = {}, phase_durations = [], session = None, screen = None, tracker = None):
         super(SPTrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
                 
-        this_instruction_string = 'Determine whether the second flash is more left or right of the first.'
+        this_instruction_string = 'Determine where the flash is\n by pressing the corresponding button'
         self.instruction = visual.TextStim(self.screen, 
 		    text = this_instruction_string, 
 		    font = 'Helvetica Neue',
@@ -30,9 +30,8 @@ class SPTrial(Trial):
         self.instruct_time = self.t_time=self.fix_time = self.stimulus_time = self.post_stimulus_time = 0.0
 
         self.stim1_drawn = False
-        self.stim2_drawn = False
         
-    def update_fix_pos(self,time,frequency=0.5):
+    def update_fix_pos(self,time):#0.5):
 
         # note: this loop takes in extreme cases 1 ms, but median is 0.0004 ms. 
         amplitude = self.parameters['sp_path_amplitude']*self.session.pixels_per_degree/2# * self.screen.size[0] /2
@@ -63,18 +62,12 @@ class SPTrial(Trial):
         # draw additional stimuli:
         if (self.phase == 0 ) * (self.ID == 0):
                 self.instruction.draw()
-        # phase 2 starts with the presentation of the first stimulus
-        elif self.phase == 2:
+        # phase 2 starts with the presentation of the target stimulus
+        elif self.phase == 1:
             if self.stim1_drawn == False:
                 # print 'trial %d draw time %.2f'%(self.ID,draw_time)
-                self.session.test_stim_1.draw()
+                self.session.test_stim.draw()
                 self.stim1_drawn = True
-        # phase 3 starts with the presentation of the second stimulus
-        elif self.phase == 3:
-            if self.stim2_drawn == False:
-                # print 'trial %d draw time %.2f'%(self.ID,draw_time)
-                self.session.test_stim_2.draw()
-                self.stim2_drawn = True    
 
         super(SPTrial, self).draw() # flip
 
@@ -100,6 +93,8 @@ class SPTrial(Trial):
                 #     self.events.append( log_msg )
                 #     if self.session.tracker:
                 #         self.session.tracker.log( log_msg )
+                else:
+                    self.parameters['answer'] = ev
 
                 log_msg = 'trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime())
                 print log_msg
@@ -112,19 +107,17 @@ class SPTrial(Trial):
             super(SPTrial, self).key_event( ev )
 
     def run(self, ID = 0):
+
+        # shell()
         self.ID = ID
         super(SPTrial, self).run()
 
         fp_y = self.screen.size[1]*self.parameters['sp_path_elevation']-self.screen.size[1]/2
         target_y_offset = self.parameters['y_order']*self.parameters['test_stim_y_offset']*self.session.pixels_per_degree
-      
-        x_pos_1 = self.parameters['x_pos_1']*self.session.pixels_per_degree
-        y_pos_1 = fp_y + target_y_offset
-        self.session.test_stim_1.setPos([x_pos_1,y_pos_1 ])
-
-        x_pos_2 = self.parameters['x_pos_2']*self.session.pixels_per_degree
-        y_pos_2 = fp_y - target_y_offset
-        self.session.test_stim_2.setPos([x_pos_2,y_pos_2 ])
+  
+        x_pos = self.parameters['x_pos']*self.session.pixels_per_degree
+        y_pos = fp_y + target_y_offset
+        self.session.test_stim.setPos([x_pos,y_pos ])
 
         # we are fascists on timing issues
         if self.ID != 0:
@@ -138,26 +131,10 @@ class SPTrial(Trial):
             # After the first trial, this phase is skipped immediately
             if (self.phase == 0) * (self.ID != 0):
                 self.phase_forward()
-            # determine run_time 
-            # phase 1 is the smooth pursuit 'rest period'
+            # only 1 phase in this trial
             if self.phase == 1:
                 self.phase_1_time = self.session.clock.getTime()
                 if ( self.phase_1_time  - self.trial_onset_time ) > self.phase_durations[1]:
-                # if self.session.clock.getTime() > (self.session.cumulative_phase_durations[self.ID,1] + self.session.start_time):
-                    # print 'trial %d phase 1 end time %.2f'%(self.ID,self.session.clock.getTime() - self.session.start_time)
-                    # print 'trial %d:\n phase_dur: %.2f\nphase 1 end time %.2f\ncum :%.2f'%(self.ID,self.phase_durations[1], self.phase_1_time  - self.trial_onset_time, self.session.cumulative_phase_durations[self.ID,0])
-                    self.phase_forward()
-            # phase 2 starts with the presentation of the first stimulus
-            if self.phase == 2:
-                self.phase_2_time = self.session.clock.getTime()
-                if ( self.phase_2_time  - self.phase_1_time ) > self.phase_durations[2]:
-                    # print 'trial %d:\n phase_dur: %.2f\nphase 2 end time %.2f\ncum :%.2f'%(self.ID,self.phase_durations[2],self.phase_2_time  - self.phase_1_time , self.session.cumulative_phase_durations[self.ID,1])
-                    self.phase_forward()
-            # phase 3 starts with the presentation of the second stimulus
-            if self.phase == 3:
-                self.phase_3_time = self.session.clock.getTime()
-                if ( self.phase_3_time  - self.phase_2_time ) > self.phase_durations[3]:
-                    # print 'trial %d:\n phase_dur: %.2f\nphase 3 end time %.2f\ncum :%.2f'%(self.ID,self.phase_durations[3],self.phase_3_time  - self.phase_2_time , self.session.cumulative_phase_durations[self.ID,2])
                     self.stopped = True
 
             # events and draw

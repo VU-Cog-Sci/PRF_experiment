@@ -31,55 +31,32 @@ class SATrial(Trial):
 
         self.stim1_drawn = False
 
-    def set_fix_color(self,time):
-
-        self.session.fixation_left.setColor(self.session.stim_color)       
-        self.session.fixation_right.setColor(self.session.stim_color)            
-        self.session.fixation_center.setColor(self.session.stim_color)
-
-        # dim center ref
-        if (time % self.parameters['TR']) < self.parameters['fp_dim_dur']:
-            self.session.fixation_center.setColor((self.session.stim_color[0]*0.2,-1,-1))  
-
-        # this is how i determined stim pos in smooth pursuit
-        amplitude = self.parameters['sp_path_amplitude']*self.session.pixels_per_degree/2# * self.screen.size[0] /2
-        f = self.parameters['sp_path_temporal_frequency']/self.parameters['TR']
-        x_pos = amplitude * np.sin(2*np.pi*f*time) # costs about 
-        # so if x_pos is positive, it should be the right target that lights up
-
-        # you know if it's the right one if the 
-        if ((time+self.parameters['TR']/2) % (self.parameters['TR'])) < self.parameters['fp_dim_dur']:
-            if x_pos > 0:
-                self.session.fixation_right.setColor((self.session.stim_color[0]*0.2,-1,-1))
-            else:
-                self.session.fixation_left.setColor((self.session.stim_color[0]*0.2,-1,-1))
-
-
-    def draw(self):
-
+    def draw(self):    
         """docstring for draw"""
 
-        if (self.phase == 0) * (self.ID == 0):
-            draw_time = 0         
-        else:
-            draw_time = self.session.clock.getTime() - self.session.start_time
-
-        self.set_fix_color(draw_time)
-        self.session.fixation_center.draw()
-
+        # draw fixation points:
+        if self.phase != 2:
+            self.session.fixation_center.draw()
         self.session.fixation_left.draw()
         self.session.fixation_right.draw()
 
         # draw additional stimuli:
         if (self.phase == 0 ) * (self.ID == 0):
                 self.instruction.draw()
-        # phase 2 starts with the presentation of the target stimulus
+        # phase 2 is cue presentation
         elif self.phase == 2:
+            if self.parameters['eye_dir'] == 0:
+                self.session.cue_cent_stim.draw()
+            if self.parameters['eye_dir'] == 1:
+                self.session.cue_right_stim.draw()
+            if self.parameters['eye_dir'] == -1:
+                self.session.cue_left_stim.draw()
+        # phase 4 starts with target presentation
+        elif self.phase == 4:
             if self.stim1_drawn == False:
                 # print 'trial %d draw time %.2f'%(self.ID,draw_time)
                 self.session.test_stim.draw()
                 self.stim1_drawn = True
-
 
         super(SATrial, self).draw() # flip
 
@@ -120,7 +97,6 @@ class SATrial(Trial):
 
     def run(self, ID = 0):
 
-        # shell()
         self.ID = ID
         super(SATrial, self).run()
 
@@ -159,10 +135,18 @@ class SATrial(Trial):
                 self.phase_1_time = self.session.clock.getTime()
                 if ( self.phase_1_time  - self.trial_onset_time ) > self.phase_durations[1]:
                     self.phase_forward()
-            # only 1 phase in this trial
             if self.phase == 2:
                 self.phase_2_time = self.session.clock.getTime()
                 if ( self.phase_2_time  - self.phase_1_time ) > self.phase_durations[2]:
+                    self.phase_forward()
+            if self.phase == 3:
+                self.phase_3_time = self.session.clock.getTime()
+                if ( self.phase_3_time  - self.phase_2_time ) > self.phase_durations[3]:
+                    self.phase_forward()               
+            # only 1 phase in this trial
+            if self.phase == 4:
+                self.phase_4_time = self.session.clock.getTime()
+                if ( self.phase_4_time  - self.phase_3_time ) > self.phase_durations[4]:
                     self.stopped = True      
             # events and draw
             self.event()

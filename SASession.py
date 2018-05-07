@@ -19,7 +19,6 @@ from Session import *
 from SATrial import *
 from constants import *
 
-
 try:
     import appnope
     appnope.nope()
@@ -33,8 +32,8 @@ class SASession(EyelinkSession):
         self.background_color = (np.array(BGC)/255*2)-1
         self.stim_color = (np.array(FGC)/255*2)-1
 		
-        if fix_sp == 'y':
-            standard_parameters['sp_path_amplitude'] = 0
+        self.fix_sp = fix_sp
+
 
         screen = self.create_screen( size = DISPSIZE, full_screen =full_screen, physical_screen_distance = SCREENDIST, 
             background_color = self.background_color, physical_screen_size = SCREENSIZE, wait_blanking = True, screen_nr = 1 )
@@ -152,123 +151,37 @@ class SASession(EyelinkSession):
 
         self.standard_parameters = standard_parameters
 
-        # shell()
-        x_test_positions = np.linspace(-self.standard_parameters['target_max_ecc'], self.standard_parameters['target_max_ecc'], self.standard_parameters['n_targets'])
-        # pop the 0 position
-        # x_test_positions = np.delete(x_test_positions,self.standard_parameters['n_targets']/2)
+        x_test_positions = np.random.uniform(-self.standard_parameters['target_max_ecc'], self.standard_parameters['target_max_ecc'], self.standard_parameters['n_targets'])
+        y_test_positions = np.random.choice([-1,1],size=self.standard_parameters['n_targets'])
+        
+        if self.fix_sp == 'n':
+            eye_dir = np.random.choice([-1,1],size=self.standard_parameters['n_targets'])
+        elif self.fix_sp == 'y':
+            eye_dir = np.zeros(self.standard_parameters['n_targets'])
+        else:
+            print('invalid value for fixing smooth pursuit: %s. Should be either y or n'%self.fix_sp)
+            sys.exit()
 
-        # double x positions, to add above and below positions
-        x_test_positions_rep = np.tile(x_test_positions,2)
-        y_test_positions = np.concatenate((-1 * np.ones(x_test_positions.shape[0]), np.ones(x_test_positions.shape[0])))
 
-        # double the whole thing so we can add eye dir 
-        x_test_positions_tiled = np.tile(x_test_positions_rep, 2)
-        y_test_positions_tiled = np.tile(y_test_positions, 2)
+        ITIs = np.random.exponential(self.standard_parameters['mean_iti'], self.standard_parameters['n_targets']) + self.standard_parameters['minimal_iti']
 
-        # now add eye dir
-        eye_dir = np.concatenate([np.ones(int(x_test_positions_tiled.shape[0]/2)),np.zeros(int(x_test_positions_tiled.shape[0]/2))])
-
-        # now duplicate the whole thing for multiple trials
-        x_test_positions_tiled = np.tile(x_test_positions_tiled,self.standard_parameters['n_target_reps'])
-        y_test_positions_tiled = np.tile(y_test_positions_tiled,self.standard_parameters['n_target_reps'])
-        eye_dir = np.tile(eye_dir,self.standard_parameters['n_target_reps'])
-
-        self.trial_order = np.arange(eye_dir.shape[0])
-
-        # shuffle the trial order untill the first eye dir is 0:
-        while True:
-            
-            # now let's create a random trial order 
-            np.random.shuffle(self.trial_order)
-
-            # and apply
-            x_test_positions_tiled_shuffled = x_test_positions_tiled[self.trial_order]
-            y_test_positions_tiled_shuffled = y_test_positions_tiled[self.trial_order]
-            eye_dir_shuffled = eye_dir[self.trial_order]
-
-            # now check if first eye dir is 0:
-            if eye_dir_shuffled[0] == 0:
-                break
-                
-        ITIs = np.zeros(len(self.trial_order))#*self.standard_parameters['minimal_iti']
-
-        if self.standard_parameters['n_targets'] == 3:
-            # and here's the distribution of ITIs:
-            unique_ITIs = {
-            0: 6*self.standard_parameters['n_target_reps'],
-            1: 3*self.standard_parameters['n_target_reps'],
-            2: 2*self.standard_parameters['n_target_reps'],
-            3: 1*self.standard_parameters['n_target_reps'],
-            }
-
-        if self.standard_parameters['n_targets'] == 5:
-            # and here's the distribution of ITIs:
-            unique_ITIs = {
-            1: 9*self.standard_parameters['n_target_reps'],
-            2: 5*self.standard_parameters['n_target_reps'],
-            3: 3*self.standard_parameters['n_target_reps'],
-            4: 2*self.standard_parameters['n_target_reps'],
-            5: 1*self.standard_parameters['n_target_reps'],
-            }
-
-        if self.standard_parameters['n_targets'] == 8:
-            # and here's the distribution of ITIs:
-            unique_ITIs = {
-            0: 13*self.standard_parameters['n_target_reps'],
-            1: 9*self.standard_parameters['n_target_reps'],
-            2: 6*self.standard_parameters['n_target_reps'],
-            3: 3*self.standard_parameters['n_target_reps'],
-            4: 1*self.standard_parameters['n_target_reps'],
-            }
-
-        # randomly distribute ITI's over the trial combinations:
-        ITI_order = np.arange(len(ITIs))
-        np.random.shuffle(ITI_order)        
-        k = 0
-        for this_ITI in unique_ITIs.keys():
-            ITIs[ITI_order[k:k+unique_ITIs[this_ITI]]] = this_ITI
-            k += unique_ITIs[this_ITI]
-
-        # and add or subtract 1 when a switch in eye dir is required:
-        n_switches = 0
-        for ti, this_eye_dir in enumerate(eye_dir_shuffled):
-            ITI_cumsum = np.sum(ITIs[:ti])
-            current_direction = ITI_cumsum%2
-            if current_direction != this_eye_dir: # this cannot happen on first trial as eye dir on first trial was set to 0 (and ITI cumsum is always 0 there)
-                ITIs[ti-1] += [-1,1][n_switches%2] # change ITI from previous trial, as this affects current flash direction
-                n_switches += 1
-
-        ITIs += self.standard_parameters['minimal_iti']
-
-        # the total number of TRs can now be one less or more depending on whether there were uneven or even n_switches
-        # thus add 1 TR when n_switches are uneven:
-        padd_TR = n_switches%2
-
-        print 'run will last %d TRs'%(np.sum(ITIs)+padd_TR)
-
-        # now add the first and last empty trials:
-        x_test_positions_tiled_shuffled = np.hstack([-1e3,x_test_positions_tiled_shuffled,-1e3]) #-1e3 means off the screen)
-        y_test_positions_tiled_shuffled = np.hstack([-1e3,y_test_positions_tiled_shuffled,-1e3]) #-1e3 means off the screen)
-        ITIs = np.hstack([self.standard_parameters['warming_up_n_TRs'],ITIs,self.standard_parameters['warming_up_n_TRs']+padd_TR])
-        eye_dir_shuffled = np.hstack([0,eye_dir_shuffled,0])
-
+        # phase overview
+        # phase 0: wait for t on first trial
+        # phase 1: exponential wait interval
+        # phase 2: presentation of central cue
+        # phase 3: target presentation delay
+        # phase 4: response window (for return saccade and mislocalization response)
 
         # define all durations per trial
         self.phase_durations = np.array([[
-            -0.0001, # wait for t on first trial if in scanner
-            self.standard_parameters['fp_dim_delay'],
-            ITIs[t] * self.standard_parameters['TR'] - self.standard_parameters['fp_dim_delay'], # ITI in TRs
+            -0.0001,                                                                 # phase 0
+            ITIs[t],                                                                    # phase 1        
+            self.standard_parameters['cue_dur'],                    # phase 2
+            self.standard_parameters['target_delay'],             # phase 3
+            self.standard_parameters['response_window'],    # phase 4
             ] for t in range(len(ITIs))] )   
 
-
-        # fixation point
-        # self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=12.5, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
-        # self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=22.5, pos = np.array((0.0,0.0)), color = (0.0,0.0,0.0), maskParams = {'fringeWidth':0.4})
-        # self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=9.0, pos = np.array((0.0,0.0)), color = (1.0,1.0,1.0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
-
-        # self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=35, pos = np.array((0.0,0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
-        # self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=45, pos = np.array((0.0,0.0)), color = (0.0,0.0,0.0), maskParams = {'fringeWidth':0.4})
-        # self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=50, pos = np.array((0.0,0.0)), color = (1.0,1.0,1.0), opacity = 1.0, maskParams = {'fringeWidth':0.4})
+        print 'run will last %d seconds (%.2f minutes)'%(np.sum(self.phase_durations),np.sum(self.phase_durations)/60)
 
         self.fixation_left = visual.PatchStim(self.screen,
             mask='raisedCos',
@@ -289,13 +202,43 @@ class SASession(EyelinkSession):
             maskParams = {'fringeWidth':0.4})
 
         self.fixation_center = visual.PatchStim(self.screen,
-			mask='raisedCos',
-			tex=None, 
-			size=self.standard_parameters['sp_target_size']*self.pixels_per_degree, 
-			pos = np.array((0.0,0.0)), 
-			color = self.stim_color, 
-			opacity = 1.0, 
-			maskParams = {'fringeWidth':0.4})
+	mask='raisedCos',
+	tex=None, 
+	size=self.standard_parameters['sp_target_size']*self.pixels_per_degree, 
+	pos = np.array((0.0,0.0)), 
+	color = self.stim_color, 
+	opacity = 1.0, 
+	maskParams = {'fringeWidth':0.4})
+
+        self.cue_right_stim = visual.Polygon(self.screen,
+            edges = 3,
+            radius = self.standard_parameters['sp_target_size']*self.pixels_per_degree/2, 
+            fillColor = self.stim_color,
+            lineColor = self.stim_color,
+            ori = 90,
+            opacity = 1.0, 
+            pos = np.array((0.0,0.0)), 
+            )
+
+        self.cue_left_stim = visual.Polygon(self.screen,
+            edges = 3,
+            radius = self.standard_parameters['sp_target_size']*self.pixels_per_degree/2, 
+            fillColor = self.stim_color,
+            lineColor = self.stim_color,
+            ori = 270,
+            opacity = 1.0, 
+            pos = np.array((0.0,0.0)), 
+            )
+
+        self.cue_cent_stim = visual.Polygon(self.screen,
+            edges = 4,
+            radius = self.standard_parameters['sp_target_size']*self.pixels_per_degree/2, 
+            fillColor = self.stim_color,
+            lineColor = self.stim_color,
+            ori = 0,
+            opacity = 1.0, 
+            pos = np.array((0.0,0.0)), 
+            )
 
         self.saccade_target = visual.PatchStim(self.screen,
             mask='raisedCos',
@@ -322,16 +265,16 @@ class SASession(EyelinkSession):
         self.cumulative_phase_durations = np.cumsum(np.r_[0,self.phase_durations[:,1:].ravel()][:-1]).reshape((self.phase_durations.shape[0], -1))
 
         self.all_trials = []
-        for i in range(len(eye_dir_shuffled)):#self.trial_order:
+        for i in range(len(eye_dir)):#self.trial_order:
 
             this_trial_parameters={
                                     # trial varying params:
-                                    'x_pos': x_test_positions_tiled_shuffled[i],
-                                    'y_order': y_test_positions_tiled_shuffled[i],
-                                    'eye_dir': eye_dir_shuffled[i],
+                                    'x_pos': x_test_positions[i],
+                                    'y_order': y_test_positions[i],
+                                    'eye_dir': eye_dir[i],
                                     'ITI': ITIs[i], # this should not be _shuffled
                                     'answer': self.standard_parameters['default_answer'],
-                                    'fp_dim_dur':self.standard_parameters['fp_dim_dur'],
+                                    # 'fp_dim_dur':self.standard_parameters['fp_dim_dur'],
 
                                     # these params don't vary over trials:
                                     'TR': self.standard_parameters['TR'],

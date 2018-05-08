@@ -34,18 +34,25 @@ class SPTrial(Trial):
     def update_fix_pos(self,time):#0.5):
 
         # note: this loop takes in extreme cases 1 ms, but median is 0.0004 ms. 
-        amplitude = self.parameters['sp_path_amplitude']*self.session.pixels_per_degree/2# * self.screen.size[0] /2
-        f = self.parameters['sp_path_temporal_frequency']/self.parameters['TR']
+        # self.freq f = self.parameters['sp_path_temporal_frequency']#/self.parameters['TR']
         # f = frequency/self.parameters['TR']
-        x_pos = amplitude * np.sin(2*np.pi*f*time) # costs about 
-        y_pos = self.screen.size[1]*self.parameters['sp_path_elevation']-self.screen.size[1]/2
+        # y_pos = self.screen.size[1]*self.parameters['sp_path_elevation']-self.screen.size[1]/2
         # self.session.fixation_outer_rim.setPos([x_pos,y_pos])
         # self.session.fixation_rim.setPos([x_pos,y_pos])
-        self.session.fixation.setPos([x_pos,y_pos])
 
+        if self.parameters['sp_type'] == 0:
+            x_pos = self.session.sp_amplitude_pix * np.sin(2*np.pi* self.parameters['sp_path_temporal_frequency']*time) # costs about 
+        elif self.parameters['sp_type'] == 1:
+            phase = ((time-self.session.sp_cycle_time/4)/(self.session.sp_cycle_time/2))%1
+            sign = (int(((time-self.session.sp_cycle_time/4)/(self.session.sp_cycle_time/2))%2<1)*2)-1
+            x_pos = sign * self.session.sp_amplitude_pix + -sign*phase*self.session.sp_amplitude_pix*2 # costs about 
+        
+        return x_pos
+        
     def draw(self):
 
         """docstring for draw"""
+
 
         # the position of the dot is determined based
         # on the session time
@@ -54,7 +61,20 @@ class SPTrial(Trial):
         else:
             draw_time = self.session.clock.getTime() - self.session.start_time
 
-        self.update_fix_pos(draw_time)
+        if not self.parameters['fixate']:
+            fix_x =self.update_fix_pos(draw_time)
+        else:
+            fix_x = 0
+
+        self.session.fixation.setPos([fix_x,self.fp_y])
+        if self.parameters['moving_window']:
+            self.session.ref_right.setPos([self.max_x+fix_x,self.fp_y])
+            self.session.ref_left.setPos([-self.max_x+fix_x,self.fp_y])
+
+        if self.parameters['window'] + self.parameters['fixate']:
+            self.session.ref_left.draw()
+            self.session.ref_right.draw()
+
         # self.session.fixation_outer_rim.draw()
         # self.session.fixation_rim.draw()
         self.session.fixation.draw()
@@ -65,6 +85,7 @@ class SPTrial(Trial):
         # phase 2 starts with the presentation of the target stimulus
         elif self.phase == 1:
             if self.stim1_drawn == False:
+                print 'eye dir: %d'%self.parameters['eye_dir']
                 # print 'trial %d draw time %.2f'%(self.ID,draw_time)
                 self.session.test_stim.draw()
                 self.stim1_drawn = True
@@ -112,12 +133,16 @@ class SPTrial(Trial):
         self.ID = ID
         super(SPTrial, self).run()
 
-        fp_y = self.screen.size[1]*self.parameters['sp_path_elevation']-self.screen.size[1]/2
+        self.fp_y = self.screen.size[1]*self.parameters['sp_path_elevation']-self.screen.size[1]/2
         target_y_offset = self.parameters['y_order']*self.parameters['test_stim_y_offset']*self.session.pixels_per_degree
   
         x_pos = self.parameters['x_pos']*self.session.pixels_per_degree
-        y_pos = fp_y + target_y_offset
+        y_pos = self.fp_y + target_y_offset
         self.session.test_stim.setPos([x_pos,y_pos ])
+
+        self.max_x = int(np.round( (self.parameters['sp_path_amplitude']/2*self.session.pixels_per_degree)))
+        self.session.ref_left.setPos([self.max_x*-1,self.fp_y])
+        self.session.ref_right.setPos([self.max_x,self.fp_y])
 
         # we are fascists on timing issues
         if self.ID != 0:

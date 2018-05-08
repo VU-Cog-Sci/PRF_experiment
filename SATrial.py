@@ -34,29 +34,43 @@ class SATrial(Trial):
     def draw(self):    
         """docstring for draw"""
 
-        # draw fixation points:
-        if self.phase != 2:
-            self.session.fixation_center.draw()
-        self.session.fixation_left.draw()
-        self.session.fixation_right.draw()
-
         # draw additional stimuli:
         if (self.phase == 0 ) * (self.ID == 0):
                 self.instruction.draw()
-        # phase 2 is cue presentation
-        elif self.phase == 2:
-            if self.parameters['eye_dir'] == 0:
-                self.session.cue_cent_stim.draw()
-            if self.parameters['eye_dir'] == 1:
-                self.session.cue_right_stim.draw()
-            if self.parameters['eye_dir'] == -1:
-                self.session.cue_left_stim.draw()
-        # phase 4 starts with target presentation
-        elif self.phase == 4:
+        
+        # cue presentation
+        if self.phase >= 2:
+            if self.parameters['eye_dir'] != 0:
+                self.session.saccade_cue.draw()
+            # if self.parameters['eye_dir'] == 0:
+            #     # self.session.cue_cent_stim.draw()
+            #     self.session.fixation_center.draw()
+            # if self.parameters['eye_dir'] == 1:
+            #     self.session.cue_right_stim.setPos((0,self.fp_y))                
+            #     self.session.cue_right_stim.draw()
+            # if self.parameters['eye_dir'] == -1:
+            #     self.session.cue_left_stim.setPos((0,self.fp_y))                
+            #     self.session.cue_left_stim.draw()
+        # else:
+        self.session.fixation_center.draw()
+
+        # target presentation and response window
+        if self.phase == 3:
             if self.stim1_drawn == False:
                 # print 'trial %d draw time %.2f'%(self.ID,draw_time)
                 self.session.test_stim.draw()
                 self.stim1_drawn = True
+        
+        if self.phase == 4:
+            if self.parameters['eye_dir'] == 1:
+                self.session.saccade_cue.setPos((self.max_x*.97,self.fp_y))
+                self.session.saccade_cue.draw()
+            elif self.parameters['eye_dir'] == -1:
+                self.session.saccade_cue.setPos((self.max_x*-.97,self.fp_y))
+                self.session.saccade_cue.draw()
+
+        self.session.ref_right.draw()
+        self.session.ref_left.draw()
 
         super(SATrial, self).draw() # flip
 
@@ -100,22 +114,26 @@ class SATrial(Trial):
         self.ID = ID
         super(SATrial, self).run()
 
-        fp_y = self.screen.size[1]*self.parameters['sp_path_elevation']-self.screen.size[1]/2
+        self.fp_y = self.screen.size[1]*self.parameters['sp_path_elevation']-self.screen.size[1]/2
        
         target_y_offset = self.parameters['y_order']*self.parameters['test_stim_y_offset']*self.session.pixels_per_degree
         x_pos = self.parameters['x_pos']*self.session.pixels_per_degree
-        y_pos = fp_y + target_y_offset
+        y_pos = self.fp_y + target_y_offset
         self.session.test_stim.setPos([x_pos,y_pos ])
 
         # eye_dir 1 should be to the left, eye dir 0 to the rigth:
-        target_x_pos = int(np.round( (self.parameters['sp_path_amplitude']/2*self.session.pixels_per_degree)*([1,-1][int(self.parameters['eye_dir'])])))
-        self.session.saccade_target.setPos([target_x_pos,fp_y])
+        # target_x_pos = int(np.round( (self.parameters['sp_path_amplitude']/2*self.session.pixels_per_degree)*([1,-1][int(self.parameters['eye_dir'])])))
+        # self.session.saccade_target.setPos([target_x_pos,self.fp_y])
 
-        leftrefx = int(np.round( (self.parameters['sp_path_amplitude']/2*self.session.pixels_per_degree) * -1))
-        rightrefx = int(np.round( (self.parameters['sp_path_amplitude']/2*self.session.pixels_per_degree) ))
-        self.session.fixation_left.setPos((leftrefx,fp_y))
-        self.session.fixation_right.setPos((rightrefx,fp_y))
-        self.session.fixation_center.setPos((0,fp_y))
+        self.max_x = int(np.round( (self.parameters['sp_path_amplitude']/2*self.session.pixels_per_degree)))
+        self.session.ref_left.setPos([self.max_x*-1,self.fp_y])
+        self.session.ref_right.setPos([self.max_x,self.fp_y])
+        self.session.fixation_center.setPos((0,self.fp_y))
+
+        if self.parameters['eye_dir'] == 1:
+            self.session.saccade_cue.setPos((self.max_x*0.05,self.fp_y))
+        elif self.parameters['eye_dir'] == -1:
+            self.session.saccade_cue.setPos((self.max_x*-0.05,self.fp_y))
 
         # we are fascists on timing issues
         if self.ID != 0:
@@ -130,7 +148,6 @@ class SATrial(Trial):
             if (self.phase == 0) * (self.ID != 0):
                 self.phase_forward()
 
-            # only 1 phase in this trial
             if self.phase == 1:
                 self.phase_1_time = self.session.clock.getTime()
                 if ( self.phase_1_time  - self.trial_onset_time ) > self.phase_durations[1]:
@@ -142,12 +159,14 @@ class SATrial(Trial):
             if self.phase == 3:
                 self.phase_3_time = self.session.clock.getTime()
                 if ( self.phase_3_time  - self.phase_2_time ) > self.phase_durations[3]:
-                    self.phase_forward()               
-            # only 1 phase in this trial
+                    self.phase_forward()
             if self.phase == 4:
                 self.phase_4_time = self.session.clock.getTime()
                 if ( self.phase_4_time  - self.phase_3_time ) > self.phase_durations[4]:
-                    self.stopped = True      
+                    self.stopped = True                 # if self.phase == 5:
+            #     self.phase_5_time = self.session.clock.getTime()
+            #     if ( self.phase_5_time  - self.phase_4_time ) > self.phase_durations[5]:
+            #         self.stopped = True      
             # events and draw
             self.event()
             self.draw()

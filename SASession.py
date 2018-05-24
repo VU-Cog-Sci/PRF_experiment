@@ -61,7 +61,7 @@ class SASession(EyelinkSession):
             # create the calibration targets:
             # note: 0,0 is the upper left corner of the screen
 
-            x_ratio_covered = standard_parameters['eyetracking_amplitude']/(DISPSIZE[0]/self.pixels_per_degree)
+            x_ratio_covered = (standard_parameters['eyetracking_amplitude'])/(DISPSIZE[0]/self.pixels_per_degree)
             x_edge = (1-x_ratio_covered)*DISPSIZE[0]/2
 
             # max y will be (y_portion-1)/y_portion of screen height, and min y 1/y_portion
@@ -130,7 +130,7 @@ class SASession(EyelinkSession):
             # and send these targets to the custom calibration function:
             self.custom_calibration(calibration_targets=calibration_targets,
                 validation_targets=validation_targets,point_indices=point_indices,
-                n_points=n_points,randomize_order=True,repeat_first_target=True,)
+                n_points=n_points,randomize_order=True,repeat_first_target=True)
             # reapply settings:
             self.tracker_setup()
         else:
@@ -152,12 +152,13 @@ class SASession(EyelinkSession):
         self.standard_parameters = standard_parameters
 
         if self.fix_sp == 'n':
-            max_ecc = self.standard_parameters['target_max_ecc']
+            # max_ecc = self.standard_parameters['target_max_ecc']
+            max_ecc = self.standard_parameters['sp_path_amplitude']/4
         elif self.fix_sp == 'y':
             max_ecc = self.standard_parameters['sp_path_amplitude']/2
       
         # define range of x positions
-        x_test_positions = np.linspace(-self.standard_parameters['target_max_ecc'], self.standard_parameters['target_max_ecc'], self.standard_parameters['n_targets']/4)
+        x_test_positions = np.linspace(-max_ecc, max_ecc, self.standard_parameters['n_targets']/4)
 
         # double x positions, to add above and below positions
         x_test_positions_rep = np.tile(x_test_positions,2)
@@ -189,32 +190,41 @@ class SASession(EyelinkSession):
         np.random.shuffle(precueITIs)
         np.random.shuffle(postcueITIs)
 
+        # now add the first and last empty trials:
+        x_test_positions = np.hstack([-1e3,x_test_positions,-1e3]) #-1e3 means off the screen)
+        y_test_positions = np.hstack([-1e3,y_test_positions,-1e3]) #-1e3 means off the screen)
+        precueITIs = np.hstack([self.standard_parameters['warming_up_period'],ITIs,self.standard_parameters['warming_up_period']])
+        postcueITIs = np.hstack([0,ITIs,0])
+        eye_dir = np.hstack([0,eye_dir,0])        
+
         # phase overview
         # phase 0: wait for t on first trial
         # phase 1: exponential wait interval
-        # phase 2: presentation of cue
+        # phase 2: presentation of saccade cue
         # phase 3: exponential response window (starts with stimulus presentation)
+        # phae 4: presentation of return saccade cue
 
         # define all durations per trial
         self.phase_durations = np.array([[
-            -0.0001,                                                                 # phase 0
-            precueITIs[t],                                                         # phase 1        
-            self.standard_parameters['target_delay'],             # phase 2
-            postcueITIs[t],                                                        # phase 3   
-            self.standard_parameters['return_cue_dur']            # phase 4
+            -0.0001,                                                                 # phase 0 only in trial 0
+            precueITIs[t],                                                         # phase 1 wait time at fixation
+            self.standard_parameters['target_delay'],             # phase 2 cue presentation
+            self.standard_parameters['offset_delay'],              # phase 3 target presentation, cue presentation
+            postcueITIs[t],                                                        # phase 4  all stimuli turn off during this duration
+            # self.standard_parameters['return_cue_dur']        # phase 4
             ] for t in range(self.standard_parameters['n_targets'])] )   
 
         print 'run will last %2f seconds (%.2f minutes)'%(np.sum(self.phase_durations),np.sum(self.phase_durations)/60)
 
         self.ref_left = visual.Rect(self.screen, 
                     width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
-                    height = self.standard_parameters['ref_stim_width']*self.pixels_per_degree, 
+                    height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
                     lineColor = self.stim_color,
                     fillColor = self.stim_color)
 
         self.ref_right = visual.Rect(self.screen, 
                     width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
-                    height = self.standard_parameters['ref_stim_width']*self.pixels_per_degree, 
+                    height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
                     lineColor = self.stim_color,
                     fillColor = self.stim_color)
 
@@ -232,12 +242,7 @@ class SASession(EyelinkSession):
                     width = 0.2*self.pixels_per_degree, 
                     lineColor = self.stim_color,
                     fillColor = self.stim_color)
-
-        self.ref_left = visual.Rect(self.screen, 
-                    width = 0.1*self.pixels_per_degree,  
-                    height = self.standard_parameters['test_stim_height']*0.5*self.pixels_per_degree, 
-                    lineColor = self.stim_color,
-                    fillColor = self.stim_color)        
+   
         # self.cue_right_stim = visual.Polygon(self.screen,
         #     edges = 3,
         #     radius = self.standard_parameters['sp_target_size']*self.pixels_per_degree/2, 
@@ -283,25 +288,21 @@ class SASession(EyelinkSession):
         # self.cumulative_phase_durations = np.cumsum(np.r_[0,self.phase_durations[self.trial_order,1:].ravel()][:-1]).reshape((self.phase_durations.shape[0], -1))
         self.cumulative_phase_durations = np.cumsum(np.r_[0,self.phase_durations[:,1:].ravel()][:-1]).reshape((self.phase_durations.shape[0], -1))
 
+        # add stuff to standard parameters so it is saved afterwards:
+        self.standard_parameters['pixels_per_degree'] = self.pixels_per_degree
+
+        # now create trial loop
         self.all_trials = []
         for i in range(self.standard_parameters['n_targets']):#self.trial_order:
 
-            this_trial_parameters={
-                                    # trial varying params:
+            this_trial_parameters=self.standard_parameters
+            this_trial_parameters{
+                                    # add trial varying params:
                                     'x_pos': x_test_positions[i],
                                     'y_order': y_test_positions[i],
                                     'eye_dir': eye_dir[i],
-                                    'answer': self.standard_parameters['default_answer'],
+                                    'answer': self.standard_parameters['default_answer'], # fill in default answer to initiate answer variable
                                     'fixate':(self.fix_sp=='y'),
-                                    # 'fp_dim_dur':self.standard_parameters['fp_dim_dur'],
-
-                                    # these params don't vary over trials:
-                                    # 'TR': self.standard_parameters['TR'],
-                                    'sp_path_amplitude':self.standard_parameters['sp_path_amplitude'],
-                                    'test_stim_y_offset':self.standard_parameters['test_stim_y_offset'],
-                                    'sp_path_elevation':self.standard_parameters['sp_path_elevation'],
-                                    'sp_path_temporal_frequency':self.standard_parameters['sp_path_temporal_frequency'],
-                                    'warming_up_period':self.standard_parameters['warming_up_period']
                                     }
 
             self.all_trials.append(SATrial(this_trial_parameters, phase_durations = self.phase_durations[i], session = self, screen = self.screen, tracker = self.tracker))

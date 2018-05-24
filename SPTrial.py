@@ -106,14 +106,7 @@ class SPTrial(Trial):
                     if (self.phase == 0) * (self.ID == 0):
                         self.session.start_time = self.session.clock.getTime()
                         self.trial_onset_time = self.session.cumulative_phase_durations[self.ID,0] + self.session.start_time
-                        # print 'trial %d start time %.2f'%(self.ID,self.trial_onset_time)
                         self.phase_forward()
-                # elif ev in self.session.response_button_signs.keys():
-                #     log_msg = 'trial ' + str(self.ID) + ' key: ' + str(ev) + ' at time: ' + str(self.session.clock.getTime())
-                #     # first check, do we even need an answer?
-                #     self.events.append( log_msg )
-                #     if self.session.tracker:
-                #         self.session.tracker.log( log_msg )
                 else:
                     self.parameters['answer'] = ev
 
@@ -147,9 +140,6 @@ class SPTrial(Trial):
         # we are fascists on timing issues
         if self.ID != 0:
             self.trial_onset_time = self.session.cumulative_phase_durations[self.ID,0] + self.session.start_time
-            # print 'session cumsum %.2f'%self.session.cumulative_phase_durations[self.ID,0]
-            # print 'session start time %.2f'%self.session.start_time
-            # print 'trial %d start time %.2f'%(self.ID,self.trial_onset_time)
 
         while not self.stopped:
             # Only in trial 1, phase 0 represents the instruction period.

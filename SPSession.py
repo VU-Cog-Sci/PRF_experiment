@@ -63,7 +63,7 @@ class SPSession(EyelinkSession):
             # create the calibration targets:
             # note: 0,0 is the upper left corner of the screen
 
-            x_ratio_covered = standard_parameters['eyetracking_amplitude']/(DISPSIZE[0]/self.pixels_per_degree)
+            x_ratio_covered = (standard_parameters['eyetracking_amplitude'])/(DISPSIZE[0]/self.pixels_per_degree)
             x_edge = (1-x_ratio_covered)*DISPSIZE[0]/2
 
             # max y will be (y_portion-1)/y_portion of screen height, and min y 1/y_portion
@@ -154,7 +154,8 @@ class SPSession(EyelinkSession):
         self.standard_parameters = standard_parameters
 
         if self.fix_sp == 'n':
-            max_ecc = self.standard_parameters['target_max_ecc']
+            # max_ecc = self.standard_parameters['target_max_ecc']
+            max_ecc = self.standard_parameters['sp_path_amplitude']/4            
         elif self.fix_sp == 'y':
             max_ecc = self.standard_parameters['sp_path_amplitude']/2
 

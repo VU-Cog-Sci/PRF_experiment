@@ -39,38 +39,31 @@ class SATrial(Trial):
                 self.instruction.draw()
         
         # cue presentation
-        if self.phase >= 2:
+        if self.phase in [2,3]:
             if self.parameters['eye_dir'] != 0:
                 self.session.saccade_cue.draw()
-            # if self.parameters['eye_dir'] == 0:
-            #     # self.session.cue_cent_stim.draw()
-            #     self.session.fixation_center.draw()
-            # if self.parameters['eye_dir'] == 1:
-            #     self.session.cue_right_stim.setPos((0,self.fp_y))                
-            #     self.session.cue_right_stim.draw()
-            # if self.parameters['eye_dir'] == -1:
-            #     self.session.cue_left_stim.setPos((0,self.fp_y))                
-            #     self.session.cue_left_stim.draw()
-        # else:
-        self.session.fixation_center.draw()
 
         # target presentation and response window
         if self.phase == 3:
             if self.stim1_drawn == False:
+                print 'eye_dir: %d'%self.parameters['eye_dir']
                 # print 'trial %d draw time %.2f'%(self.ID,draw_time)
                 self.session.test_stim.draw()
                 self.stim1_drawn = True
         
-        if self.phase == 4:
-            if self.parameters['eye_dir'] == 1:
-                self.session.saccade_cue.setPos((self.max_x*.97,self.fp_y))
-                self.session.saccade_cue.draw()
-            elif self.parameters['eye_dir'] == -1:
-                self.session.saccade_cue.setPos((self.max_x*-.97,self.fp_y))
-                self.session.saccade_cue.draw()
+        # if self.phase == 4:
+        #     if self.parameters['eye_dir'] == 1:
+        #         self.session.saccade_cue.setPos((self.max_x*.97,self.fp_y))
+        #         self.session.saccade_cue.draw()
+        #     elif self.parameters['eye_dir'] == -1:
+        #         self.session.saccade_cue.setPos((self.max_x*-.97,self.fp_y))
+        #         self.session.saccade_cue.draw()
 
-        self.session.ref_right.draw()
-        self.session.ref_left.draw()
+        if self.phase < 4:
+            self.session.ref_right.draw()
+            self.session.ref_left.draw()
+            self.session.fixation_center.draw()
+
 
         super(SATrial, self).draw() # flip
 
@@ -163,10 +156,11 @@ class SATrial(Trial):
             if self.phase == 4:
                 self.phase_4_time = self.session.clock.getTime()
                 if ( self.phase_4_time  - self.phase_3_time ) > self.phase_durations[4]:
-                    self.stopped = True                 # if self.phase == 5:
+            #         self.phase_forward()
+            # if self.phase == 5:
             #     self.phase_5_time = self.session.clock.getTime()
             #     if ( self.phase_5_time  - self.phase_4_time ) > self.phase_durations[5]:
-            #         self.stopped = True      
+                    self.stopped = True      
             # events and draw
             self.event()
             self.draw()

@@ -258,7 +258,7 @@ class EyelinkSession(Session):
         self.tracker.send_command('randomize_validation_order %d'%randomize_order)
         self.tracker.send_command('cal_repeat_first_target  %d'%repeat_first_target)
         self.tracker.send_command('val_repeat_first_target  %d'%repeat_first_target)
-
+        
         if repeat_first_target:
             n_points+=1
          

@@ -9,6 +9,11 @@ try:
 except:
     print 'APPNOPE NOT ACTIVE!'
 
+from psychopy.platform_specific.darwin import rush
+rush_worked = rush()
+if rush_worked == False:
+    print 'PSYCHOPY RUSH NOT ACTIVE!'
+    
 from constants import *
 
 def main():

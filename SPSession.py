@@ -264,24 +264,34 @@ class SPSession(EyelinkSession):
         #     pos = np.array((0.0,0.0)), 
         #     color = self.stim_color, 
         #     opacity = 1.0, 
-        #     maskParams = {'fringeWidth':0.4})        
+        #     maskParams = {'fringeWidth':0.4})    
+
+
         self.test_stim = visual.Rect(self.screen, 
                             width = self.standard_parameters['test_stim_width']*self.pixels_per_degree,  
                             height = self.standard_parameters['test_stim_height']*self.pixels_per_degree, 
                             lineColor = self.stim_color,
                             fillColor = self.stim_color)
 
-        self.ref_left = visual.Rect(self.screen, 
-                    width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
-                    height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
+        self.ref_line = visual.Rect(self.screen, 
+                    width = self.standard_parameters['sp_path_amplitude']*self.pixels_per_degree*self.standard_parameters['ref_stim_line_factor'],  
+                    height = self.standard_parameters['ref_stim_line_width']*self.pixels_per_degree, 
+                    pos = np.array((0.0,0.0)), 
                     lineColor = self.stim_color,
                     fillColor = self.stim_color)
 
-        self.ref_right = visual.Rect(self.screen, 
-                    width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
-                    height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
-                    lineColor = self.stim_color,
-                    fillColor = self.stim_color)
+
+        # self.ref_left = visual.Rect(self.screen, 
+        #             width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
+        #             height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
+        #             lineColor = self.stim_color,
+        #             fillColor = self.stim_color)
+
+        # self.ref_right = visual.Rect(self.screen, 
+        #             width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
+        #             height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
+        #             lineColor = self.stim_color,
+        #             fillColor = self.stim_color)
 
         self.sp_amplitude_pix = self.standard_parameters['sp_path_amplitude']*self.pixels_per_degree/2# * self.screen.size[0] /2
 
@@ -292,23 +302,15 @@ class SPSession(EyelinkSession):
         self.all_trials = []
         for i in range(len(eye_dir)):#self.trial_order:
 
-            this_trial_parameters={
+            this_trial_parameters=self.standard_parameters
+            this_trial_parameters.update({
                                     # trial varying params:
                                     'x_pos': x_test_positions[i],
                                     'y_order': y_test_positions[i],
                                     'eye_dir': eye_dir[i],
-
-                                    # these params don't vary over trials:
                                     'answer': self.standard_parameters['default_answer'],
-                                    'sp_type': self.standard_parameters['sp_type'],
                                     'fixate':(self.fix_sp=='y'),
-                                    'sp_path_amplitude':self.standard_parameters['sp_path_amplitude'],
-                                    'test_stim_y_offset':self.standard_parameters['test_stim_y_offset'],
-                                    'sp_path_elevation':self.standard_parameters['sp_path_elevation'],
-                                    'sp_path_temporal_frequency':self.standard_parameters['sp_path_temporal_frequency'],
-                                    'window':self.standard_parameters['window'],
-                                    'moving_window':self.standard_parameters['moving_window'],
-                                    }
+                                    })
 
             self.all_trials.append(SPTrial(this_trial_parameters, phase_durations = self.phase_durations[i], session = self, screen = self.screen, tracker = self.tracker))
 

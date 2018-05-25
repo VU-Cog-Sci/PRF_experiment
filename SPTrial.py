@@ -54,6 +54,9 @@ class SPTrial(Trial):
         """docstring for draw"""
 
 
+        if self.parameters['window']:
+            self.session.ref_line.draw()
+
         # the position of the dot is determined based
         # on the session time
         if (self.phase == 0) * (self.ID == 0):
@@ -67,13 +70,13 @@ class SPTrial(Trial):
             fix_x = 0
 
         self.session.fixation.setPos([fix_x,self.fp_y])
-        if self.parameters['moving_window']:
-            self.session.ref_right.setPos([self.max_x+fix_x,self.fp_y])
-            self.session.ref_left.setPos([-self.max_x+fix_x,self.fp_y])
+        # if self.parameters['moving_window']:
+        #     self.session.ref_right.setPos([self.max_x+fix_x,self.fp_y])
+        #     self.session.ref_left.setPos([-self.max_x+fix_x,self.fp_y])
 
-        if self.parameters['window'] + self.parameters['fixate']:
-            self.session.ref_left.draw()
-            self.session.ref_right.draw()
+        # if self.parameters['window'] + self.parameters['fixate']:
+        #     self.session.ref_left.draw()
+        #     self.session.ref_right.draw()
 
         # self.session.fixation_outer_rim.draw()
         # self.session.fixation_rim.draw()
@@ -133,9 +136,9 @@ class SPTrial(Trial):
         y_pos = self.fp_y + target_y_offset
         self.session.test_stim.setPos([x_pos,y_pos ])
 
-        self.max_x = int(np.round( (self.parameters['sp_path_amplitude']/2*self.session.pixels_per_degree)))
-        self.session.ref_left.setPos([self.max_x*-1,self.fp_y])
-        self.session.ref_right.setPos([self.max_x,self.fp_y])
+        # self.max_x = int(np.round( (self.parameters['sp_path_amplitude']/2*self.session.pixels_per_degree)))
+        # self.session.ref_left.setPos([self.max_x*-1,self.fp_y])
+        # self.session.ref_right.setPos([self.max_x,self.fp_y])
 
         # we are fascists on timing issues
         if self.ID != 0:

@@ -186,15 +186,26 @@ class SASession(EyelinkSession):
         # now for the ITIs
         precueITIs = np.load('ITIs/precueITIs.npy') #np.random.exponential(self.standard_parameters['mean_iti'], self.standard_parameters['n_targets']) + self.standard_parameters['min_iti']
         postcueITIs = np.load('ITIs/postcueITIs.npy') #np.random.exponential(self.standard_parameters['mean_iti'], self.standard_parameters['n_targets']) + self.standard_parameters['min_iti']
+        targetITIs = np.load('ITIs/targetsITIs.npy') #np.random.exponential(self.standard_parameters['mean_iti'], self.standard_parameters['n_targets']) + self.standard_parameters['min_iti']
+
         # and separately shuffle the ITIs
         np.random.shuffle(precueITIs)
         np.random.shuffle(postcueITIs)
+        np.random.shuffle(targetITIs)
+
+        # add mean to target ITIs:
+        targetITIs[eye_dir==-1] += self.standard_parameters['target_delay_mean_left']
+        targetITIs[eye_dir==1] += self.standard_parameters['target_delay_mean_right']
+
+        # correct postcueITIs for target duration
+        postcueITIs -= targetITIs
 
         # now add the first and last empty trials:
         x_test_positions = np.hstack([-1e3,x_test_positions,-1e3]) #-1e3 means off the screen)
         y_test_positions = np.hstack([-1e3,y_test_positions,-1e3]) #-1e3 means off the screen)
-        precueITIs = np.hstack([self.standard_parameters['warming_up_period'],ITIs,self.standard_parameters['warming_up_period']])
-        postcueITIs = np.hstack([0,ITIs,0])
+        precueITIs = np.hstack([self.standard_parameters['warming_up_period'],precueITIs,self.standard_parameters['warming_up_period']])
+        postcueITIs = np.hstack([0,postcueITIs,0])
+        targetITIs = np.hstack([0,targetITIs,0])
         eye_dir = np.hstack([0,eye_dir,0])        
 
         # phase overview
@@ -208,11 +219,11 @@ class SASession(EyelinkSession):
         self.phase_durations = np.array([[
             -0.0001,                                                                 # phase 0 only in trial 0
             precueITIs[t],                                                         # phase 1 wait time at fixation
-            self.standard_parameters['target_delay'],             # phase 2 cue presentation
+            targetITIs[t],                                                            # phase 2 cue presentation
             self.standard_parameters['offset_delay'],              # phase 3 target presentation, cue presentation
             postcueITIs[t],                                                        # phase 4  all stimuli turn off during this duration
             # self.standard_parameters['return_cue_dur']        # phase 4
-            ] for t in range(self.standard_parameters['n_targets'])] )   
+            ] for t in range(len(eye_dir))] )   
 
         print 'run will last %2f seconds (%.2f minutes)'%(np.sum(self.phase_durations),np.sum(self.phase_durations)/60)
 
@@ -229,19 +240,19 @@ class SASession(EyelinkSession):
                     fillColor = self.stim_color)
 
         self.fixation_center = visual.PatchStim(self.screen,
-	mask='raisedCos',
-	tex=None, 
-	size=self.standard_parameters['sp_target_size']*self.pixels_per_degree, 
-	pos = np.array((0.0,0.0)), 
-	color = self.stim_color, 
-	opacity = 1.0, 
-	maskParams = {'fringeWidth':0.4})
+        	mask='raisedCos',
+        	tex=None, 
+        	size=self.standard_parameters['sp_target_size']*self.pixels_per_degree, 
+        	pos = np.array((0.0,0.0)), 
+        	color = self.stim_color, 
+        	opacity = 1.0, 
+        	maskParams = {'fringeWidth':0.4})
 
         self.saccade_cue = visual.Rect(self.screen, 
-                    height = 0.05*self.pixels_per_degree,  
-                    width = 0.2*self.pixels_per_degree, 
-                    lineColor = self.stim_color,
-                    fillColor = self.stim_color)
+            height = 0.05*self.pixels_per_degree,  
+            width = 0.2*self.pixels_per_degree, 
+            lineColor = self.stim_color,
+            fillColor = self.stim_color)
    
         # self.cue_right_stim = visual.Polygon(self.screen,
         #     edges = 3,
@@ -293,17 +304,18 @@ class SASession(EyelinkSession):
 
         # now create trial loop
         self.all_trials = []
-        for i in range(self.standard_parameters['n_targets']):#self.trial_order:
+        for i in range(len(eye_dir)):#self.trial_order:
 
             this_trial_parameters=self.standard_parameters
-            this_trial_parameters{
+
+            this_trial_parameters.update({
                                     # add trial varying params:
                                     'x_pos': x_test_positions[i],
                                     'y_order': y_test_positions[i],
                                     'eye_dir': eye_dir[i],
                                     'answer': self.standard_parameters['default_answer'], # fill in default answer to initiate answer variable
                                     'fixate':(self.fix_sp=='y'),
-                                    }
+                                    })
 
             self.all_trials.append(SATrial(this_trial_parameters, phase_durations = self.phase_durations[i], session = self, screen = self.screen, tracker = self.tracker))
 

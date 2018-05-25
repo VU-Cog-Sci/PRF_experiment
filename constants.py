@@ -7,7 +7,8 @@
 # verwachting van target minimaliseren door exponentiele(?) random interval
 # trials kunen nu sneller voor gedrag
     
-
+# remove target if saccade is not detected 100ms after flash
+# plot mislocalization as function of flash relative to saccade onset
 
 location = 'K2D38'# 'office','laptop','K2D38','7T'
 full_screen = True#lse
@@ -33,8 +34,7 @@ standard_parameters = {
     'n_targets':                                          80,          # number of target positions, should be divisible by 4 (one for every eye dir and y position)
     'pupil_tracking_mode':                       0,             # 0: centroid, 1 = ellipse
 
-    'ref_stim_width':                                   0.25,       # in deg
-    'ref_stim_height':                                  1,       # in deg
+
 
     ##############################
     # SP  variables:
@@ -45,18 +45,20 @@ standard_parameters = {
     'mean_iti_sp':                                      2,           # in sp cycles (i.e. 1/tf)
     'min_iti_sp':                                         3,           # in sp cycles (i.e. 1/tf)
     'sp_path_temporal_frequency':          0.5,         # in Hz 
-    'sp_type' :                                        0,          # 0 for sin, 1 for lin
-
+    'sp_type' :                                          0,          # 0 for sin, 1 for lin
+    'ref_stim_line_width' :                         .01,    # in deg
+    'ref_stim_line_factor':                         1,       # scaling of sp_path_amplitude
     # other parameters
     'window':                                             False,
-    'moving_window':                                False,
 
     ##############################
     # saccade variables
     ##############################
 
     # temporal parameters (NOTE: rerun create_ITIs when changing any of these parameters)
-    'target_delay':                                      .250,         # in s this is the saccade delay duration
+    'target_delay_mean_left':                      .285,         # in s this is the saccade delay duration 
+    'target_delay_mean_right':                   .260,         # in s this is the saccade delay duration 
+    'target_delay_window':                         .050,         # [[target_delay_mean - target_delay_window/2] - [target_delay_mean + target_delay_window/2]] is uniform window for target delays
     'offset_delay':                                       .100,
     'mean_iti_precue':                               1,          # in s
     'min_iti_precue':                                  1.5,             # in s
@@ -64,6 +66,8 @@ standard_parameters = {
     'min_iti_postcue':                                1.5,             # in s
     'return_cue_dur':                                 .100,        # in s
 
+    'ref_stim_width':                                   0.25,       # in deg
+    'ref_stim_height':                                  1,       # in deg
 }
 
 # print 

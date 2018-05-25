@@ -30,6 +30,7 @@ class SATrial(Trial):
         self.instruct_time = self.t_time=self.fix_time = self.stimulus_time = self.post_stimulus_time = 0.0
 
         self.stim1_drawn = False
+        self.saccade_before_target= False
 
     def draw(self):    
         """docstring for draw"""
@@ -59,7 +60,7 @@ class SATrial(Trial):
         #         self.session.saccade_cue.setPos((self.max_x*-.97,self.fp_y))
         #         self.session.saccade_cue.draw()
 
-        if self.phase < 4:
+        if (self.ID == 0) + (self.phase < 4):
             self.session.ref_right.draw()
             self.session.ref_left.draw()
             self.session.fixation_center.draw()
@@ -140,7 +141,6 @@ class SATrial(Trial):
             # After the first trial, this phase is skipped immediately
             if (self.phase == 0) * (self.ID != 0):
                 self.phase_forward()
-
             if self.phase == 1:
                 self.phase_1_time = self.session.clock.getTime()
                 if ( self.phase_1_time  - self.trial_onset_time ) > self.phase_durations[1]:

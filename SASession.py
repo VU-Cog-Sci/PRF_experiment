@@ -220,40 +220,81 @@ class SASession(EyelinkSession):
             -0.0001,                                                                 # phase 0 only in trial 0
             precueITIs[t],                                                         # phase 1 wait time at fixation
             targetITIs[t],                                                            # phase 2 cue presentation
-            self.standard_parameters['offset_delay'],              # phase 3 target presentation, cue presentation
-            postcueITIs[t],                                                        # phase 4  all stimuli turn off during this duration
+            postcueITIs[t],                                                        # phase 3 starts with target presentation and waits for stim to turn off
+            self.standard_parameters['return_cue_dur'],              # phase 4, return cue
             # self.standard_parameters['return_cue_dur']        # phase 4
             ] for t in range(len(eye_dir))] )   
 
         print 'run will last %2f seconds (%.2f minutes)'%(np.sum(self.phase_durations),np.sum(self.phase_durations)/60)
 
+        self.fp_y = self.screen.size[1]*self.standard_parameters['sp_path_elevation']-self.screen.size[1]/2
+
+        # convert test positions to pixels
+        y_positions_pixels =  y_test_positions*self.standard_parameters['test_stim_y_offset']*self.pixels_per_degree+self.fp_y
+        x_positions_pixels =  x_test_positions*self.pixels_per_degree
+
+        target_stims = []
+        for i in range(len(eye_dir)):#self.trial_order:
+            target_stims.append(visual.Rect(self.screen, 
+                                width = self.standard_parameters['test_stim_width']*self.pixels_per_degree,  
+                                height = self.standard_parameters['test_stim_height']*self.pixels_per_degree, 
+                                lineColor = self.stim_color,
+                                fillColor = self.stim_color,
+                                pos = (x_positions_pixels[i],y_positions_pixels[i])))   
+
+        self.max_x = int(np.round( (self.standard_parameters['sp_path_amplitude']/2*self.pixels_per_degree)))
+
         self.ref_left = visual.Rect(self.screen, 
                     width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
                     height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
                     lineColor = self.stim_color,
-                    fillColor = self.stim_color)
+                    fillColor = self.stim_color,
+                    pos = (self.max_x*-1,self.fp_y ))
 
         self.ref_right = visual.Rect(self.screen, 
                     width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
                     height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
                     lineColor = self.stim_color,
-                    fillColor = self.stim_color)
+                    fillColor = self.stim_color,
+                    pos=(self.max_x,self.fp_y))
 
         self.fixation_center = visual.PatchStim(self.screen,
         	mask='raisedCos',
         	tex=None, 
         	size=self.standard_parameters['sp_target_size']*self.pixels_per_degree, 
-        	pos = np.array((0.0,0.0)), 
+        	pos = (0,self.fp_y), 
         	color = self.stim_color, 
         	opacity = 1.0, 
         	maskParams = {'fringeWidth':0.4})
 
-        self.saccade_cue = visual.Rect(self.screen, 
-            height = 0.05*self.pixels_per_degree,  
-            width = 0.2*self.pixels_per_degree, 
+        self.saccade_cue_left = visual.Rect(self.screen, 
+            height = self.standard_parameters['saccade_cue_height']*self.pixels_per_degree,  
+            width = self.standard_parameters['saccade_cue_width']*self.pixels_per_degree, 
             lineColor = self.stim_color,
-            fillColor = self.stim_color)
-   
+            fillColor = self.stim_color,
+            pos =(-self.standard_parameters['saccade_cue_x_offset']*self.pixels_per_degree,self.fp_y))
+
+        self.saccade_cue_right = visual.Rect(self.screen, 
+            height = self.standard_parameters['saccade_cue_height']*self.pixels_per_degree,  
+            width = self.standard_parameters['saccade_cue_width']*self.pixels_per_degree, 
+            lineColor = self.stim_color,
+            fillColor = self.stim_color,
+            pos =(self.standard_parameters['saccade_cue_x_offset']*self.pixels_per_degree,self.fp_y))
+
+        self.saccade_cue_back_right = visual.Rect(self.screen, 
+            height = self.standard_parameters['saccade_cue_height']*self.pixels_per_degree,  
+            width = self.standard_parameters['saccade_cue_width']*self.pixels_per_degree, 
+            lineColor = self.stim_color,
+            fillColor = self.stim_color,
+            pos =(self.max_x-self.standard_parameters['saccade_cue_x_offset']*self.pixels_per_degree,self.fp_y))
+
+        self.saccade_cue_back_left = visual.Rect(self.screen, 
+            height = self.standard_parameters['saccade_cue_height']*self.pixels_per_degree,  
+            width = self.standard_parameters['saccade_cue_width']*self.pixels_per_degree, 
+            lineColor = self.stim_color,
+            fillColor = self.stim_color,
+            pos =(-self.max_x+self.standard_parameters['saccade_cue_x_offset']*self.pixels_per_degree,self.fp_y))
+
         # self.cue_right_stim = visual.Polygon(self.screen,
         #     edges = 3,
         #     radius = self.standard_parameters['sp_target_size']*self.pixels_per_degree/2, 
@@ -312,12 +353,14 @@ class SASession(EyelinkSession):
                                     # add trial varying params:
                                     'x_pos': x_test_positions[i],
                                     'y_order': y_test_positions[i],
+                                    'x_pos_pix': x_positions_pixels[i],
+                                    'y_pos_pix': y_positions_pixels[i],
                                     'eye_dir': eye_dir[i],
                                     'answer': self.standard_parameters['default_answer'], # fill in default answer to initiate answer variable
                                     'fixate':(self.fix_sp=='y'),
                                     })
 
-            self.all_trials.append(SATrial(this_trial_parameters, phase_durations = self.phase_durations[i], session = self, screen = self.screen, tracker = self.tracker))
+            self.all_trials.append(SATrial(this_trial_parameters, phase_durations = self.phase_durations[i], session = self, screen = self.screen, tracker = self.tracker,target_stim=target_stims[i]))
 
     
     def close(self):

@@ -10,8 +10,12 @@
 # remove target if saccade is not detected 100ms after flash
 # plot mislocalization as function of flash relative to saccade onset
 
+
+# SP versie: implement jitter van target onset relatief aan fixatie
+# Sacc: terug naar oude versie met index voor terug naar center
+
 location = 'K2D38'# 'office','laptop','K2D38','7T'
-full_screen = True#lse
+full_screen = False#lse
 
 # standard parameters
 standard_parameters = {
@@ -28,8 +32,8 @@ standard_parameters = {
     'default_answer':                                0,            # for in trial object
     'test_stim_y_offset':                           2.5,         # in degrees, if 0 takes mid between fp and y boundary
     'test_stim_height':                              2,            # in degrees, if 0, takes 1/4 of available y space
-    'test_stim_width':                               0.4,          # in degrees 
-    'sp_target_size':                                 0.5,         # in degrees # also for fp in saccade exp
+    'test_stim_width':                               0.5,          # in degrees 
+    'sp_target_size':                                 0.75,         # in degrees # also for fp in saccade exp
     # 'target_max_ecc':                               4,            # in degrees # now set to sp_path_amplitude/4 in the experiment 
     'n_targets':                                          80,          # number of target positions, should be divisible by 4 (one for every eye dir and y position)
     'pupil_tracking_mode':                       0,             # 0: centroid, 1 = ellipse
@@ -66,8 +70,13 @@ standard_parameters = {
     'min_iti_postcue':                                1.5,             # in s
     'return_cue_dur':                                 .100,        # in s
 
-    'ref_stim_width':                                   0.25,       # in deg
-    'ref_stim_height':                                  1,       # in deg
+    'saccade_cue_x_offset':                      0.5,
+    'saccade_cue_width':                         0.2,
+    'saccade_cue_height':                       0.05,
+
+    'ref_stim_width':                                   0.2,       # in deg
+    'ref_stim_height':                                  0.5,       # in deg
+    'ref_y_offset':                                        4.5,
 }
 
 # print 
@@ -84,7 +93,7 @@ if location == 'K2D38':
     # K2D-38 (all in cm):
     DISPSIZE = (1024,768) # at 120 Hz (can be 160 but cant get it to work)
     SCREENSIZE = (39.6,29.7) # conforms to 36.53 by 27.80 (so 28.03 x 27.623 pixels per degree (should be same, but differ slightly due to computation with small angle (why?))), mean 27.83
-    SCREENDIST = 60.0
+    SCREENDIST = 50.0#60.0
 
 elif location == '7T':
     #7T scan room (all in cm):

@@ -44,6 +44,13 @@ class SPSession(EyelinkSession):
         # define the effective screen dimensions for stimulus presentation
         self.ywidth = (1-standard_parameters['sp_path_elevation'])*DISPSIZE[1]*2
 
+        self.draw_start_timings = []
+        self.draw_end_timings = []
+        self.targetstim_timings = []
+        self.before_phase_forward_timings = []
+        self.after_phase_forward_timings=[]
+        self.keytimes = []
+
         self.create_output_file_name()
         if tracker_on:
             
@@ -267,11 +274,20 @@ class SPSession(EyelinkSession):
         #     maskParams = {'fringeWidth':0.4})    
 
 
-        self.test_stim = visual.Rect(self.screen, 
-                            width = self.standard_parameters['test_stim_width']*self.pixels_per_degree,  
-                            height = self.standard_parameters['test_stim_height']*self.pixels_per_degree, 
-                            lineColor = self.stim_color,
-                            fillColor = self.stim_color)
+        self.fp_y = self.screen.size[1]*self.standard_parameters['sp_path_elevation']-self.screen.size[1]/2
+
+        # convert test positions to pixels
+        y_positions_pixels =  y_test_positions*self.standard_parameters['test_stim_y_offset']*self.pixels_per_degree+self.fp_y
+        x_positions_pixels =  x_test_positions*self.pixels_per_degree
+
+        target_stims = []
+        for i in range(len(eye_dir)):#self.trial_order:
+            target_stims.append(visual.Rect(self.screen, 
+                                width = self.standard_parameters['test_stim_width']*self.pixels_per_degree,  
+                                height = self.standard_parameters['test_stim_height']*self.pixels_per_degree, 
+                                lineColor = self.stim_color,
+                                fillColor = self.stim_color,
+                                pos = (x_positions_pixels[i],y_positions_pixels[i])))   
 
         self.ref_line = visual.Rect(self.screen, 
                     width = self.standard_parameters['sp_path_amplitude']*self.pixels_per_degree*self.standard_parameters['ref_stim_line_factor'],  
@@ -281,17 +297,38 @@ class SPSession(EyelinkSession):
                     fillColor = self.stim_color)
 
 
-        # self.ref_left = visual.Rect(self.screen, 
-        #             width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
-        #             height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
-        #             lineColor = self.stim_color,
-        #             fillColor = self.stim_color)
 
-        # self.ref_right = visual.Rect(self.screen, 
-        #             width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
-        #             height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
-        #             lineColor = self.stim_color,
-        #             fillColor = self.stim_color)
+        if self.standard_parameters['window']:
+
+            self.max_x = int(np.round( (self.standard_parameters['sp_path_amplitude']/2*self.pixels_per_degree)))
+
+            self.ref_left_down = visual.Rect(self.screen, 
+                        width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
+                        height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
+                        lineColor = self.stim_color,
+                        fillColor = self.stim_color,
+                        pos = ([self.max_x*-1,self.fp_y-self.standard_parameters['ref_y_offset']*self.pixels_per_degree]))
+
+            self.ref_right_down = visual.Rect(self.screen, 
+                        width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
+                        height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
+                        lineColor = self.stim_color,
+                        fillColor = self.stim_color,
+                        pos = ([self.max_x,self.fp_y-self.standard_parameters['ref_y_offset']*self.pixels_per_degree]))
+
+            self.ref_left_up = visual.Rect(self.screen, 
+                        width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
+                        height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
+                        lineColor = self.stim_color,
+                        fillColor = self.stim_color,
+                        pos = ([self.max_x*-1,self.fp_y+self.standard_parameters['ref_y_offset']*self.pixels_per_degree]))
+
+            self.ref_right_up = visual.Rect(self.screen, 
+                        width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
+                        height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
+                        lineColor = self.stim_color,
+                        fillColor = self.stim_color,
+                        pos=([self.max_x,self.fp_y+self.standard_parameters['ref_y_offset']*self.pixels_per_degree]))
 
         self.sp_amplitude_pix = self.standard_parameters['sp_path_amplitude']*self.pixels_per_degree/2# * self.screen.size[0] /2
 
@@ -307,12 +344,14 @@ class SPSession(EyelinkSession):
                                     # trial varying params:
                                     'x_pos': x_test_positions[i],
                                     'y_order': y_test_positions[i],
+                                    'y_pos_pix': y_positions_pixels[i],
+                                    'x_pos_pix': x_positions_pixels[i],
                                     'eye_dir': eye_dir[i],
                                     'answer': self.standard_parameters['default_answer'],
                                     'fixate':(self.fix_sp=='y'),
                                     })
 
-            self.all_trials.append(SPTrial(this_trial_parameters, phase_durations = self.phase_durations[i], session = self, screen = self.screen, tracker = self.tracker))
+            self.all_trials.append(SPTrial(this_trial_parameters, phase_durations = self.phase_durations[i], session = self, screen = self.screen, tracker = self.tracker,target_stim = target_stims[i]))
 
     
     def close(self):
@@ -324,8 +363,9 @@ class SPSession(EyelinkSession):
         for i, trial in enumerate(self.all_trials):
             # run the prepared trial
             trial.run(ID = i)
-            if self.stopped == True:
+            if i == 15:#self.stopped == True:
                 break
         self.close()
+        shell()
     
 

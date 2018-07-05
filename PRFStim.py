@@ -44,7 +44,10 @@ class PRFStim(object):
         else: # horizontal bar passes:
             self.size_pix = [self.screen.size[0]*session.standard_parameters['horizontal_stim_size'],self.screen.size[1]*session.standard_parameters['vertical_stim_size']]
             self.period = np.int(np.round(session.standard_parameters['horizontal_pass_dur'] * session.standard_parameters['TR']))
-            
+        
+        if self.trial.parameters['stim_bool'] == 0:
+            self.period = np.int(np.round(session.standard_parameters['vertical_pass_dur'] * session.standard_parameters['TR']))
+
         self.full_width = self.size_pix[0] + self.bar_width + self.session.standard_parameters['element_size']
         self.midpoint = 0
 

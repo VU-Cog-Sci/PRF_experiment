@@ -19,7 +19,7 @@ class PRFTrial(Trial):
         self.stim = PRFStim(self.screen, self, self.session, orientation = self.parameters['orientation'])
         
         if self.session.task == 'bar':
-            this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nColor\t\t-\tBY\t\t\t/\tRG'# self.parameters['task_instruction']
+            this_instruction_string = '\t\t\t\t  Index\t\t/\tMiddle:\n\nColor\t\t-\tBY\t\t\t/\tRG'# self.parameters['task_instruction']
         else:
             this_instruction_string = '\t\t\t\t  Left\t\t/\tRight:\n\nDarker\t\t-\tBrighter\t\t\t\tDarker'# self.parameters['task_instruction']        
         self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 30, alignHoriz = 'center')

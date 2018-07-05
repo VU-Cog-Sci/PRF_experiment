@@ -42,16 +42,16 @@ class ColorMatcherStim(object):
         blue = np.array([- self.trial.parameters['BY_comparison_color'],- self.trial.parameters['BY_comparison_color'], self.trial.parameters['BY_comparison_color']]) 
 
         # Now set the actual stimulus parameters
-        self.colors = np.concatenate((np.ones((self.num_elements/4.0,3)) * red,  # red/green - red
-                                    np.ones((self.num_elements/4.0,3)) * green,  # red/green - green
-                                    np.ones((self.num_elements/4.0,3)) * blue,  # blue/yellow - blue
-                                    np.ones((self.num_elements/4.0,3)) * yellow))  # blue/yellow - yellow
+        self.colors = np.concatenate((np.ones((int(self.num_elements/4.0),3)) * red,  # red/green - red
+                                    np.ones((int(self.num_elements/4.0),3)) * green,  # red/green - green
+                                    np.ones((int(self.num_elements/4.0),3)) * blue,  # blue/yellow - blue
+                                    np.ones((int(self.num_elements/4.0),3)) * yellow))  # blue/yellow - yellow
 
         np.random.shuffle(self.colors)
-        self.element_positions = np.random.rand(self.num_elements, 2) * np.array([self.size_pix_hor, self.size_pix_ver]) - np.array([self.size_pix_hor/2.0, self.size_pix_ver/2.0])
-        self.element_sfs = np.random.rand(self.num_elements)*5+0.5
-        self.element_sizes = np.ones((self.num_elements)) * self.trial.parameters['element_size']
-        self.element_orientations = np.random.rand(self.num_elements) * 720.0 - 360.0
+        self.element_positions = np.random.rand(int(self.num_elements), 2) * np.array([self.size_pix_hor, self.size_pix_ver]) - np.array([self.size_pix_hor/2.0, self.size_pix_ver/2.0])
+        self.element_sfs = np.random.rand(int(self.num_elements))*5+0.5
+        self.element_sizes = np.ones(int(self.num_elements)) * self.trial.parameters['element_size']
+        self.element_orientations = np.random.rand(int(self.num_elements)) * 720.0 - 360.0
         
     
     def draw(self):

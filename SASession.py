@@ -65,8 +65,8 @@ class SASession(EyelinkSession):
             x_edge = (1-x_ratio_covered)*DISPSIZE[0]/2
 
             # max y will be (y_portion-1)/y_portion of screen height, and min y 1/y_portion
-            y_portion = 5
-			
+            y_portion = 5 #so this is 80 percent of y height
+            
             # set calibration targets
             cal_center_x = DISPSIZE[0]/2
             cal_right_x = DISPSIZE[0]-x_edge
@@ -83,15 +83,20 @@ class SASession(EyelinkSession):
             cal_leftup = [cal_left_x,cal_up_y]
             cal_rightup = [cal_right_x,cal_up_y]
             cal_leftdown = [cal_left_x,cal_down_y]
-            cal_rightdown = [cal_right_x,cal_down_y]			
-            
-            # set validation targets			
+            cal_rightdown = [cal_right_x,cal_down_y]            
+
+            x_ratio_covered_val = x_ratio_covered*0.75
+            x_edge_val = (1-x_ratio_covered_val)*DISPSIZE[0]/2
+
+            y_portion_val = y_portion*0.75
+
+            # set validation targets            
             val_center_x = DISPSIZE[0]/2
-            val_right_x = DISPSIZE[0]-(x_edge*2)
-            val_left_x = x_edge*2
+            val_right_x = DISPSIZE[0]-(x_edge_val)
+            val_left_x = x_edge_val
             val_center_y = self.ywidth/2
-            val_up_y = self.ywidth/y_portion*2
-            val_down_y =  self.ywidth-self.ywidth/y_portion*2	
+            val_up_y = self.ywidth/y_portion_val
+            val_down_y =  self.ywidth/y_portion_val*(y_portion_val-1)
             
             val_center = [val_center_x,val_center_y]
             val_left = [val_left_x,val_center_y]
@@ -101,7 +106,7 @@ class SASession(EyelinkSession):
             val_leftup = [val_left_x,val_up_y]
             val_rightup = [val_right_x,val_up_y]
             val_leftdown = [val_left_x,val_down_y]
-            val_rightdown = [val_right_x,val_down_y]	
+            val_rightdown = [val_right_x,val_down_y]    
             
             # get them in the right order
             if n_points == 5:
@@ -153,9 +158,9 @@ class SASession(EyelinkSession):
 
         if self.fix_sp == 'n':
             # max_ecc = self.standard_parameters['target_max_ecc']
-            max_ecc = self.standard_parameters['sp_path_amplitude']/4
+            max_ecc = self.standard_parameters['sa_path_amplitude']/4
         elif self.fix_sp == 'y':
-            max_ecc = self.standard_parameters['sp_path_amplitude']/2
+            max_ecc = self.standard_parameters['sa_path_amplitude']/2
       
         # define range of x positions
         x_test_positions = np.linspace(-max_ecc, max_ecc, self.standard_parameters['n_targets']/4)
@@ -242,7 +247,7 @@ class SASession(EyelinkSession):
                                 fillColor = self.stim_color,
                                 pos = (x_positions_pixels[i],y_positions_pixels[i])))   
 
-        self.max_x = int(np.round( (self.standard_parameters['sp_path_amplitude']/2*self.pixels_per_degree)))
+        self.max_x = int(np.round( (self.standard_parameters['sa_path_amplitude']/2*self.pixels_per_degree)))
 
         self.ref_left = visual.Rect(self.screen, 
                     width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  

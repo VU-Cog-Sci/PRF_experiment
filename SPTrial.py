@@ -76,11 +76,14 @@ class SPTrial(Trial):
         #     self.session.ref_right.setPos([self.max_x+fix_x,self.session.fp_y])
         #     self.session.ref_left.setPos([-self.max_x+fix_x,self.session.fp_y])
 
-        # if self.parameters['window']:## + self.parameters['fixate']:
-        #     self.session.ref_left_up.draw()
-        #     self.session.ref_right_up.draw()
-        #     self.session.ref_left_down.draw()
-        #     self.session.ref_right_down.draw()
+        if self.parameters['window']:## + self.parameters['fixate']:
+            self.session.ref_left.draw()
+            self.session.ref_right.draw()
+        if self.parameters['square_window']:
+            self.session.ref_left_up.draw()
+            self.session.ref_right_up.draw()
+            self.session.ref_left_down.draw()
+            self.session.ref_right_down.draw()
         # self.session.fixation_outer_rim.draw()
         # self.session.fixation_rim.draw()
         self.session.fixation.draw()

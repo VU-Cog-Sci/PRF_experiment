@@ -31,7 +31,8 @@ for fi in range(2,(len(sys.argv))):
 
 	false_trials = (answers==0)+(np.abs(positions)==1000)+np.array([a not in keys for a in answers])
 
-	answer_positions = np.linspace(-params[0]['sp_path_amplitude']/2, params[0]['sp_path_amplitude']/2, len(keys))
+	# answer_positions = np.linspace(-params[0]['sp_path_amplitude']/2-params[0]['ref_x_offset'],params[0]['ref_x_offset']+params[0]['sp_path_amplitude']/2, len(keys))
+	answer_positions = np.linspace(-params[0]['sp_path_amplitude']/2,params[0]['sp_path_amplitude']/2, len(keys))
 
 	answers=answers[~false_trials]
 	positions=positions[~false_trials]

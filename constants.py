@@ -15,7 +15,7 @@
 # Sacc: terug naar oude versie met index voor terug naar center
 
 location = 'K2D38'# 'office','laptop','K2D38','7T'
-full_screen = False#lse
+full_screen = True#lse
 
 # standard parameters
 standard_parameters = {
@@ -26,8 +26,9 @@ standard_parameters = {
 
     # define screen size:
     'ref_stim_width':                                 0.05,      # in deg
-    'eyetracking_amplitude':                    20,         # custom calibration x-width
-    'sp_path_amplitude':                          14,         # width in degrees of sp amplitude
+    'eyetracking_amplitude':                    16,         # custom calibration x-width
+    'sa_path_amplitude':                          12,         # width in degrees of sp amplitude
+    'sp_path_amplitude':                          8,         # width in degrees of sp amplitude
     'sp_path_elevation':                           0.5,        # ratio of screen height (0.5 for middle)
     'default_answer':                                0,            # for in trial object
     'test_stim_y_offset':                           2.5,         # in degrees, if 0 takes mid between fp and y boundary
@@ -52,23 +53,25 @@ standard_parameters = {
     'sp_type' :                                          0,          # 0 for sin, 1 for lin
     'ref_stim_line_width' :                         .01,    # in deg
     'ref_stim_line_factor':                         1,       # scaling of sp_path_amplitude
+    
     # other parameters
-    'window':                                             False,
+    'window':                                             True,
+    'square_window':                                False,
 
     ##############################
     # saccade variables
     ##############################
 
     # temporal parameters (NOTE: rerun create_ITIs when changing any of these parameters)
-    'target_delay_mean_left':                      .285,         # in s this is the saccade delay duration 
+    'target_delay_mean_left':                     .275,         # in s this is the saccade delay duration 
     'target_delay_mean_right':                   .260,         # in s this is the saccade delay duration 
     'target_delay_window':                         .050,         # [[target_delay_mean - target_delay_window/2] - [target_delay_mean + target_delay_window/2]] is uniform window for target delays
     'offset_delay':                                       .100,
     'mean_iti_precue':                               1,          # in s
-    'min_iti_precue':                                  1.5,             # in s
+    'min_iti_precue':                                  1,             # in s
     'mean_iti_postcue':                             1,          # in s
-    'min_iti_postcue':                                1.5,             # in s
-    'return_cue_dur':                                 .100,        # in s
+    'min_iti_postcue':                                2,             # in s
+    'return_cue_dur':                                 .500,        # in s
 
     'saccade_cue_x_offset':                      0.5,
     'saccade_cue_width':                         0.2,
@@ -77,7 +80,15 @@ standard_parameters = {
     'ref_stim_width':                                   0.2,       # in deg
     'ref_stim_height':                                  0.5,       # in deg
     'ref_y_offset':                                        4.5,
+
+    'ref_x_offset':                                         2,              
 }
+
+# subject_specific_latencies = {
+    
+#     'ms': [280,290],
+#     'de': [275,260],
+# }
 
 # print 
     

@@ -74,7 +74,7 @@ class SPSession(EyelinkSession):
             x_edge = (1-x_ratio_covered)*DISPSIZE[0]/2
 
             # max y will be (y_portion-1)/y_portion of screen height, and min y 1/y_portion
-            y_portion = 5
+            y_portion = 5 #so this is 80 percent of y height
 			
             # set calibration targets
             cal_center_x = DISPSIZE[0]/2
@@ -93,14 +93,19 @@ class SPSession(EyelinkSession):
             cal_rightup = [cal_right_x,cal_up_y]
             cal_leftdown = [cal_left_x,cal_down_y]
             cal_rightdown = [cal_right_x,cal_down_y]			
-            
+
+            x_ratio_covered_val = x_ratio_covered*0.75
+            x_edge_val = (1-x_ratio_covered_val)*DISPSIZE[0]/2
+
+            y_portion_val = y_portion*0.75
+
             # set validation targets			
             val_center_x = DISPSIZE[0]/2
-            val_right_x = DISPSIZE[0]-(x_edge*2)
-            val_left_x = x_edge*2
+            val_right_x = DISPSIZE[0]-(x_edge_val)
+            val_left_x = x_edge_val
             val_center_y = self.ywidth/2
-            val_up_y = self.ywidth/y_portion*2
-            val_down_y =  self.ywidth-self.ywidth/y_portion*2	
+            val_up_y = self.ywidth/y_portion_val
+            val_down_y =  self.ywidth/y_portion_val*(y_portion_val-1)
             
             val_center = [val_center_x,val_center_y]
             val_left = [val_left_x,val_center_y]
@@ -162,9 +167,9 @@ class SPSession(EyelinkSession):
 
         if self.fix_sp == 'n':
             # max_ecc = self.standard_parameters['target_max_ecc']
-            max_ecc = self.standard_parameters['sp_path_amplitude']/4            
+            max_ecc = self.standard_parameters['sp_path_amplitude']/4+self.standard_parameters['ref_x_offset']
         elif self.fix_sp == 'y':
-            max_ecc = self.standard_parameters['sp_path_amplitude']/2
+            max_ecc = self.standard_parameters['sp_path_amplitude']/2+self.standard_parameters['ref_x_offset']
 
         x_test_positions = np.linspace(-max_ecc, max_ecc, self.standard_parameters['n_targets']/4)
 
@@ -289,46 +294,62 @@ class SPSession(EyelinkSession):
                                 fillColor = self.stim_color,
                                 pos = (x_positions_pixels[i],y_positions_pixels[i])))   
 
-        self.ref_line = visual.Rect(self.screen, 
-                    width = self.standard_parameters['sp_path_amplitude']*self.pixels_per_degree*self.standard_parameters['ref_stim_line_factor'],  
-                    height = self.standard_parameters['ref_stim_line_width']*self.pixels_per_degree, 
-                    pos = np.array((0.0,0.0)), 
-                    lineColor = self.stim_color,
-                    fillColor = self.stim_color)
+        # self.ref_line = visual.Rect(self.screen, 
+        #             width = self.standard_parameters['sp_path_amplitude']*self.pixels_per_degree*self.standard_parameters['ref_stim_line_factor'],  
+        #             height = self.standard_parameters['ref_stim_line_width']*self.pixels_per_degree, 
+        #             pos = np.array((0.0,0.0)), 
+        #             lineColor = self.stim_color,
+        #             fillColor = self.stim_color)
 
 
+        self.max_x = int(np.round( (self.standard_parameters['sp_path_amplitude']/2*self.pixels_per_degree)))
+        x_offset_pix = self.standard_parameters['ref_x_offset']*self.pixels_per_degree
 
         if self.standard_parameters['window']:
 
-            self.max_x = int(np.round( (self.standard_parameters['sp_path_amplitude']/2*self.pixels_per_degree)))
+            self.ref_left = visual.Rect(self.screen, 
+                        width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
+                        height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
+                        lineColor = self.stim_color,
+                        fillColor = self.stim_color,
+                        pos = (-self.max_x-x_offset_pix,self.fp_y ))
+
+            self.ref_right = visual.Rect(self.screen, 
+                        width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
+                        height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
+                        lineColor = self.stim_color,
+                        fillColor = self.stim_color,
+                        pos=(self.max_x+x_offset_pix,self.fp_y))
+        
+        elif self.standard_parameters['square_window']:
 
             self.ref_left_down = visual.Rect(self.screen, 
                         width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
                         height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
                         lineColor = self.stim_color,
                         fillColor = self.stim_color,
-                        pos = ([self.max_x*-1,self.fp_y-self.standard_parameters['ref_y_offset']*self.pixels_per_degree]))
+                        pos = ([self.max_x*-1-x_offset_pix,self.fp_y-self.standard_parameters['ref_y_offset']*self.pixels_per_degree]))
 
             self.ref_right_down = visual.Rect(self.screen, 
                         width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
                         height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
                         lineColor = self.stim_color,
                         fillColor = self.stim_color,
-                        pos = ([self.max_x,self.fp_y-self.standard_parameters['ref_y_offset']*self.pixels_per_degree]))
+                        pos = ([self.max_x+x_offset_pix,self.fp_y-self.standard_parameters['ref_y_offset']*self.pixels_per_degree]))
 
             self.ref_left_up = visual.Rect(self.screen, 
                         width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
                         height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
                         lineColor = self.stim_color,
                         fillColor = self.stim_color,
-                        pos = ([self.max_x*-1,self.fp_y+self.standard_parameters['ref_y_offset']*self.pixels_per_degree]))
+                        pos = ([self.max_x*-1-x_offset_pix,self.fp_y+self.standard_parameters['ref_y_offset']*self.pixels_per_degree]))
 
             self.ref_right_up = visual.Rect(self.screen, 
                         width = self.standard_parameters['ref_stim_width']*self.pixels_per_degree,  
                         height = self.standard_parameters['ref_stim_height']*self.pixels_per_degree, 
                         lineColor = self.stim_color,
                         fillColor = self.stim_color,
-                        pos=([self.max_x,self.fp_y+self.standard_parameters['ref_y_offset']*self.pixels_per_degree]))
+                        pos=([self.max_x+x_offset_pix,self.fp_y+self.standard_parameters['ref_y_offset']*self.pixels_per_degree]))
 
         self.sp_amplitude_pix = self.standard_parameters['sp_path_amplitude']*self.pixels_per_degree/2# * self.screen.size[0] /2
 
@@ -363,9 +384,9 @@ class SPSession(EyelinkSession):
         for i, trial in enumerate(self.all_trials):
             # run the prepared trial
             trial.run(ID = i)
-            if i == 15:#self.stopped == True:
+            if self.stopped == True:
                 break
         self.close()
-        shell()
+
     
 

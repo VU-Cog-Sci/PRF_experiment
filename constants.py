@@ -6,8 +6,8 @@ standard_parameters = {
     
     'eyelink_calib_size':               0.5,     
 
-    'stim_size':                        200,            
-    'stim_x_offset':                    170,    
+    'stim_size':                        400,            
+    'stim_x_offset':                    250,    
     'stim_spatial_frequency':           0.0375,  
     'stim_flicker_freq':                8.0,       
     
@@ -16,24 +16,24 @@ standard_parameters = {
     'total_nr_trials':                  60,
     'total_ITI_tolerance':              0.025,
 
-    'high_reward_probability':          0.8,
-    'TR':                               0.945,     
+    'high_reward_probability':          0.7,
+    'TR':                               1.5,     
 
     'stim_dur' :                        0.75,       
-    'fb_dur' :                          1.0,       
+    'fb_dur' :                          0.5,       
     'ITI_minimum':                      1.5,       
-    'ITI_mean':                         2.0        
+    'ITI_mean':                         1.5        
 }
 
-# response_button_signs = {
-# 'e':-1,  # left 'less' answer  e
-# 'b':1,   # right 'more' answer   b
-# 'y':2}   # confirm color match y 
-
 response_button_signs = {
-        'f':-1,  # left 'less' answer  e
-        'j':1,   # right 'more' answer   b
-        'y':2}   # confirm color match y 
+'e':-1,  # left 'less' answer  e
+'b':1,   # right 'more' answer   b
+'y':2}   # confirm color match y 
+
+# response_button_signs = {
+#         'f':-1,  # left 'less' answer  e
+#         'j':1,   # right 'more' answer   b
+#         'y':2}   # confirm color match y 
 # }      
 
 # screen_res = (1920,1080)

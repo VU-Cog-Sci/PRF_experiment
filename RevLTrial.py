@@ -15,9 +15,9 @@ class RevLTrial(Trial):
     def __init__(self, parameters = {}, phase_durations = [], session = None, screen = None, tracker = None):
         super(RevLTrial, self).__init__(parameters = parameters, phase_durations = phase_durations, session = session, screen = screen, tracker = tracker)
                 
-        this_instruction_string = 'CW: R - CCW: L'
-        self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 0), italic = True, height = 50, alignHoriz = 'center')
-        self.instruction.setSize((200,50))
+        this_instruction_string = 'Is your favorite orientation on the left, or on the right?\nAnswer with your index fingers!'
+        self.instruction = visual.TextStim(self.screen, text = this_instruction_string, font = 'Helvetica Neue', pos = (0, 200), italic = True, height = 50, alignHoriz = 'center')
+        self.instruction.setSize((600,150))
 
         self.run_time = 0.0
         self.instruct_time = self.trial_start_time =self.stimulus_time = self.post_stimulus_time = 0.0
@@ -32,7 +32,7 @@ class RevLTrial(Trial):
 
         elif self.phase == 2:
             grating_phase = 0.5 * np.round(self.stimulus_time * \
-                                self.parameters['stim_flicker_freq'])
+                                self.parameters['stim_flicker_freq'] * 2.0)
             self.session.CW_stim.setPhase(grating_phase)
             self.session.CCW_stim.setPhase(grating_phase)
 

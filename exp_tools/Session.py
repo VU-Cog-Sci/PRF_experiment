@@ -235,7 +235,7 @@ class EyelinkSession(Session):
                     data_file=self.eyelink_temp_file, bgc=self.display.bgc,eventdetection='native')
                 self.tracker_on = True
             except:
-                print '\ncould not connect to tracker'
+                print('\ncould not connect to tracker')
                 self.tracker = None
                 self.tracker_on = False
                 self.eye_measured, self.sample_rate, self.CR_mode, self.file_sample_filter, self.link_sample_filter = 'N', sample_rate, 1, 1, 1

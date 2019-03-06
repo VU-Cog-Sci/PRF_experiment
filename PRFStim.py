@@ -38,12 +38,12 @@ class PRFStim(object):
         self.num_elements = session.standard_parameters['num_elements']
 
         # change n_elements, sizes and bar width ratio for horizontal / vertical passes
-        if self.trial.parameters['orientation'] in [0,np.pi]: # these are the vertical passes (e.g. top-bottom)
-            self.size_pix = [self.screen.size[1]*session.standard_parameters['vertical_stim_size'],self.screen.size[0]*session.standard_parameters['horizontal_stim_size']]
-            self.period = session.standard_parameters['vertical_pass_dur'] * session.standard_parameters['TR']
-        else: # horizontal bar passes:
+        if self.trial.parameters['orientation'] in [3*np.pi/2,np.pi/2]: # these are the vertical passes (e.g. top-bottom)
             self.size_pix = [self.screen.size[0]*session.standard_parameters['horizontal_stim_size'],self.screen.size[1]*session.standard_parameters['vertical_stim_size']]
             self.period = np.int(np.round(session.standard_parameters['horizontal_pass_dur'] * session.standard_parameters['TR']))
+        else: # horizontal bar passes:
+            self.size_pix = [self.screen.size[1]*session.standard_parameters['vertical_stim_size'],self.screen.size[0]*session.standard_parameters['horizontal_stim_size']]
+            self.period = session.standard_parameters['vertical_pass_dur'] * session.standard_parameters['TR']
         
         if self.trial.parameters['stim_bool'] == 0:
             self.period = np.int(np.round(session.standard_parameters['vertical_pass_dur'] * session.standard_parameters['TR']))
@@ -145,7 +145,8 @@ class PRFStim(object):
 
         self.element_positions = np.random.rand(self.num_elements, 2) * np.array([self.bar_length, self.bar_width]) - np.array([self.bar_length/2.0, self.bar_width/2.0])
         # self.element_sfs = np.ones((self.num_elements)) * self.session.standard_parameters['element_spatial_frequency']
-        self.element_sfs = np.random.rand(self.num_elements)*5+0.5
+        self.element_sfs = np.random.rand(self.num_elements)*self.session.standard_parameters['element_spatial_frequency_gain'] \
+                                + self.session.standard_parameters['element_spatial_frequency_offset']
         self.element_sizes = np.ones((self.num_elements)) * self.session.standard_parameters['element_size']
         self.element_phases = np.zeros(self.num_elements)
         self.element_orientations = np.random.rand(self.num_elements) * 720.0 - 360.0

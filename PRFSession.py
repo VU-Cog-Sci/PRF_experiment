@@ -176,11 +176,11 @@ class PRFSession(EyelinkSession):
             self.direction_indices = np.array([0,2,6,4])
         else:
             # nostim-top-left-bottom-right-nostim-top-left-bottom-right-nostim
-            # self.stim_bool = [0,1,1,1,1,0,1,1,1,1,0]
-            # self.direction_indices = np.array([0,4,2,0,6,0,4,2,0,6,0])
+            self.stim_bool = [0,1,1,1,1,0,1,1,1,1,0]
+            self.direction_indices = np.array([0,4,2,0,6,0,2,0,6,4,0])
             # nostim-bottom-left-nostim-right-top-nostim
-            self.stim_bool = [0,1,1,0,1,1,0]
-            self.direction_indices = np.array([0,0,2,0,6,4,0])
+            # self.stim_bool = [0,1,1,0,1,1,0]
+            # self.direction_indices = np.array([0,0,2,0,6,4,0])
 
         self.trial_array = np.array([[self.direction_indices[i], self.stim_bool[i]] for i in range(len(self.stim_bool))])
 
@@ -205,9 +205,9 @@ class PRFSession(EyelinkSession):
             self.standard_parameters['PRF_ITI_in_TR'] * self.standard_parameters['TR'] ])# for stim_dur in self.stim_durations])    # ITI
 
         # fixation point
-        self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=40, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.background_color, maskParams = {'fringeWidth':0.4})
-        self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=22, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
-        self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=17, pos = np.array((self.standard_parameters['x_offset'],0.0)), color = self.background_color, opacity = 1.0, maskParams = {'fringeWidth':0.4})
+        self.fixation_outer_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=40, pos = np.array((self.standard_parameters['x_offset'],self.screen_pix_size[1]*self.standard_parameters['y_offset'])), color = self.background_color, maskParams = {'fringeWidth':0.4})
+        self.fixation_rim = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=22, pos = np.array((self.standard_parameters['x_offset'],self.screen_pix_size[1]*self.standard_parameters['y_offset'])), color = (-1.0,-1.0,-1.0), maskParams = {'fringeWidth':0.4})
+        self.fixation = visual.PatchStim(self.screen, mask='raisedCos',tex=None, size=17, pos = np.array((self.standard_parameters['x_offset'],self.screen_pix_size[1]*self.standard_parameters['y_offset'])), color = self.background_color, opacity = 1.0, maskParams = {'fringeWidth':0.4})
         
         # mask
         if self.standard_parameters['mask_type'] ==1:

@@ -9,7 +9,7 @@ try:
     import appnope
     appnope.nope()
 except:
-    print 'APPNOPE NOT ACTIVE!'
+    print('APPNOPE NOT ACTIVE!')
 
 def main():
     initials = raw_input('Your initials: ')

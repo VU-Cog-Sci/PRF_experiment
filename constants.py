@@ -4,12 +4,12 @@ import numpy as np
 import sys
 
 if len(sys.argv)>1:
-    wanted_dur = 24. # in seconds
+    wanted_dur = 30. # in seconds
 
     #rest is computed
     TR = float(sys.argv[1])/1000. # should be given in ms in terminal
     nr_TRs = np.int(np.round(wanted_dur/TR))
-    print '\n%d TRs of %.3fs makes %.3fs per bar pass, total of %.3fm\n'%(nr_TRs,TR,TR*nr_TRs,TR*nr_TRs*7/60)
+    print '\n%d TRs of %.3fs makes %.3fs per bar pass\n'%(nr_TRs,TR,TR*nr_TRs)
 else:
     print '\n\n\n!!!please indicate the desired TR in ms as first argument!!!\n\n\n'
     exit()
@@ -24,6 +24,7 @@ standard_parameters = {
     'vertical_stim_size':               1,            # portion of horizontal screen space covered
     'horizontal_stim_size':             1,         # when wanting a circular mask, set this to screen_size[1]/screen_size[0]
     'x_offset':                         0,          # when wanting a circular mask, x-offset
+    'y_offset':                         0.0,          # y-offset for taking the fixation mark up as Cerebellum seems to have only lower VF pRFs
     'bar_width_ratio':                  0.125,        # portion of screen height
     
     ## temporal dimensions:
@@ -38,7 +39,7 @@ standard_parameters = {
     'fast_speed':                       12.0,        # speed of the fast elements for TK/DE/JW: 6, for JS/SN/NA: 7
     'slow_speed':                       7.0,        # speed of the slow elements for TK/DE/JW: 4, for JS/SN/NA: 3
     'element_size':                     45.0,        # size of the elements # used: 35
-    'element_spatial_frequency':        2,        # sf of the elemenets # used: 2
+    'element_spatial_frequency':        5,        # sf of the elemenets # used: 2
 
     ## stim feature params
     'fast_speed':                       12.0,        # speed of the fast elements for TK/DE/JW: 6, for JS/SN/NA: 7
@@ -65,20 +66,20 @@ standard_parameters = {
 # 'b':1,   # right 'more' answer   b
 # 'y':2}   # confirm color match y 
 
-# response_button_signs = {
-#         'b':-1,  # left 'less' answer  e
-#         'y':1,   # right 'more' answer   b
-#         'g':2}   # confirm color match y 
-# }      
+response_button_signs = {
+        'b':-1,  # left 'less' answer  e
+        'y':1,   # right 'more' answer   b
+        'g':2   # confirm color match y 
+}      
 # response_button_signs = {
 #         'b':-1,
 #         'y':1
 #         }
 
-response_button_signs = {
-        'e':-1,
-        'w':1
-        }
+# response_button_signs = {
+#         'b':-1,
+#         'y':1
+#         }
 # screen_res = (1920,1080)
 # background_color = (0.5,0.5,0.5)#-0.75,-0.75,-0.75)
 

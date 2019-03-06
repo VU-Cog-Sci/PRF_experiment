@@ -8,7 +8,7 @@ import os, sys, time, pickle
 import pygame
 from pygame.locals import *
 # from pygame import mixer, time
-
+import pandas as pd
 # import Quest
 
 sys.path.append( 'exp_tools' )
@@ -232,6 +232,10 @@ class PRFSession(EyelinkSession):
         super(PRFSession, self).close()
         with open(self.staircase_file_name, 'w') as f:
             pickle.dump(self.staircases, f)
+        with open(self.output_file + '_outputDict.pickle', 'r') as f:
+            opd = pickle.load(f)
+            opd_df = pd.DataFrame(opd['parameterArray'])
+            opd_df.to_csv(self.output_file + '_parameters.tsv', sep='\t')
         # for s in self.staircases.keys():
             # print 'Staircase {}'.format(s)
             # self.staircases[s].printAsText()

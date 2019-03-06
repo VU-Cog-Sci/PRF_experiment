@@ -4,7 +4,7 @@ import numpy as np
 import sys
 
 if len(sys.argv)>1:
-    wanted_dur = 30. # in seconds
+    wanted_dur = 27. # in seconds
 
     #rest is computed
     TR = float(sys.argv[1])/1000. # should be given in ms in terminal
@@ -32,17 +32,17 @@ standard_parameters = {
     'num_elements':                     4000,        # amount of elements in bar, this will be num_elements * (1/bar_width_ratio) = 8000 for Mapper
     'vertical_pass_dur':                int(2.0*nr_TRs/3.0),#32,        # that is 24*1.5=36 sec, which is 15/24 = 0.625 degree per step 
     'horizontal_pass_dur':              nr_TRs,#32,
-    'nr_staircases_ecc':                4,
+    'nr_staircases_ecc':                3,
     'PRF_ITI_in_TR':                    0.5,        # fill in 0.5 less than wanted to accomodate for t waiting
     'TR':                               TR,#1.3,        # VERY IMPORTANT TO FILL IN AFTER PLANNING IN!            
     'redraws_per_TR' :                  3.0,        # TR/redraws_per_TR is the length of the transients, in this case 500 ms: #used e
-    'fast_speed':                       12.0,        # speed of the fast elements for TK/DE/JW: 6, for JS/SN/NA: 7
-    'slow_speed':                       7.0,        # speed of the slow elements for TK/DE/JW: 4, for JS/SN/NA: 3
+    'fast_speed':                       16.0,        # speed of the fast elements for TK/DE/JW: 6, for JS/SN/NA: 7
+    'slow_speed':                       8.0,        # speed of the slow elements for TK/DE/JW: 4, for JS/SN/NA: 3
     'element_size':                     45.0,        # size of the elements # used: 35
-    'element_spatial_frequency':        5,        # sf of the elemenets # used: 2
+    'element_spatial_frequency_gain':   8,        # sf of the elemenets # used: 2
+    'element_spatial_frequency_offset': 0.125,        # sf of the elemenets # used: 2
 
     ## stim feature params
-    'fast_speed':                       12.0,        # speed of the fast elements for TK/DE/JW: 6, for JS/SN/NA: 7
     'num_fns_trials':                   4,        # speaks for itself
 
     ## mapper variables:
